@@ -7,150 +7,146 @@
 <meta name="description" content="Interactive simulations that make tricky concepts click. Drag, break, explore." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --ink:#2a2233; --muted:#6a6175; --line:rgba(42,34,51,.1);
-    --coral:#ff6f5e; --teal:#1fb0a0; --indigo:#6c5ce7; --amber:#f5a623;
-    --card:rgba(255,255,255,.62); --shadow:0 22px 50px -26px rgba(60,40,70,.42);
+    --ink:#2b2440; --muted:#7a7390; --paper:#fff4e6;
+    --coral:#ff5e5b; --coral-d:#d63f3c;
+    --teal:#2ec4b6;  --teal-d:#1c9286;
+    --purple:#9b5de5;--purple-d:#7a3fc7;
+    --blue:#4ea8ff;  --blue-d:#2f86e0;
+    --amber:#ffb703; --amber-d:#e09a00;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;
-    background:#fdf4ec;min-height:100vh;overflow-x:hidden}
-  /* dreamy gradient mesh */
-  #bg{position:fixed;inset:0;z-index:-2;
-    background:
-      radial-gradient(60% 50% at 82% 8%, #ffd9c9 0%, transparent 60%),
-      radial-gradient(55% 45% at 12% 18%, #ffe2ef 0%, transparent 60%),
-      radial-gradient(60% 55% at 50% 100%, #cdeee6 0%, transparent 60%),
-      radial-gradient(45% 40% at 90% 80%, #e4ddff 0%, transparent 60%),
-      linear-gradient(180deg,#fdf4ec,#fbeee6);}
-  .blob{position:fixed;z-index:-1;border-radius:50%;filter:blur(70px);opacity:.4;mix-blend-mode:multiply;animation:float 20s ease-in-out infinite}
-  .b1{width:42vw;height:42vw;left:-8vw;top:-6vw;background:#ffc9bd;animation-delay:-3s}
-  .b2{width:38vw;height:38vw;right:-10vw;top:30vh;background:#bfe9e0;animation-delay:-9s}
-  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(3vw,-3vh) scale(1.08)}}
-  #grain{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.04;mix-blend-mode:multiply;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);background:var(--paper);
+    min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  /* playful confetti background */
+  .dot{position:fixed;border-radius:50%;z-index:0;opacity:.5;animation:bob 7s ease-in-out infinite}
+  .dot.sq{border-radius:10px}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-18px) rotate(12deg)}}
+  .wrap{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
 
   /* nav */
-  nav{display:flex;align-items:center;justify-content:space-between;max-width:1080px;margin:0 auto;
-    padding:20px clamp(18px,4vw,40px)}
-  .brand{display:flex;align-items:center;gap:9px;font-family:'Fraunces',serif;font-weight:600;font-size:23px;letter-spacing:.01em}
-  .brand .star{font-size:18px;color:var(--coral)}
-  .brand em{font-style:italic;font-weight:400}
-  .nav-pill{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;backdrop-filter:blur(12px)}
-  .nav-pill a{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:9px 15px;border-radius:999px;transition:all .25s}
-  .nav-pill a:hover{color:var(--ink)}
-  .nav-pill a.cta{background:var(--ink);color:#fff}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{font-family:'Fredoka';font-weight:700;font-size:26px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em}
+  .brand .s{display:inline-block;color:var(--coral);animation:spin 6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .navbtn{font-family:'Fredoka';font-weight:600;font-size:15px;color:#fff;background:var(--ink);text-decoration:none;
+    padding:12px 20px;border-radius:14px;box-shadow:0 5px 0 #15102a;transition:transform .12s,box-shadow .12s}
+  .navbtn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #15102a}
+  .navbtn:active{transform:translateY(3px);box-shadow:0 2px 0 #15102a}
 
   /* hero */
-  header{max-width:840px;margin:0 auto;text-align:center;padding:clamp(40px,8vw,86px) clamp(20px,5vw,40px) 30px}
-  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--muted);
-    background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 15px;margin-bottom:24px;backdrop-filter:blur(10px)}
-  .eyebrow b{color:var(--teal)}
-  h1{font-family:'Fraunces',serif;font-weight:400;line-height:1.02;letter-spacing:-.02em;font-size:clamp(40px,7.4vw,76px)}
-  h1 em{font-style:italic;color:var(--coral)}
-  .lede{font-size:clamp(16px,1.8vw,20px);line-height:1.55;color:#574d63;max-width:48ch;margin:22px auto 0;font-weight:400}
-  .hero-cta{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;margin-top:34px}
-  .btn{font-family:'Hanken Grotesk';font-weight:600;font-size:15px;padding:14px 26px;border-radius:14px;text-decoration:none;cursor:pointer;transition:transform .2s,box-shadow .2s;border:1px solid transparent}
-  .btn.primary{background:var(--ink);color:#fff;box-shadow:0 12px 28px -12px rgba(42,34,51,.6)}
-  .btn.primary:hover{transform:translateY(-2px)}
-  .btn.ghost{background:var(--card);border-color:var(--line);color:var(--ink);backdrop-filter:blur(10px)}
+  header{text-align:center;padding:clamp(34px,7vw,72px) 0 18px}
+  .chip{display:inline-flex;align-items:center;gap:8px;font-family:'Fredoka';font-weight:600;font-size:14px;
+    background:#fff;border:2px solid var(--ink);border-radius:999px;padding:8px 16px;margin-bottom:24px;
+    box-shadow:0 4px 0 var(--ink)}
+  h1{font-family:'Fredoka';font-weight:700;line-height:1.0;letter-spacing:-.02em;font-size:clamp(44px,9vw,92px)}
+  h1 .hi{position:relative;white-space:nowrap}
+  h1 .hi mark{background:none;color:var(--coral)}
+  h1 .hi svg{position:absolute;left:-2%;bottom:-14px;width:104%;height:18px}
+  .lede{font-size:clamp(17px,1.9vw,21px);line-height:1.5;color:#5a5270;max-width:46ch;margin:26px auto 0;font-weight:500}
+  .heroBtn{display:inline-block;margin-top:32px;font-family:'Fredoka';font-weight:600;font-size:19px;color:#fff;
+    background:var(--coral);text-decoration:none;padding:17px 34px;border-radius:18px;
+    box-shadow:0 8px 0 var(--coral-d);transition:transform .12s,box-shadow .12s}
+  .heroBtn:hover{transform:translateY(-3px);box-shadow:0 11px 0 var(--coral-d)}
+  .heroBtn:active{transform:translateY(4px);box-shadow:0 4px 0 var(--coral-d)}
 
-  /* sections */
-  main{max-width:1080px;margin:0 auto;padding:30px clamp(18px,4vw,40px) 60px}
-  .sec-head{display:flex;align-items:baseline;gap:12px;margin:46px 0 18px}
-  .sec-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:26px}
-  .sec-head .count{font-size:13px;color:var(--muted)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  /* section heads */
+  .sec{display:flex;align-items:center;gap:12px;margin:54px 0 22px}
+  .sec h2{font-family:'Fredoka';font-weight:700;font-size:30px}
+  .sec .tag{font-family:'Fredoka';font-weight:600;font-size:13px;color:#fff;background:var(--teal);padding:5px 12px;border-radius:999px;box-shadow:0 3px 0 var(--teal-d)}
+  .sec .tag.soon{background:#c9c2d6;box-shadow:0 3px 0 #a79fbb}
 
-  .card{position:relative;display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
-    border-radius:20px;padding:22px;backdrop-filter:blur(14px);box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s;overflow:hidden}
-  .card:hover{transform:translateY(-5px);box-shadow:0 30px 60px -30px rgba(60,40,70,.5)}
-  .card .ic{font-size:38px;display:block;margin-bottom:14px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.12))}
-  .card h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin-bottom:6px}
-  .card p{font-size:13.5px;line-height:1.45;color:var(--muted)}
-  .card .go{margin-top:14px;font-size:13px;font-weight:600;color:var(--coral);display:flex;align-items:center;gap:5px}
-  .card .go .arr{transition:transform .25s} .card:hover .go .arr{transform:translateX(4px)}
-  .badge{position:absolute;top:16px;right:16px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-    padding:4px 9px;border-radius:999px}
-  .badge.live{color:#0d7a6e;background:rgba(31,176,160,.16)}
-  .badge.soon{color:#9a7a2a;background:rgba(245,166,35,.16)}
-  .card.soon{opacity:.72;cursor:default}
-  .card.soon:hover{transform:none;box-shadow:var(--shadow)}
-  .card.soon .go{color:var(--muted)}
-  /* coloured top accent per card */
-  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--coral)}
-  .card.c-teal::before{background:var(--teal)} .card.c-indigo::before{background:var(--indigo)} .card.c-amber::before{background:var(--amber)}
-  .card.soon::before{background:#cdbfa6}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
 
-  footer{text-align:center;padding:30px 20px 50px;color:var(--muted);font-size:13px}
-  footer b{color:var(--ink)}
-  footer .made{margin-top:6px}
+  .card{position:relative;display:block;text-decoration:none;color:#fff;border-radius:26px;padding:26px 24px 22px;
+    transition:transform .16s ease,box-shadow .16s ease;will-change:transform}
+  .card .ic{font-size:46px;display:block;margin-bottom:14px;line-height:1}
+  .card h3{font-family:'Fredoka';font-weight:700;font-size:23px;margin-bottom:7px}
+  .card p{font-family:'Hanken Grotesk';font-weight:500;font-size:14px;line-height:1.45;color:rgba(255,255,255,.92)}
+  .card .play{margin-top:16px;font-family:'Fredoka';font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:7px;
+    background:rgba(255,255,255,.22);padding:8px 15px;border-radius:12px}
+  .card .play .a{transition:transform .16s} .card:hover .play .a{transform:translateX(5px)}
+  .card:nth-child(odd){transform:rotate(-1.2deg)} .card:nth-child(even){transform:rotate(1.2deg)}
+  .card:hover{transform:translateY(-8px) rotate(0deg) scale(1.02)}
+  .card:active{transform:translateY(2px) rotate(0deg)}
+  .c-coral{background:var(--coral);box-shadow:0 9px 0 var(--coral-d),0 22px 34px -14px rgba(214,63,60,.5)}
+  .c-coral:hover{box-shadow:0 15px 0 var(--coral-d),0 30px 44px -14px rgba(214,63,60,.55)}
+  .c-teal{background:var(--teal);box-shadow:0 9px 0 var(--teal-d),0 22px 34px -14px rgba(28,146,134,.5)}
+  .c-teal:hover{box-shadow:0 15px 0 var(--teal-d),0 30px 44px -14px rgba(28,146,134,.55)}
+  .c-purple{background:var(--purple);box-shadow:0 9px 0 var(--purple-d),0 22px 34px -14px rgba(122,63,199,.5)}
+  .c-purple:hover{box-shadow:0 15px 0 var(--purple-d),0 30px 44px -14px rgba(122,63,199,.55)}
+  .c-blue{background:var(--blue);box-shadow:0 9px 0 var(--blue-d),0 22px 34px -14px rgba(47,134,224,.5)}
+  .c-blue:hover{box-shadow:0 15px 0 var(--blue-d),0 30px 44px -14px rgba(47,134,224,.55)}
 
-  .reveal{opacity:0;transform:translateY(20px);animation:rise .7s ease forwards}
-  @keyframes rise{to{opacity:1;transform:none}}
+  /* coming soon */
+  .soon{background:#fff;color:var(--ink);border:3px dashed #d8cfe0;box-shadow:none}
+  .soon:hover{transform:rotate(0deg);box-shadow:none}
+  .soon:nth-child(odd),.soon:nth-child(even){transform:rotate(0deg)}
+  .soon p{color:var(--muted)}
+  .soon .play{background:#f1ecf6;color:var(--muted)}
+  .soon .ic{filter:grayscale(.2);opacity:.85}
+  .soonbadge{position:absolute;top:18px;right:18px;font-family:'Fredoka';font-weight:600;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:#9a7a2a;background:rgba(255,183,3,.2);padding:4px 10px;border-radius:999px}
+
+  footer{text-align:center;padding:46px 20px 56px;position:relative;z-index:2}
+  footer .big{font-family:'Fredoka';font-weight:600;font-size:18px;color:var(--ink)}
+  footer .made{margin-top:8px;color:var(--muted);font-size:14px}
+  footer .made b{color:var(--ink);font-family:'Fredoka'}
+
+  .pop{opacity:0;transform:translateY(18px) scale(.98);animation:pop .5s cubic-bezier(.34,1.56,.64,1) forwards}
+  @keyframes pop{to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-  <div id="bg"></div><div class="blob b1"></div><div class="blob b2"></div><div id="grain"></div>
+  <!-- confetti -->
+  <span class="dot" style="width:70px;height:70px;background:#ffb703;left:6%;top:18%;animation-delay:-1s"></span>
+  <span class="dot sq" style="width:46px;height:46px;background:#9b5de5;right:8%;top:12%;animation-delay:-3s"></span>
+  <span class="dot" style="width:34px;height:34px;background:#2ec4b6;left:12%;bottom:22%;animation-delay:-2s"></span>
+  <span class="dot sq" style="width:58px;height:58px;background:#ff5e5b;right:12%;bottom:26%;animation-delay:-4s"></span>
+  <span class="dot" style="width:26px;height:26px;background:#4ea8ff;left:46%;top:8%;animation-delay:-5s"></span>
 
-  <nav>
-    <div class="brand"><span class="star">✦</span>D<em>abble</em></div>
-    <div class="nav-pill">
-      <a href="#explore">Explore</a>
-      <a href="https://maghimma.github.io/physics-lab/" class="cta">Open Physics Lab</a>
-    </div>
-  </nav>
+  <div class="wrap">
+    <nav class="pop">
+      <div class="brand"><span class="s">✦</span> Dabble</div>
+      <a class="navbtn" href="https://maghimma.github.io/physics-lab/">Open Physics Lab</a>
+    </nav>
 
-  <header class="reveal">
-    <div class="eyebrow">✦ interactive learning · <b>built for curious students</b></div>
-    <h1>Play with ideas<br>until they <em>click</em>.</h1>
-    <p class="lede">Dabble turns tricky concepts into things you can <b>drag, break and explore</b>. Stop memorising — start messing around until it just makes sense.</p>
-    <div class="hero-cta">
-      <a class="btn primary" href="#explore">Start exploring ↓</a>
-      <a class="btn ghost" href="https://maghimma.github.io/physics-lab/">Jump into the Physics Lab</a>
-    </div>
-  </header>
+    <header>
+      <div class="chip pop">✦ learn by messing around</div>
+      <h1 class="pop" style="animation-delay:.05s">Play with ideas<br>until they
+        <span class="hi"><mark>click</mark><svg viewBox="0 0 200 18" preserveAspectRatio="none"><path d="M3,13 Q60,2 100,8 T197,6" fill="none" stroke="#ff5e5b" stroke-width="5" stroke-linecap="round"/></svg></span> ✨
+      </h1>
+      <p class="lede pop" style="animation-delay:.1s">Tricky concepts become things you can <b>drag, break and explore</b>. Stop memorising — start poking at stuff until it just makes sense.</p>
+      <a class="heroBtn pop" style="animation-delay:.15s" href="#explore">Start exploring ↓</a>
+    </header>
 
-  <main id="explore">
-    <div class="sec-head reveal" style="animation-delay:.05s">
-      <h2>🧲 Physics</h2><span class="count">4 simulations · live</span>
-    </div>
-    <div class="grid">
-      <a class="card reveal" style="animation-delay:.08s" href="https://maghimma.github.io/physics-lab/?topic=hooke">
-        <span class="badge live">live</span><span class="ic">🪝</span>
-        <h3>Hooke's Law</h3><p>Hang masses on a spring, watch the force–extension graph build, and push past its limit.</p>
-        <div class="go">Open <span class="arr">→</span></div>
-      </a>
-      <a class="card c-teal reveal" style="animation-delay:.12s" href="https://maghimma.github.io/physics-lab/?topic=moments">
-        <span class="badge live">live</span><span class="ic">⚖️</span>
-        <h3>Moments</h3><p>Stack apples, discs and blocks on a beam and balance it: clockwise vs anticlockwise.</p>
-        <div class="go">Open <span class="arr">→</span></div>
-      </a>
-      <a class="card c-indigo reveal" style="animation-delay:.16s" href="https://maghimma.github.io/physics-lab/?topic=cog">
-        <span class="badge live">live</span><span class="ic">📦</span>
-        <h3>Centre of Gravity</h3><p>Tilt a block until its line of weight leaves the base — and over it goes.</p>
-        <div class="go">Open <span class="arr">→</span></div>
-      </a>
-      <a class="card c-amber reveal" style="animation-delay:.2s" href="https://maghimma.github.io/physics-lab/?topic=pressure">
-        <span class="badge live">live</span><span class="ic">💧</span>
-        <h3>Pressure</h3><p>Dive a probe through a tank, watch pressure climb with depth, and squeeze a box into sand.</p>
-        <div class="go">Open <span class="arr">→</span></div>
-      </a>
-    </div>
+    <section id="explore">
+      <div class="sec"><h2>🧲 Physics</h2><span class="tag">4 sims · live</span></div>
+      <div class="grid">
+        <a class="card c-coral pop" style="animation-delay:.1s" href="https://maghimma.github.io/physics-lab/?topic=hooke">
+          <span class="ic">🪝</span><h3>Hooke's Law</h3><p>Hang masses on a spring, watch the graph build, and stretch it past its limit.</p><span class="play">Play <span class="a">→</span></span></a>
+        <a class="card c-teal pop" style="animation-delay:.16s" href="https://maghimma.github.io/physics-lab/?topic=moments">
+          <span class="ic">⚖️</span><h3>Moments</h3><p>Stack apples, discs and blocks on a beam and balance it just right.</p><span class="play">Play <span class="a">→</span></span></a>
+        <a class="card c-purple pop" style="animation-delay:.22s" href="https://maghimma.github.io/physics-lab/?topic=cog">
+          <span class="ic">📦</span><h3>Centre of Gravity</h3><p>Tilt a block until its weight tips past the base — and over it goes.</p><span class="play">Play <span class="a">→</span></span></a>
+        <a class="card c-blue pop" style="animation-delay:.28s" href="https://maghimma.github.io/physics-lab/?topic=pressure">
+          <span class="ic">💧</span><h3>Pressure</h3><p>Dive a probe through water, watch pressure climb, and squish a box into sand.</p><span class="play">Play <span class="a">→</span></span></a>
+      </div>
 
-    <div class="sec-head reveal"><h2>🌱 More subjects</h2><span class="count">in the works</span></div>
-    <div class="grid">
-      <div class="card soon reveal"><span class="badge soon">soon</span><span class="ic">🧪</span><h3>Chemistry</h3><p>Reactions, bonding and the particle model — coming to life.</p><div class="go">Coming soon</div></div>
-      <div class="card soon reveal"><span class="badge soon">soon</span><span class="ic">🔬</span><h3>Biology</h3><p>Cells, systems and how living things work.</p><div class="go">Coming soon</div></div>
-      <div class="card soon reveal"><span class="badge soon">soon</span><span class="ic">📐</span><h3>Maths</h3><p>Graphs, geometry and motion you can actually move.</p><div class="go">Coming soon</div></div>
-    </div>
-  </main>
+      <div class="sec"><h2>🌈 More subjects</h2><span class="tag soon">brewing</span></div>
+      <div class="grid">
+        <div class="card soon pop"><span class="soonbadge">soon</span><span class="ic">🧪</span><h3>Chemistry</h3><p>Reactions, bonding and the particle model.</p><span class="play">Coming soon</span></div>
+        <div class="card soon pop"><span class="soonbadge">soon</span><span class="ic">🔬</span><h3>Biology</h3><p>Cells, systems and how living things tick.</p><span class="play">Coming soon</span></div>
+        <div class="card soon pop"><span class="soonbadge">soon</span><span class="ic">📐</span><h3>Maths</h3><p>Graphs, geometry and motion you can move.</p><span class="play">Coming soon</span></div>
+      </div>
+    </section>
+  </div>
 
   <footer>
-    <div>More worlds on the way ✦</div>
+    <div class="big">more worlds on the way ✦</div>
     <div class="made">made by <b>Maghimma</b></div>
   </footer>
 </body>
