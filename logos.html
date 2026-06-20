@@ -3,67 +3,99 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dabble — logo options</title>
+<title>Dabble — logo options (v2)</title>
 <style>
   :root{--ink:#1d1d1f;--dim:#6e6e73}
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;color:var(--ink);
-    background:linear-gradient(180deg,#fcfcfe,#f1f2f6);min-height:100vh;padding:50px 22px 70px}
+    background:linear-gradient(180deg,#fcfcfe,#eef0f5);min-height:100vh;padding:50px 22px 80px}
   h1{text-align:center;font-size:30px;font-weight:700;letter-spacing:-.02em}
   .note{text-align:center;color:var(--dim);font-size:15px;margin-top:8px}
-  .grid{max-width:1000px;margin:40px auto 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
-  .card{background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.06);border-radius:22px;padding:26px;backdrop-filter:blur(14px);
-    box-shadow:0 10px 34px rgba(30,40,80,.08);text-align:center}
+  .grid{max-width:1040px;margin:42px auto 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+  .card{background:rgba(255,255,255,.72);border:1px solid rgba(0,0,0,.06);border-radius:24px;padding:30px 26px;backdrop-filter:blur(14px);
+    box-shadow:0 12px 36px rgba(30,40,80,.09);text-align:center}
   .num{font-size:13px;font-weight:700;color:#0071e3;letter-spacing:.08em}
-  .ico{width:96px;height:96px;margin:14px auto 0}
-  .ico svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 18px rgba(30,40,80,.18))}
-  .name{font-weight:700;font-size:16px;margin-top:16px;letter-spacing:-.01em}
+  .stage{height:110px;display:flex;align-items:center;justify-content:center;margin-top:8px}
+  .name{font-weight:700;font-size:16px;margin-top:14px;letter-spacing:-.01em}
   .desc{color:var(--dim);font-size:13px;margin-top:3px}
-  .navprev{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(0,0,0,.06)}
-  .navprev svg{width:26px;height:26px}
-  .navprev b{font-weight:700;font-size:17px;letter-spacing:-.01em}
+  .navp{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(0,0,0,.06)}
+  .navp b{font-weight:700;font-size:17px;letter-spacing:-.01em}
+
+  /* shared icon sizing */
+  .ic{width:84px;height:84px} .navp .ic{width:26px;height:26px}
+  .ic svg,.navp .ic svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 16px rgba(30,40,80,.16))}
+
+  /* 1 — live ripple */
+  .rip .r{transform-box:fill-box;transform-origin:50% 50%;animation:ripA 2.6s ease-out infinite}
+  .rip .r2{animation-delay:1.3s}
+  @keyframes ripA{0%{transform:scale(.35);opacity:.9}75%{opacity:0}100%{transform:scale(1.75);opacity:0}}
+
+  /* 2 — liquid blob */
+  .blob{width:84px;height:84px;background:linear-gradient(135deg,#3a8bff,#19c7b6);position:relative;
+    border-radius:42% 58% 60% 40%/45% 47% 53% 55%;animation:morph 7s ease-in-out infinite;box-shadow:0 10px 22px rgba(30,80,140,.28)}
+  .blob::after{content:"";position:absolute;width:20%;height:20%;background:#fff;border-radius:50%;top:30%;left:38%}
+  .navp .blob{width:26px;height:26px}
+  @keyframes morph{0%,100%{border-radius:42% 58% 60% 40%/45% 47% 53% 55%}50%{border-radius:60% 40% 43% 57%/52% 60% 40% 48%;transform:rotate(8deg)}}
+
+  /* 3 — tap cursor */
+  .tap .cur{transform-box:fill-box;transform-origin:34% 28%;animation:tapA 2.4s ease-in-out infinite}
+  .tap .ring{transform-box:fill-box;transform-origin:60% 66%;animation:tapR 2.4s ease-out infinite}
+  @keyframes tapA{0%,100%{transform:translate(0,0)}45%{transform:translate(2px,2px) scale(.92)}}
+  @keyframes tapR{0%,40%{transform:scale(.2);opacity:0}55%{opacity:.8}100%{transform:scale(1.5);opacity:0}}
+
+  /* 5 — spark pulse */
+  .spk g{transform-box:fill-box;transform-origin:50% 50%;animation:spkA 4s ease-in-out infinite}
+  @keyframes spkA{0%,100%{transform:scale(.86) rotate(0)}50%{transform:scale(1.04) rotate(45deg)}}
+
+  /* 4 — wordmark */
+  .wm{display:inline-flex;align-items:flex-end;gap:2px;font-weight:800;font-size:34px;letter-spacing:-.03em;color:var(--ink);position:relative;padding-bottom:8px}
+  .wm .drop{width:13px;height:17px;background:linear-gradient(135deg,#3a8bff,#19c7b6);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+    transform:rotate(0);margin:0 1px 5px 1px;animation:dropB 2.6s ease-in-out infinite}
+  @keyframes dropB{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .wm svg{position:absolute;left:0;bottom:-2px;width:100%;height:10px}
+  .navp .wm{font-size:18px;padding-bottom:5px}.navp .wm .drop{width:8px;height:11px;margin-bottom:3px}
 </style>
 </head>
 <body>
-  <h1>Dabble — logo options</h1>
-  <div class="note">Tell me the number you like (icon + how it looks next to the name). Nothing's locked.</div>
-  <div class="grid" id="grid"></div>
+  <h1>Dabble — logo options, with life ✦</h1>
+  <div class="note">These move (hover or just watch). Tell me the number. Nothing's locked.</div>
+  <div class="grid">
 
-<script>
-  const G='<defs><linearGradient id="LG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a8bff"/><stop offset="1" stop-color="#19c7b6"/></linearGradient></defs>';
-  function sq(inner,bg){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${G}<rect x="3" y="3" width="94" height="94" rx="27" fill="${bg||'url(#LG)'}"/>${inner}</svg>`;}
-
-  const opts=[
-    {n:'01',name:'Tile grid — colour',desc:'Hub of subjects, playful',
-     svg:sq(`<rect x="24" y="24" width="22" height="22" rx="7" fill="#fff" opacity=".95"/><rect x="54" y="24" width="22" height="22" rx="7" fill="#fff" opacity=".72"/><rect x="24" y="54" width="22" height="22" rx="7" fill="#fff" opacity=".72"/><rect x="54" y="54" width="22" height="22" rx="7" fill="#fff" opacity=".95"/>`)},
-
-    {n:'02',name:'Tile grid — light',desc:'Clean, each tile a subject',
-     svg:sq(`<rect x="24" y="24" width="22" height="22" rx="7" fill="#3a8bff"/><rect x="54" y="24" width="22" height="22" rx="7" fill="#19c7b6"/><rect x="24" y="54" width="22" height="22" rx="7" fill="#9b5de5"/><rect x="54" y="54" width="22" height="22" rx="7" fill="#ffb454"/>`,'#fff')},
-
-    {n:'03',name:'Cursor',desc:'You interact — learn by doing',
-     svg:sq(`<polygon points="38,28 38,72 49,61 56,77 63,74 56,59 70,57" fill="#fff"/>`)},
-
-    {n:'04',name:'Cursor + ripple',desc:'Poke it, it responds',
-     svg:sq(`<ellipse cx="60" cy="68" rx="18" ry="6.5" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><polygon points="34,26 34,64 44,55 50,69 56,66 50,52 62,50" fill="#fff"/>`)},
-
-    {n:'05',name:'Tap + ripple',desc:'A "dab" that ripples out',
-     svg:sq(`<circle cx="50" cy="38" r="9" fill="#fff"/><ellipse cx="50" cy="64" rx="13" ry="5" fill="none" stroke="#fff" stroke-width="3.6" opacity=".95"/><ellipse cx="50" cy="69" rx="25" ry="8.5" fill="none" stroke="#fff" stroke-width="3.2" opacity=".5"/>`)},
-
-    {n:'06',name:'Ripple rings',desc:'Minimal, calm',
-     svg:sq(`<circle cx="50" cy="50" r="7" fill="#fff"/><circle cx="50" cy="50" r="17" fill="none" stroke="#fff" stroke-width="3.4" opacity=".8"/><circle cx="50" cy="50" r="28" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/>`)},
-
-    {n:'07',name:'"d" monogram',desc:'Apple-app, safe',
-     svg:sq(`<text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,Helvetica,sans-serif" font-weight="700" font-size="62" fill="#fff">d</text>`)},
-  ];
-
-  document.getElementById('grid').innerHTML = opts.map(o=>`
     <div class="card">
-      <div class="num">${o.n}</div>
-      <div class="ico">${o.svg}</div>
-      <div class="name">${o.name}</div>
-      <div class="desc">${o.desc}</div>
-      <div class="navprev">${o.svg}<b>Dabble</b></div>
-    </div>`).join('');
-</script>
+      <div class="num">01</div>
+      <div class="stage"><div class="ic rip"><svg viewBox="0 0 100 100"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a8bff"/><stop offset="1" stop-color="#19c7b6"/></linearGradient></defs><rect x="3" y="3" width="94" height="94" rx="27" fill="url(#g1)"/><circle cx="50" cy="50" r="7" fill="#fff"/><circle class="r" cx="50" cy="50" r="16" fill="none" stroke="#fff" stroke-width="3.5"/><circle class="r r2" cx="50" cy="50" r="16" fill="none" stroke="#fff" stroke-width="3.5"/></svg></div></div>
+      <div class="name">Live ripple</div><div class="desc">A drop that keeps rippling — alive, interactive</div>
+      <div class="navp"><div class="ic rip"><svg viewBox="0 0 100 100"><rect x="3" y="3" width="94" height="94" rx="27" fill="url(#g1)"/><circle cx="50" cy="50" r="7" fill="#fff"/><circle class="r" cx="50" cy="50" r="16" fill="none" stroke="#fff" stroke-width="3.5"/></svg></div><b>Dabble</b></div>
+    </div>
+
+    <div class="card">
+      <div class="num">02</div>
+      <div class="stage"><div class="blob"></div></div>
+      <div class="name">Liquid blob</div><div class="desc">Organic, morphing — modern & playful</div>
+      <div class="navp"><div class="blob"></div><b>Dabble</b></div>
+    </div>
+
+    <div class="card">
+      <div class="num">03</div>
+      <div class="stage"><div class="ic tap"><svg viewBox="0 0 100 100"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a8bff"/><stop offset="1" stop-color="#19c7b6"/></linearGradient></defs><rect x="3" y="3" width="94" height="94" rx="27" fill="url(#g3)"/><circle class="ring" cx="60" cy="66" r="16" fill="none" stroke="#fff" stroke-width="3"/><polygon class="cur" points="34,26 34,64 44,55 50,69 56,66 50,52 62,50" fill="#fff"/></svg></div></div>
+      <div class="name">Tap cursor</div><div class="desc">Pokes & ripples — "learn by doing"</div>
+      <div class="navp"><div class="ic tap"><svg viewBox="0 0 100 100"><rect x="3" y="3" width="94" height="94" rx="27" fill="url(#g3)"/><polygon class="cur" points="34,26 34,64 44,55 50,69 56,66 50,52 62,50" fill="#fff"/></svg></div><b>Dabble</b></div>
+    </div>
+
+    <div class="card">
+      <div class="num">04</div>
+      <div class="stage"><div class="wm">dabble<span class="drop"></span><svg viewBox="0 0 120 10" preserveAspectRatio="none"><path d="M2,6 Q20,1 40,6 T78,6 T118,5" fill="none" stroke="url(#g4)" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="g4" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a8bff"/><stop offset="1" stop-color="#19c7b6"/></linearGradient></defs></svg></div></div>
+      <div class="name">Wordmark + drop</div><div class="desc">Custom-feel lettering, a bobbing drop, wavy underline</div>
+      <div class="navp"><span class="wm">dabble<span class="drop"></span></span></div>
+    </div>
+
+    <div class="card">
+      <div class="num">05</div>
+      <div class="stage"><div class="ic spk"><svg viewBox="0 0 100 100"><defs><linearGradient id="g5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a8bff"/><stop offset="1" stop-color="#19c7b6"/></linearGradient></defs><rect x="3" y="3" width="94" height="94" rx="27" fill="url(#g5)"/><g><path d="M50 24 C53 42 58 47 76 50 C58 53 53 58 50 76 C47 58 42 53 24 50 C42 47 47 42 50 24 Z" fill="#fff"/></g></svg></div></div>
+      <div class="name">Spark</div><div class="desc">The "it clicks" moment, gently pulsing</div>
+      <div class="navp"><div class="ic spk"><svg viewBox="0 0 100 100"><rect x="3" y="3" width="94" height="94" rx="27" fill="url(#g5)"/><g><path d="M50 24 C53 42 58 47 76 50 C58 53 53 58 50 76 C47 58 42 53 24 50 C42 47 47 42 50 24 Z" fill="#fff"/></g></svg></div><b>Dabble</b></div>
+    </div>
+
+  </div>
 </body>
 </html>
