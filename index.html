@@ -3,153 +3,128 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dabble — play until it clicks</title>
-<meta name="description" content="Interactive simulations that make tricky concepts click. Drag, break, explore." />
+<title>Dabble — learn by doing</title>
+<meta name="description" content="Interactive simulations that make tough concepts obvious. Drag, break, explore." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root{
-    --paper:#eceae1; --ink:#15120e; --blue:#1f2bff; --red:#ff3b2f; --lime:#cdff2e;
-  }
+  :root{--ink:#1d1d1f;--grey:#6e6e73;--line:#d2d2d7;--bg:#fff;--panel:#f5f5f7;--blue:#0071e3;--bluelink:#0066cc}
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{font-family:'Archivo',sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  /* grain */
-  body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-  .page{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,44px)}
+  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+  body{font-family:'Manrope',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.4}
+  a{color:inherit}
+  .wrap{max-width:980px;margin:0 auto;padding:0 22px}
 
-  /* masthead */
-  .mast{display:flex;align-items:flex-end;justify-content:space-between;padding:22px 0 12px}
-  .logo{font-family:'Anton';font-size:clamp(26px,3.4vw,34px);letter-spacing:-.01em;text-transform:uppercase;line-height:.9}
-  .logo .st{color:var(--blue)}
-  .mast .right{text-align:right;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;line-height:1.5}
-  .mast .right a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--ink);padding-bottom:1px}
-  .mast .right a:hover{color:var(--blue);border-color:var(--blue)}
-  .rule{height:3px;background:var(--ink)}
-  .rule.thin{height:1.5px}
-  .kicker{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+  /* nav */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,.08)}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:48px}
+  .brand{font-weight:700;font-size:18px;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+  .brand .s{color:var(--blue)}
+  .nav a.link{font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;opacity:.85}
+  .nav a.link:hover{opacity:1;color:var(--blue)}
 
   /* hero */
-  .hero{display:grid;grid-template-columns:1.55fr .9fr;gap:30px;align-items:end;padding:34px 0 24px}
-  @media(max-width:780px){.hero{grid-template-columns:1fr;gap:22px}}
-  .hero h1{font-family:'Anton';font-weight:400;text-transform:uppercase;line-height:.82;letter-spacing:-.01em;
-    font-size:clamp(58px,12.5vw,150px)}
-  .hero h1 .ser{font-family:'Instrument Serif',serif;font-style:italic;text-transform:lowercase;color:var(--blue);letter-spacing:0}
-  .hero .col p{font-size:15.5px;line-height:1.5;font-weight:500;max-width:34ch}
-  .hero .col .start{display:inline-flex;align-items:center;gap:10px;margin-top:20px;font-family:'Archivo';font-weight:800;
-    font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--paper);background:var(--ink);
-    text-decoration:none;padding:15px 24px;transition:background .2s,transform .15s}
-  .hero .col .start:hover{background:var(--blue);transform:translate(-2px,-2px)}
-  .stamp{display:inline-block;margin-top:18px;transform:rotate(-7deg);font-family:'Archivo';font-weight:800;font-size:12px;
-    letter-spacing:.12em;text-transform:uppercase;color:var(--red);border:2px solid var(--red);border-radius:999px;padding:6px 13px}
+  .hero{text-align:center;padding:72px 22px 8px}
+  .eyebrow{font-size:19px;font-weight:600;color:var(--blue);margin-bottom:10px}
+  h1{font-size:clamp(40px,6.4vw,72px);font-weight:700;letter-spacing:-.025em;line-height:1.04}
+  .sub{font-size:clamp(19px,2.4vw,26px);font-weight:500;color:var(--grey);max-width:30ch;margin:18px auto 0;line-height:1.3}
+  .cta{display:flex;gap:26px;justify-content:center;align-items:center;margin-top:30px;flex-wrap:wrap}
+  .btn{background:var(--blue);color:#fff;text-decoration:none;font-size:17px;font-weight:600;padding:12px 24px;border-radius:980px;transition:opacity .2s}
+  .btn:hover{opacity:.88}
+  .tlink{color:var(--bluelink);text-decoration:none;font-size:17px;font-weight:500}
+  .tlink:hover{text-decoration:underline}
+  .tlink .c{font-weight:700}
 
-  /* section label */
-  .seclab{display:flex;align-items:center;gap:16px;margin:54px 0 18px}
-  .seclab h2{font-family:'Anton';font-size:clamp(26px,3.6vw,40px);text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap}
-  .seclab .ln{flex:1;height:2px;background:var(--ink)}
-  .seclab .no{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
-  .seclab .no.live{color:var(--blue)}
+  /* hero product shot (live lab) */
+  .stage{max-width:1040px;margin:46px auto 0;padding:0 16px}
+  .frame{position:relative;border-radius:24px;overflow:hidden;background:#0e2420;border:1px solid var(--line);box-shadow:0 40px 80px -30px rgba(0,0,0,.28)}
+  .frame iframe{width:100%;height:min(64vw,560px);border:0;display:block}
+  .frame .open{position:absolute;right:16px;bottom:16px;background:rgba(255,255,255,.92);color:var(--ink);font-size:13px;font-weight:600;text-decoration:none;padding:9px 16px;border-radius:980px;backdrop-filter:blur(8px)}
+  .frame .open:hover{background:#fff}
+  .cap{text-align:center;color:var(--grey);font-size:13px;margin-top:14px}
 
-  /* sim clippings */
-  .clips{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-  .clip{grid-column:span 6;position:relative;text-decoration:none;color:inherit;min-height:230px;padding:22px;
-    display:flex;flex-direction:column;justify-content:space-between;border:2.5px solid var(--ink);background:var(--paper);
-    transition:transform .18s ease, box-shadow .18s ease}
-  @media(max-width:680px){.clip{grid-column:span 12}}
-  .clip:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 var(--ink)}
-  .clip .top{display:flex;align-items:flex-start;justify-content:space-between}
-  .clip .num{font-family:'Anton';font-size:46px;line-height:.8}
-  .clip .em{font-size:40px}
-  .clip h3{font-family:'Anton';font-size:clamp(26px,3vw,38px);text-transform:uppercase;line-height:.9;margin-top:18px}
-  .clip p{font-size:13.5px;line-height:1.45;font-weight:500;margin-top:8px;max-width:32ch}
-  .clip .go{margin-top:16px;font-family:'Archivo';font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
-  .clip .go .a{transition:transform .18s}.clip:hover .go .a{transform:translateX(6px)}
-  /* feature = blue inverted, spans wide */
-  .clip.feat{grid-column:span 6;background:var(--blue);color:var(--paper);border-color:var(--blue)}
-  .clip.feat:hover{box-shadow:8px 8px 0 var(--ink)}
-  .clip.dark{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-  .clip.dark:hover{box-shadow:8px 8px 0 var(--blue)}
-  .tag{position:absolute;top:-12px;right:14px;transform:rotate(4deg);font-family:'Archivo';font-weight:800;font-size:10px;
-    letter-spacing:.12em;text-transform:uppercase;background:var(--red);color:#fff;padding:5px 10px}
+  /* section heading */
+  .sh{text-align:center;padding:84px 22px 0}
+  .sh h2{font-size:clamp(30px,4.2vw,48px);font-weight:700;letter-spacing:-.02em}
+  .sh p{font-size:clamp(17px,2vw,21px);color:var(--grey);margin-top:8px;font-weight:500}
+
+  /* tiles */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:32px}
+  @media(max-width:720px){.tiles{grid-template-columns:1fr}}
+  .tile{background:var(--panel);border-radius:24px;padding:40px 34px;text-align:center;text-decoration:none;color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;transition:transform .25s ease}
+  .tile:hover{transform:scale(1.012)}
+  .tile h3{font-size:28px;font-weight:700;letter-spacing:-.02em}
+  .tile p{font-size:16px;color:var(--grey);font-weight:500;margin-top:6px;max-width:26ch}
+  .tile .go{color:var(--bluelink);font-size:16px;font-weight:600;margin-top:12px}
+  .tile:hover .go{text-decoration:underline}
+  .tile .art{font-size:80px;margin-top:26px;line-height:1}
+  .tile.dark{background:#1d1d1f;color:#f5f5f7}
+  .tile.dark p{color:#a1a1a6}
 
   /* soon */
-  .soongrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  @media(max-width:680px){.soongrid{grid-template-columns:1fr}}
-  .soon{border:2px dashed #b3ad9f;padding:20px;background:transparent;position:relative;min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
-  .soon .em{font-size:30px;filter:grayscale(1);opacity:.55}
-  .soon h3{font-family:'Anton';font-size:24px;text-transform:uppercase;margin-top:10px;color:#857e6e}
-  .soon p{font-size:12.5px;color:#948c7c;font-weight:500;margin-top:4px}
-  .soon .st{position:absolute;top:14px;right:14px;font-family:'Archivo';font-weight:800;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#948c7c}
+  .soon{margin-top:18px;background:var(--panel);border-radius:24px;padding:34px;text-align:center}
+  .soon .lab{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--grey)}
+  .soon h3{font-size:24px;font-weight:700;letter-spacing:-.01em;margin-top:6px}
+  .soon .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+  .soon .pill{background:#fff;border:1px solid var(--line);border-radius:980px;padding:9px 18px;font-size:15px;font-weight:600;color:var(--grey)}
 
-  footer{margin-top:60px;border-top:3px solid var(--ink);padding:18px 0 50px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-  footer .l{font-family:'Anton';font-size:20px;text-transform:uppercase}
-  footer .r{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#6f6858}
-  footer .r b{color:var(--ink)}
-
-  .rise{opacity:0;transform:translateY(16px);animation:rise .6s ease forwards}
-  @keyframes rise{to{opacity:1;transform:none}}
+  footer{margin-top:90px;border-top:1px solid var(--line);background:var(--panel)}
+  footer .wrap{padding:24px 22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--grey)}
+  footer b{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
-  <div class="page">
-    <div class="mast rise">
-      <div class="logo">DABBLE<span class="st">✦</span></div>
-      <div class="right">No. 01 — Interactive Learning<br><a href="https://maghimma.github.io/physics-lab/">Open Physics Lab ↗</a></div>
+  <nav class="nav"><div class="wrap">
+    <div class="brand"><span class="s">✦</span> Dabble</div>
+    <a class="link" href="https://maghimma.github.io/physics-lab/">Open Physics Lab ›</a>
+  </div></nav>
+
+  <header class="hero">
+    <div class="eyebrow">Dabble</div>
+    <h1>Learn by doing.</h1>
+    <p class="sub">Interactive simulations that make tough concepts obvious. Drag, break, explore.</p>
+    <div class="cta">
+      <a class="btn" href="#sims">Start exploring</a>
+      <a class="tlink" href="https://maghimma.github.io/physics-lab/">Open the lab <span class="c">›</span></a>
     </div>
-    <div class="rule"></div>
+  </header>
 
-    <section class="hero">
-      <div>
-        <div class="kicker rise">Drag · break · explore</div>
-        <h1 class="rise" style="animation-delay:.05s;margin-top:14px">Play until<br>it <span class="ser">clicks.</span></h1>
-      </div>
-      <div class="col rise" style="animation-delay:.1s">
-        <p>Tricky stuff becomes something you can actually mess with. Stop memorising — poke at it until it makes sense.</p>
-        <a class="start" href="#sims">Start exploring <span>▸</span></a>
-        <div><span class="stamp">No textbooks ✦</span></div>
-      </div>
-    </section>
+  <section class="stage">
+    <div class="frame">
+      <iframe src="https://maghimma.github.io/physics-lab/?embed=1&topic=hooke" loading="lazy" title="Live physics simulation"></iframe>
+      <a class="open" href="https://maghimma.github.io/physics-lab/">Open full ↗</a>
+    </div>
+    <div class="cap">Live preview — drag the spring. This is a real simulation, running right here.</div>
+  </section>
 
-    <section id="sims">
-      <div class="seclab"><h2>The Sims</h2><span class="ln"></span><span class="no live">01–04 · Live</span></div>
-      <div class="clips">
-        <a class="clip feat rise" href="https://maghimma.github.io/physics-lab/?topic=hooke">
-          <span class="tag">live</span>
-          <div class="top"><span class="num">01</span><span class="em">🪝</span></div>
-          <div><h3>Hooke's Law</h3><p>Hang masses on a spring, watch the force–extension graph build, then stretch it past its limit.</p></div>
-          <div class="go">Open <span class="a">→</span></div>
-        </a>
-        <a class="clip dark rise" style="animation-delay:.05s" href="https://maghimma.github.io/physics-lab/?topic=moments">
-          <div class="top"><span class="num">02</span><span class="em">⚖️</span></div>
-          <div><h3>Moments</h3><p>Stack weights on a beam and balance it — clockwise against anticlockwise.</p></div>
-          <div class="go">Open <span class="a">→</span></div>
-        </a>
-        <a class="clip rise" style="animation-delay:.1s" href="https://maghimma.github.io/physics-lab/?topic=cog">
-          <div class="top"><span class="num">03</span><span class="em">📦</span></div>
-          <div><h3>Centre of Gravity</h3><p>Tilt a block until its line of weight leaves the base — and over it goes.</p></div>
-          <div class="go">Open <span class="a">→</span></div>
-        </a>
-        <a class="clip rise" style="animation-delay:.15s" href="https://maghimma.github.io/physics-lab/?topic=pressure">
-          <div class="top"><span class="num">04</span><span class="em">💧</span></div>
-          <div><h3>Pressure</h3><p>Dive a probe through water, watch pressure climb with depth, and squeeze a box into sand.</p></div>
-          <div class="go">Open <span class="a">→</span></div>
-        </a>
-      </div>
-
-      <div class="seclab"><h2>More</h2><span class="ln"></span><span class="no">Coming soon</span></div>
-      <div class="soongrid">
-        <div class="soon rise"><span class="st">Soon</span><span class="em">🧪</span><div><h3>Chemistry</h3><p>Reactions, bonding & the particle model.</p></div></div>
-        <div class="soon rise" style="animation-delay:.05s"><span class="st">Soon</span><span class="em">🔬</span><div><h3>Biology</h3><p>Cells, systems & how living things tick.</p></div></div>
-        <div class="soon rise" style="animation-delay:.1s"><span class="st">Soon</span><span class="em">📐</span><div><h3>Maths</h3><p>Graphs, geometry & motion you can move.</p></div></div>
-      </div>
-    </section>
-
-    <footer>
-      <div class="l">Dabble ✦</div>
-      <div class="r">Made by <b>Maghimma</b> · © 2026</div>
-    </footer>
+  <div class="sh" id="sims">
+    <h2>Pick a simulation.</h2>
+    <p>Four physics topics. More subjects on the way.</p>
   </div>
+  <section class="wrap">
+    <div class="tiles">
+      <a class="tile" href="https://maghimma.github.io/physics-lab/?topic=hooke">
+        <h3>Hooke's Law</h3><p>Stretch a spring, build the graph, find its limit.</p><span class="go">Open ›</span><span class="art">🪝</span></a>
+      <a class="tile dark" href="https://maghimma.github.io/physics-lab/?topic=moments">
+        <h3>Moments</h3><p>Stack weights and balance the beam.</p><span class="go">Open ›</span><span class="art">⚖️</span></a>
+      <a class="tile dark" href="https://maghimma.github.io/physics-lab/?topic=cog">
+        <h3>Centre of Gravity</h3><p>Tilt it until it topples.</p><span class="go">Open ›</span><span class="art">📦</span></a>
+      <a class="tile" href="https://maghimma.github.io/physics-lab/?topic=pressure">
+        <h3>Pressure</h3><p>Dive a probe, watch pressure climb.</p><span class="go">Open ›</span><span class="art">💧</span></a>
+    </div>
+
+    <div class="soon">
+      <div class="lab">Coming soon</div>
+      <h3>More subjects in the works.</h3>
+      <div class="row"><span class="pill">🧪 Chemistry</span><span class="pill">🔬 Biology</span><span class="pill">📐 Maths</span></div>
+    </div>
+  </section>
+
+  <footer><div class="wrap">
+    <div>Dabble — learn by doing.</div>
+    <div>Made by <b>Maghimma</b> · © 2026</div>
+  </div></footer>
 </body>
 </html>
