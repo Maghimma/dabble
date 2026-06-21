@@ -73,13 +73,17 @@ function loop(now){const dt=Math.min((now-last)/1000,.03);last=now;
   ctx.strokeStyle='rgba(234,241,247,.18)';ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pivX-len-20,pivY+len);ctx.lineTo(pivX+len+20,pivY+len);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='rgba(234,241,247,.4)';ctx.font='11px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('lowest point — all KE',pivX,pivY+len+18);
   // string
-  ctx.strokeStyle='rgba(234,241,247,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pivX,pivY);ctx.lineTo(bx,by);ctx.stroke();
-  // pivot
-  ctx.fillStyle='#6e7b8c';ctx.beginPath();ctx.arc(pivX,pivY,6,0,7);ctx.fill();
-  // bob — colour blends green(fast)..blue(high)
+  ctx.strokeStyle='rgba(234,241,247,.55)';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(pivX,pivY);ctx.lineTo(bx,by);ctx.stroke();
+  // pivot (shaded ball)
+  const pg=ctx.createRadialGradient(pivX-2,pivY-3,1,pivX,pivY,9);pg.addColorStop(0,'#b6c1cf');pg.addColorStop(1,'#444f5e');ctx.fillStyle=pg;ctx.beginPath();ctx.arc(pivX,pivY,9,0,7);ctx.fill();
+  // floor shadow under bob (shrinks as it lifts)
+  const fy=pivY+len;ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(bx,fy+8,24*(0.5+0.5*(by-pivY)/len),7,0,0,7);ctx.fill();
+  // bob — 3D sphere; colour blends green(fast)..blue(high)
   const frac=mech>0?ke/mech:0;const r=Math.round(91+(140-91)*frac),gg=Math.round(155+(233-155)*frac),b=Math.round(255-(255-154)*frac);
-  ctx.shadowColor='rgba(140,233,154,'+frac+')';ctx.shadowBlur=18*frac;
-  ctx.fillStyle='rgb('+r+','+gg+','+b+')';ctx.beginPath();ctx.arc(bx,by,20,0,7);ctx.fill();ctx.shadowBlur=0;
+  const RB=23;ctx.shadowColor='rgba(140,233,154,'+(0.55*frac)+')';ctx.shadowBlur=22*frac;
+  const bg=ctx.createRadialGradient(bx-RB*0.38,by-RB*0.44,RB*0.12,bx,by,RB);bg.addColorStop(0,'rgba(255,255,255,.96)');bg.addColorStop(.28,'rgb('+r+','+gg+','+b+')');bg.addColorStop(1,'rgb('+Math.round(r*0.42)+','+Math.round(gg*0.42)+','+Math.round(b*0.46)+')');
+  ctx.fillStyle=bg;ctx.beginPath();ctx.arc(bx,by,RB,0,7);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.beginPath();ctx.ellipse(bx-RB*0.32,by-RB*0.36,RB*0.22,RB*0.13,-0.6,0,7);ctx.fill();
   // speed streaks
   // bars
   const pct=v=>Math.max(0,Math.min(100,v/total0*100));
