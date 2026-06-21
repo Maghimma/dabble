@@ -51,7 +51,7 @@
   <div class="ctrl"><div class="wrap2">
     <div class="modebar">
       <div class="shapes" id="shapes"></div>
-      <div class="seg" style="flex:0 0 auto;margin-left:8px"><button id="modeBtn" onclick="toggleSolve()">🎯 Solve</button></div>
+      <div class="seg" style="flex:0 0 auto;margin-left:8px"><button id="netBtn" onclick="toggleNet()">📄 Unfold</button><button id="modeBtn" onclick="toggleSolve()">🎯 Solve</button></div>
     </div>
     <div id="sliders"></div>
     <div id="solve">
@@ -78,6 +78,20 @@ const key=new THREE.DirectionalLight(0xffffff,1.2);key.position.set(14,24,18);sc
 const MAT=new THREE.MeshStandardMaterial({color:0x2ec4b6,transparent:true,opacity:.8,roughness:.3,metalness:.1,side:THREE.DoubleSide});
 function meshOf(geo){const g=new THREE.Group();g.add(new THREE.Mesh(geo,MAT));g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xaffff5,transparent:true,opacity:.55})));return g;}
 const Box=(x,y,z)=>meshOf(new THREE.BoxGeometry(x,y,z));
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+function faceQuat(normal,width){const z=normal.clone().normalize();const x=width.clone().normalize();const y=new THREE.Vector3().crossVectors(z,x).normalize();return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z));}
+function netFace(W,H,aN,aW,aP,fN,fW,fP){const geo=new THREE.PlaneGeometry(W,H);const g=new THREE.Group();g.add(new THREE.Mesh(geo,MAT));g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xaffff5,transparent:true,opacity:.55})));g.userData={aP:aP,aQ:faceQuat(aN,aW),fP:fP,fQ:faceQuat(fN,fW)};return g;}
+function boxNet(l,h,w){const grp=new THREE.Group();const F=[];
+  function f(W,H,aN,aW,aP,fN,fW,fP){const g=netFace(W,H,aN,aW,aP,fN,fW,fP);grp.add(g);F.push(g);}
+  const zf=w/2+h/2, zb=-(w/2+h/2), zt=w/2+h+w/2, xr=l/2+h/2, xl=-(l/2+h/2);
+  f(l,w, V(0,1,0),V(1,0,0),V(0,-h/2,0),  V(0,1,0),V(1,0,0), V(0,0,0));      // bottom
+  f(l,w, V(0,1,0),V(1,0,0),V(0,h/2,0),   V(0,1,0),V(-1,0,0),V(0,0,zt));     // top
+  f(l,h, V(0,0,1),V(1,0,0),V(0,0,w/2),   V(0,1,0),V(-1,0,0),V(0,0,zf));     // front +z
+  f(l,h, V(0,0,-1),V(1,0,0),V(0,0,-w/2), V(0,1,0),V(1,0,0), V(0,0,zb));     // back -z
+  f(w,h, V(1,0,0),V(0,0,-1),V(l/2,0,0),  V(0,1,0),V(0,0,1), V(xr,0,0));     // right +x
+  f(w,h, V(-1,0,0),V(0,0,1),V(-l/2,0,0), V(0,1,0),V(0,0,-1),V(xl,0,0));     // left -x
+  grp.setUnfold=function(t){F.forEach(function(g){g.position.lerpVectors(g.userData.aP,g.userData.fP,t);g.quaternion.copy(g.userData.aQ).slerp(g.userData.fQ,t);});};
+  grp.setUnfold(0);return grp;}
 // ---- shapes ----
 const S=[
  {n:'Cube',d:[['a','side a',1,10,4]],mesh:D=>Box(D.a,D.a,D.a),
@@ -114,9 +128,17 @@ const S=[
    solve:()=>{const R=ri(4,9),r=ri(1,3),h=ri(3,10);const l=Math.sqrt((R-r)**2+h*h);return{D:{R,r,h},prompt:'A frustum has base radius <b>'+R+'</b>, top radius <b>'+r+'</b> and height <b>'+h+' cm</b>. Find its slant height <i>l</i>.',ans:l,u:'cm',w:'l = √((R−r)² + h²) = √('+(R-r)+'² + '+h+'²) ≈ '+f(l)+' cm'};}}
 ];
 let si=0,D={},solid=null,solveMode=false,cur=null;
+let netMode=false,unfoldT=0,unfoldTarget=0,netObj=null;
+const NETABLE={0:true,1:true};
+function netDims(){return si===0?[D.a,D.a,D.a]:[D.l,D.h,D.w];}
+function buildNet(){if(netObj)scene.remove(netObj);const d=netDims();netObj=boxNet(d[0],d[1],d[2]);netObj.setUnfold(unfoldT);scene.add(netObj);}
+function toggleNet(){if(!NETABLE[si])return;netMode=!netMode;$('netBtn').classList.toggle('on',netMode);
+  if(netMode){buildNet();if(solid)solid.visible=false;unfoldTarget=1;const d=netDims();orbit.R=(d[0]+2*d[1]+2*d[2])*0.85+10;}
+  else{unfoldTarget=0;}}
+window.toggleNet=toggleNet;
 function buildShapeButtons(){$('shapes').innerHTML=S.map((s,i)=>`<button class="${i===si?'on':''}" onclick="pick(${i})">${s.n}</button>`).join('');}
 function buildSliders(){const s=S[si];$('sliders').innerHTML=s.d.map(d=>`<div class="row"><span class="name">${d[1]}</span><input type="range" id="d_${d[0]}" min="${d[2]}" max="${d[3]}" step="0.5" value="${D[d[0]]}" oninput="setDim('${d[0]}',this.value)"><span class="val" id="dv_${d[0]}">${D[d[0]]}</span></div>`).join('');}
-function setDim(k,v){D[k]=+v;$('dv_'+k).textContent=v;rebuild(false);}
+function setDim(k,v){D[k]=+v;$('dv_'+k).textContent=v;rebuild(false);if(netMode){if(solid)solid.visible=false;buildNet();}}
 window.setDim=setDim;
 function rebuild(reframe){if(solid)scene.remove(solid);solid=S[si].mesh(D);scene.add(solid);
   const b=new THREE.Box3().setFromObject(solid);const c=b.getCenter(new THREE.Vector3());solid.position.sub(c);
@@ -124,9 +146,9 @@ function rebuild(reframe){if(solid)scene.remove(solid);solid=S[si].mesh(D);scene
   info();}
 function info(){const s=S[si];$('o-name').textContent=s.n;
   $('o-frm').innerHTML=s.calc(D).map(r=>`<div class="frm ${r[3]?'amb':''}"><span class="l">${r[0]}</span><br><span class="e">${r[1]}</span> &nbsp;<span class="val">= ${r[2]}</span></div>`).join('');}
-function pick(i){si=i;D={};S[i].d.forEach(d=>D[d[0]]=d[4]);buildShapeButtons();buildSliders();rebuild(true);if(solveMode)newQ();}
+function pick(i){si=i;D={};S[i].d.forEach(d=>D[d[0]]=d[4]);if(netObj){scene.remove(netObj);netObj=null;}netMode=false;unfoldT=0;unfoldTarget=0;buildShapeButtons();buildSliders();rebuild(true);if(solid)solid.visible=true;$('netBtn').classList.remove('on');$('netBtn').style.display=(NETABLE[i]&&!solveMode)?'inline-block':'none';if(solveMode)newQ();}
 window.pick=pick;
-function toggleSolve(){solveMode=!solveMode;$('modeBtn').classList.toggle('on',solveMode);$('solve').classList.toggle('on',solveMode);$('sliders').style.display=solveMode?'none':'block';if(solveMode)newQ();else{D={};S[si].d.forEach(d=>D[d[0]]=d[4]);buildSliders();rebuild(true);}}
+function toggleSolve(){solveMode=!solveMode;if(netMode){netMode=false;$('netBtn').classList.remove('on');if(netObj){scene.remove(netObj);netObj=null;}unfoldT=0;unfoldTarget=0;}$('modeBtn').classList.toggle('on',solveMode);$('solve').classList.toggle('on',solveMode);$('sliders').style.display=solveMode?'none':'block';$('netBtn').style.display=(NETABLE[si]&&!solveMode)?'inline-block':'none';if(solveMode)newQ();else{D={};S[si].d.forEach(d=>D[d[0]]=d[4]);buildSliders();rebuild(true);if(solid)solid.visible=true;}}
 window.toggleSolve=toggleSolve;
 function newQ(){cur=S[si].solve();D=Object.assign({},cur.D);rebuild(true);$('q').innerHTML='🎯 '+cur.prompt;$('ansin').value='';$('fb').textContent='';$('fb').className='fb';
   // hide the asked quantity from the info panel by showing only the shape name in solve
@@ -149,7 +171,9 @@ addEventListener('pointerup',()=>orbit.drag=false);
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(canvas);
 const clock=new THREE.Clock();
-function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.25;applyCam();renderer.render(scene,camera);}
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.25;
+  if(netObj){unfoldT+=(unfoldTarget-unfoldT)*Math.min(1,dt*4);netObj.setUnfold(unfoldT);if(unfoldTarget===0&&unfoldT<0.02){scene.remove(netObj);netObj=null;if(solid)solid.visible=true;}}
+  applyCam();renderer.render(scene,camera);}
 pick(0);resize();applyCam();tick();
 setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>
