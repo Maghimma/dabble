@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Photosynthesis — Limiting Factors — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--green:#8ce99a;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .eqn{position:fixed;top:46px;left:0;right:0;text-align:center;z-index:9;font-size:12px;color:var(--dim)}.eqn b{color:var(--green)}
+  .info{position:fixed;top:84px;right:14px;z-index:9;width:min(216px,52vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:7px}.rr:first-child{margin-top:0}.rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--green)}
+  .lim{text-align:center;font-weight:700;font-size:13px;margin-top:10px;padding:7px;border-radius:9px;background:rgba(246,166,35,.16);color:var(--amber)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:660px;margin:0 auto}
+  .row{display:flex;align-items:center;gap:14px;margin-top:9px}.row:first-child{margin-top:0}
+  .row .name{flex:0 0 130px;font-weight:600;font-size:14px}
+  .row input[type=range]{flex:1;height:26px}
+  #light{accent-color:#ffd84a}#co2{accent-color:#8ce99a}#temp{accent-color:#ff7a4a}
+  .row .val{flex:0 0 64px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--teal)}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="index.html">← Dabble</a>
+  <div class="title">🌿 Photosynthesis</div>
+  <div class="eqn">carbon dioxide + water → <b>glucose + oxygen</b> &nbsp;(needs light + chlorophyll)</div>
+  <div class="info">
+    <div class="rr"><span>Rate (O₂ bubbles)</span><span class="v" id="o-rate">—</span></div>
+    <div class="lim" id="o-lim">—</div>
+    <div class="note" id="o-note">Increase a factor and the rate rises — until a <b>different</b> factor runs short and becomes the <b>limiting factor</b>.</div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="row"><span class="name">☀️ Light intensity</span><input type="range" id="light" min="0" max="100" step="1" value="60" oninput="upd()"><span class="val" id="light-v">60%</span></div>
+    <div class="row"><span class="name">🫧 CO₂ level</span><input type="range" id="co2" min="0" max="100" step="1" value="60" oninput="upd()"><span class="val" id="co2-v">60%</span></div>
+    <div class="row"><span class="name">🌡️ Temperature</span><input type="range" id="temp" min="0" max="50" step="1" value="25" oninput="upd()"><span class="val" id="temp-v">25°C</span></div>
+  </div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
+let W,H,bubbles=[],acc=0,last=0;
+function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);}
+new ResizeObserver(resize).observe(cv);
+function tempMult(t){if(t<=0)return 0;if(t<=40)return t/40;return Math.max(0,1-(t-40)/12);} // rise to ~40 then enzymes denature
+function factors(){return{l:+$('light').value/100,c:+$('co2').value/100,t:tempMult(+$('temp').value)};}
+function rate(){const f=factors();return Math.max(0,Math.min(f.l,f.c)*f.t);}
+function limiting(){const f=factors();const t=+$('temp').value;
+  if(t>=46)return['temperature','Too hot — the enzymes are <b>denaturing</b>, so the rate falls.'];
+  if(f.t<f.l&&f.t<f.c)return['temperature','<b>Temperature</b> is limiting — warm it up (until ~40°C).'];
+  if(f.l<=f.c)return['light','<b>Light</b> is limiting — more light raises the rate.'];
+  return['CO₂','<b>CO₂</b> is limiting — more CO₂ raises the rate.'];}
+function upd(){$('light-v').textContent=$('light').value+'%';$('co2-v').textContent=$('co2').value+'%';$('temp-v').textContent=$('temp').value+'°C';}
+window.upd=upd;
+function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const r=rate();
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,top=H*0.26,bw=Math.min(W*0.36,300),bh=Math.min(H*0.46,360),bl=cx-bw/2,bb=top+bh;
+  // sun/lamp glow by light
+  const lt=+$('light').value/100;ctx.fillStyle='rgba(255,216,74,'+(0.05+0.18*lt)+')';ctx.beginPath();ctx.arc(bl-10,top-4,90*(0.4+lt),0,7);ctx.fill();
+  ctx.font='34px serif';ctx.textAlign='center';ctx.globalAlpha=0.5+0.5*lt;ctx.fillText('☀️',bl-2,top+6);ctx.globalAlpha=1;
+  // water (colour slightly green with CO2)
+  ctx.fillStyle='rgba(74,144,217,.28)';ctx.fillRect(bl,top+14,bw,bh-14);
+  // beaker glass
+  ctx.strokeStyle='rgba(191,226,240,.5)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(bl,top);ctx.lineTo(bl,bb);ctx.lineTo(bl+bw,bb);ctx.lineTo(bl+bw,top);ctx.stroke();
+  // pondweed (Elodea)
+  ctx.strokeStyle='#2f8f5a';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(cx,bb);ctx.lineTo(cx,bb-bh*0.55);ctx.stroke();
+  for(let i=0;i<6;i++){const y=bb-12-i*(bh*0.5/6);const s=(i%2?1:-1);ctx.strokeStyle='#3fa86a';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx,y);ctx.quadraticCurveTo(cx+s*26,y-6,cx+s*40,y-20);ctx.stroke();}
+  ctx.fillStyle='rgba(234,241,247,.45)';ctx.font='11px Hanken Grotesk';ctx.fillText('pondweed',cx,bb+18);
+  // spawn O2 bubbles ~ rate
+  acc+=r*dt*9;while(acc>=1){acc-=1;bubbles.push({x:cx+(Math.random()-0.5)*30,y:bb-bh*0.4*Math.random()-10,r:2+Math.random()*3,v:24+Math.random()*16});}
+  ctx.fillStyle='rgba(190,235,255,.85)';for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.y-=b.v*dt;b.x+=Math.sin(b.y*0.05)*0.4;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();if(b.y<top+10)bubbles.splice(i,1);}
+  // readouts
+  $('o-rate').textContent=Math.round(r*100)+' %';
+  const lim=limiting();$('o-lim').textContent='Limiting: '+lim[0];$('o-note').innerHTML=lim[1];
+  requestAnimationFrame(loop);}
+resize();upd();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Energy — KE &amp; GPE — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--blue:#5b9bff;--green:#8ce99a;--red:#ff8f6b;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .info{position:fixed;top:58px;right:14px;z-index:9;width:min(212px,50vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .bar{margin-top:11px}.bar:first-child{margin-top:0}
+  .bar .lab{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.bar .lab b{font-family:'Fraunces',serif}
+  .bar .track{height:12px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+  .bar .fill{height:100%;width:0;border-radius:6px;transition:width .05s linear}
+  .ke .fill{background:var(--green)}.gpe .fill{background:var(--blue)}.heat .fill{background:var(--red)}.tot .fill{background:var(--amber)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:11px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:640px;margin:0 auto}
+  .row{display:flex;align-items:center;gap:14px;margin-top:9px}.row:first-child{margin-top:0}
+  .row .name{flex:0 0 120px;font-weight:600;font-size:14px}
+  .row input[type=range]{flex:1;accent-color:var(--amber);height:26px}
+  .row .val{flex:0 0 64px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--amber)}
+  .seg button{font-family:inherit;font-weight:600;font-size:12.5px;color:var(--dim);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer}
+  .seg button.on{background:var(--red);color:#3a1500;border-color:var(--red)}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="index.html">← Dabble</a>
+  <div class="title">⚡ Energy — KE &amp; GPE</div>
+  <div class="info">
+    <div class="bar gpe"><div class="lab"><span>GPE (height)</span><b id="o-gpe">—</b></div><div class="track"><div class="fill" id="f-gpe"></div></div></div>
+    <div class="bar ke"><div class="lab"><span>KE (speed)</span><b id="o-ke">—</b></div><div class="track"><div class="fill" id="f-ke"></div></div></div>
+    <div class="bar heat"><div class="lab"><span>Lost as heat</span><b id="o-heat">—</b></div><div class="track"><div class="fill" id="f-heat"></div></div></div>
+    <div class="bar tot"><div class="lab"><span>Total</span><b id="o-tot">—</b></div><div class="track"><div class="fill" id="f-tot"></div></div></div>
+    <div class="note" id="o-note">As the pendulum falls, <b>GPE → KE</b>. At the bottom: all KE. At the top: all GPE. Total energy stays the same (unless there's friction).</div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="row"><span class="name">Release angle</span><input type="range" id="ang" min="15" max="85" step="1" value="70" oninput="release()"><span class="val" id="ang-v">70°</span></div>
+    <div class="row"><span class="name">Friction (air)</span><div class="seg"><button id="frBtn" onclick="toggleFr()">OFF</button></div><span style="flex:1;font-size:12px;color:var(--dim)">on = energy slowly lost as heat</span></div>
+  </div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
+let W,H,th,om=0,fr=false,heat=0,last=0;
+function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);}
+new ResizeObserver(resize).observe(cv);
+const g=20,L=1; // scaled units
+let th0=70*Math.PI/180;
+function release(){th0=(+$('ang').value)*Math.PI/180;th=th0;om=0;heat=0;$('ang-v').textContent=$('ang').value+'°';}
+window.release=release;
+function toggleFr(){fr=!fr;$('frBtn').classList.toggle('on',fr);$('frBtn').textContent=fr?'ON':'OFF';}
+window.toggleFr=toggleFr;
+function loop(now){const dt=Math.min((now-last)/1000,.03);last=now;
+  // pendulum integration
+  const aAcc=-(g/L)*Math.sin(th);om+=aAcc*dt;if(fr)om*=0.998;th+=om*dt;
+  // energies (m=1). total0 = g*L*(1-cos th0)
+  const total0=g*L*(1-Math.cos(th0));
+  const gpe=g*L*(1-Math.cos(th));const ke=0.5*L*L*om*om;
+  const mech=gpe+ke;heat=Math.max(0,total0-mech);
+  const pivX=W/2,pivY=H*0.30,len=Math.min(W,H)*0.30;
+  const bx=pivX+Math.sin(th)*len,by=pivY+Math.cos(th)*len;
+  ctx.clearRect(0,0,W,H);
+  // arc path (faint)
+  ctx.strokeStyle='rgba(234,241,247,.12)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(pivX,pivY,len,Math.PI/2-th0,Math.PI/2+th0);ctx.stroke();
+  // ground / lowest point marker
+  ctx.strokeStyle='rgba(234,241,247,.18)';ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pivX-len-20,pivY+len);ctx.lineTo(pivX+len+20,pivY+len);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(234,241,247,.4)';ctx.font='11px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('lowest point — all KE',pivX,pivY+len+18);
+  // string
+  ctx.strokeStyle='rgba(234,241,247,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pivX,pivY);ctx.lineTo(bx,by);ctx.stroke();
+  // pivot
+  ctx.fillStyle='#6e7b8c';ctx.beginPath();ctx.arc(pivX,pivY,6,0,7);ctx.fill();
+  // bob — colour blends green(fast)..blue(high)
+  const frac=mech>0?ke/mech:0;const r=Math.round(91+(140-91)*frac),gg=Math.round(155+(233-155)*frac),b=Math.round(255-(255-154)*frac);
+  ctx.shadowColor='rgba(140,233,154,'+frac+')';ctx.shadowBlur=18*frac;
+  ctx.fillStyle='rgb('+r+','+gg+','+b+')';ctx.beginPath();ctx.arc(bx,by,20,0,7);ctx.fill();ctx.shadowBlur=0;
+  // speed streaks
+  // bars
+  const pct=v=>Math.max(0,Math.min(100,v/total0*100));
+  $('f-gpe').style.width=pct(gpe)+'%';$('f-ke').style.width=pct(ke)+'%';$('f-heat').style.width=pct(heat)+'%';$('f-tot').style.width=pct(mech+heat)+'%';
+  $('o-gpe').textContent=Math.round(pct(gpe))+'%';$('o-ke').textContent=Math.round(pct(ke))+'%';$('o-heat').textContent=Math.round(pct(heat))+'%';$('o-tot').textContent='100%';
+  $('o-note').innerHTML=fr?'With <b>friction</b>, a little energy turns to <b>heat</b> each swing — the total mechanical energy drops, so the swing gets smaller.':'No friction → <b>GPE ⇄ KE</b> trade perfectly, total stays <b>100%</b>. Highest point = all GPE, lowest = all KE.';
+  requestAnimationFrame(loop);}
+resize();release();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

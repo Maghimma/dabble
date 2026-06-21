@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Ionic &amp; Covalent Bonding — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--dot:#5fd0ff;--cross:#ffd24a;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(222px,52vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .ftype{font-family:'Fraunces',serif;font-size:18px;text-align:center}
+  .leg{font-size:11.5px;color:var(--dim);margin-top:10px;line-height:1.9}.leg i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.55;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:660px;margin:0 auto}
+  .subs{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+  .subs button{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--dim);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;min-width:54px}
+  .subs button.on{background:var(--teal);color:#04302c;border-color:var(--teal)}
+  .replay{display:block;margin:10px auto 0;font-family:inherit;font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:8px 18px;cursor:pointer}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="index.html">← Dabble</a>
+  <div class="title">🔗 Ionic &amp; Covalent Bonding</div>
+  <div class="typetoggle">
+    <button id="t-ion" class="on" onclick="setMode('ionic')">Ionic</button>
+    <button id="t-cov" onclick="setMode('covalent')">Covalent</button>
+  </div>
+  <div class="info">
+    <div class="ftype" id="o-f">—</div>
+    <div class="leg"><i style="background:#5fd0ff"></i>one atom's electrons &nbsp;<i style="background:#ffd24a"></i>other atom's electrons</div>
+    <div class="note" id="o-note">—</div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="subs" id="subs"></div>
+    <button class="replay" id="replay" onclick="replay()" style="display:none">↻ Replay transfer</button>
+  </div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
+let W,H,mode='ionic',cur=0,phase=0,last=0;
+function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);}
+new ResizeObserver(resize).observe(cv);
+const R=52;
+const IONIC=[
+  {f:'NaCl',m:'Na',nm:'Cl',give:1,nmOuter:7,mi:'Na⁺',nmi:'Cl⁻'},
+  {f:'MgO',m:'Mg',nm:'O',give:2,nmOuter:6,mi:'Mg²⁺',nmi:'O²⁻'},
+  {f:'LiF',m:'Li',nm:'F',give:1,nmOuter:7,mi:'Li⁺',nmi:'F⁻'},
+  {f:'CaO',m:'Ca',nm:'O',give:2,nmOuter:6,mi:'Ca²⁺',nmi:'O²⁻'},
+  {f:'KCl',m:'K',nm:'Cl',give:1,nmOuter:7,mi:'K⁺',nmi:'Cl⁻'}
+];
+const COV=[
+  {f:'H₂',kind:'di',a:'H',b:'H',outerA:1,outerB:1,pairs:1},
+  {f:'Cl₂',kind:'di',a:'Cl',b:'Cl',outerA:7,outerB:7,pairs:1},
+  {f:'HCl',kind:'di',a:'H',b:'Cl',outerA:1,outerB:7,pairs:1},
+  {f:'O₂',kind:'di',a:'O',b:'O',outerA:6,outerB:6,pairs:2},
+  {f:'N₂',kind:'di',a:'N',b:'N',outerA:5,outerB:5,pairs:3},
+  {f:'H₂O',kind:'central',c:'O',cOuter:6,outer:[{s:'H',ang:215},{s:'H',ang:325}]},
+  {f:'NH₃',kind:'central',c:'N',cOuter:5,outer:[{s:'H',ang:90},{s:'H',ang:210},{s:'H',ang:330}]},
+  {f:'CH₄',kind:'central',c:'C',cOuter:4,outer:[{s:'H',ang:45},{s:'H',ang:135},{s:'H',ang:225},{s:'H',ang:315}]}
+];
+function setMode(m){mode=m;cur=0;phase=0;$('t-ion').classList.toggle('on',m==='ionic');$('t-cov').classList.toggle('on',m==='covalent');$('replay').style.display=m==='ionic'?'block':'none';buildSubs();}
+window.setMode=setMode;
+function replay(){phase=0;}window.replay=replay;
+function buildSubs(){const list=mode==='ionic'?IONIC:COV;const wrap=$('subs');wrap.innerHTML='';list.forEach(function(s,i){const b=document.createElement('button');b.textContent=s.f;b.className=i===cur?'on':'';b.onclick=function(){cur=i;phase=0;buildSubs();};wrap.appendChild(b);});}
+function mark(x,y,type){if(type==='dot'){ctx.fillStyle='#5fd0ff';ctx.beginPath();ctx.arc(x,y,4.5,0,7);ctx.fill();}else{ctx.strokeStyle='#ffd24a';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(x-4,y-4);ctx.lineTo(x+4,y+4);ctx.moveTo(x+4,y-4);ctx.lineTo(x-4,y+4);ctx.stroke();}}
+function atom(x,y,sym,col){ctx.fillStyle='rgba(255,255,255,.04)';ctx.strokeStyle=col||'rgba(180,220,255,.5)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,R,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#eaf1f7';ctx.font='600 26px Fraunces,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sym,x,y+1);}
+function ringElectrons(x,y,n,type,centerAng,span){for(let i=0;i<n;i++){const a=centerAng+(n===1?0:(-span/2+span*i/(n-1)));mark(x+Math.cos(a)*R,y+Math.sin(a)*R,type);}}
+function drawCov(){const s=COV[cur];const cx=W/2,cy=H*0.46;ctx.clearRect(0,0,W,H);
+  if(s.kind==='di'){const ax=cx-78,bx=cx+78;
+    // bond shared pairs in overlap
+    for(let p=0;p<s.pairs;p++){const off=(p-(s.pairs-1)/2)*16;mark(cx-6,cy+off,'dot');mark(cx+6,cy+off,'cross');}
+    atom(ax,cy,s.a);atom(bx,cy,s.b);
+    const loneA=s.outerA-s.pairs,loneB=s.outerB-s.pairs;
+    ringElectrons(ax,cy,loneA,'dot',Math.PI,Math.PI*1.4);
+    ringElectrons(bx,cy,loneB,'cross',0,Math.PI*1.4);
+  }else{const Rd=132;atom(cx,cy,s.c);
+    let bonded=0;s.outer.forEach(function(o){const a=o.ang*Math.PI/180;const ox=cx+Math.cos(a)*Rd,oy=cy+Math.sin(a)*Rd;
+      // bond pair at midpoint
+      const mx=cx+Math.cos(a)*(R+18),my=cy+Math.sin(a)*(R+18);mark(mx-6*Math.sin(a),my+6*Math.cos(a),'dot');mark(mx+6*Math.sin(a),my-6*Math.cos(a),'cross');
+      atom(ox,oy,o.s);bonded++;});
+    // central lone electrons fill gaps (cOuter - bonds)
+    const lone=s.cOuter-bonded;if(lone>0)ringElectrons(cx,cy,lone,'dot',-Math.PI/2,Math.PI*1.1);
+  }
+  $('o-f').textContent=s.f+' · covalent';
+  $('o-note').innerHTML='<b>Covalent</b> bonding: atoms <b>share</b> electrons to fill their outer shells. Each shared pair (one 🔵 + one ✕) is one <b>covalent bond</b>'+(s.pairs>1?' — this is a <b>'+(s.pairs===2?'double':'triple')+' bond</b>.':'.')+'';
+}
+function drawIonic(){const s=IONIC[cur];const cx=W/2,cy=H*0.46;ctx.clearRect(0,0,W,H);
+  const mx=cx-130,nx=cx+130;const done=phase>=1;
+  // transfer arrow
+  if(!done){ctx.strokeStyle='rgba(255,210,74,.5)';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(mx+R+8,cy-70);ctx.quadraticCurveTo(cx,cy-100,nx-R-8,cy-70);ctx.stroke();ctx.setLineDash([]);}
+  atom(mx,cy,done?s.mi:s.m);atom(nx,cy,done?s.nmi:s.nmi&&done?s.nmi:s.nm);
+  if(done){atom(mx,cy,s.mi);atom(nx,cy,s.nmi);
+    // brackets
+    ctx.strokeStyle='rgba(234,241,247,.45)';ctx.lineWidth=2;
+    [[mx],[nx]].forEach(function(a){const X=a[0];ctx.beginPath();ctx.moveTo(X-R-14,cy-R-6);ctx.lineTo(X-R-20,cy-R-6);ctx.lineTo(X-R-20,cy+R+6);ctx.lineTo(X-R-14,cy+R+6);ctx.moveTo(X+R+14,cy-R-6);ctx.lineTo(X+R+20,cy-R-6);ctx.lineTo(X+R+20,cy+R+6);ctx.lineTo(X+R+14,cy+R+6);ctx.stroke();});
+    // non-metal now has full 8 (crosses + transferred dots)
+    ringElectrons(nx,cy,s.nmOuter,'cross',0,Math.PI*1.5);
+    ringElectrons(nx,cy,s.give,'dot',Math.PI,Math.PI*0.6);
+  }else{
+    // metal outer electrons (transferring dots), moving with phase toward nm
+    for(let i=0;i<s.give;i++){const a=(i/Math.max(1,s.give))*Math.PI*2-Math.PI/2;const sxp=mx+Math.cos(a)*R,syp=cy+Math.sin(a)*R;const tx=nx+Math.cos(Math.PI+i*0.5)*R,ty=cy+Math.sin(Math.PI+i*0.5)*R;mark(sxp+(tx-sxp)*phase,syp-70*Math.sin(Math.PI*phase)+(ty-syp+70*Math.sin(Math.PI*phase))*phase,'dot');}
+    ringElectrons(nx,cy,s.nmOuter,'cross',0,Math.PI*1.5);
+  }
+  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText(done?'metal cation + non-metal anion':'metal gives electron(s) → non-metal',cx,cy+R+44);
+  $('o-f').textContent=s.f+' · ionic';
+  $('o-note').innerHTML='<b>Ionic</b> bonding: the metal <b>transfers</b> its outer electron(s) to the non-metal. Both reach full outer shells and become charged <b>ions</b> ('+s.mi+' and '+s.nmi+') held by strong attraction.';
+}
+function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;
+  if(mode==='ionic'){if(phase<1)phase=Math.min(1,phase+dt*0.5);drawIonic();}else drawCov();
+  requestAnimationFrame(loop);}
+resize();buildSubs();setMode('ionic');requestAnimationFrame(loop);
+</script>
+</body>
+</html>

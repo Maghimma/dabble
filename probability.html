@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Probability — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--blue:#5b9bff;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(220px,52vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:7px}.rr:first-child{margin-top:0}.rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--teal)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:660px;margin:0 auto}
+  .btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .btns button{font-family:inherit;font-weight:600;font-size:13.5px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:10px 16px;cursor:pointer}
+  .btns button.go{background:var(--teal);color:#04302c;border-color:var(--teal)}
+  .row{display:flex;align-items:center;gap:14px}
+  .row .name{flex:0 0 150px;font-weight:600;font-size:14px}
+  .row input[type=range]{flex:1;accent-color:var(--amber);height:26px}
+  .row .val{flex:0 0 60px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--amber)}
+  #ctrlTree{display:none}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="index.html">← Dabble</a>
+  <div class="title">🎲 Probability</div>
+  <div class="typetoggle">
+    <button id="t-exp" class="on" onclick="setMode('exp')">Roll a die</button>
+    <button id="t-tree" onclick="setMode('tree')">Tree diagram</button>
+  </div>
+  <div class="info">
+    <div id="infoExp">
+      <div class="rr"><span>Total rolls</span><span class="v" id="o-total">0</span></div>
+      <div class="rr"><span>Theoretical</span><span class="v" id="o-theory">1/6 ≈ 16.7%</span></div>
+      <div class="note">Each face should come up <b>1/6</b> of the time. With a few rolls it's lumpy; roll <b>hundreds</b> and the bars even out — experimental probability → theoretical.</div>
+    </div>
+    <div id="infoTree" style="display:none">
+      <div class="rr"><span>P(🔴 then 🔴)</span><span class="v" id="o-pp">—</span></div>
+      <div class="rr"><span>P(exactly one 🔴)</span><span class="v" id="o-p1">—</span></div>
+      <div class="rr"><span>P(no 🔴)</span><span class="v" id="o-p0">—</span></div>
+      <div class="note"><b>Multiply</b> along the branches; <b>add</b> the outcomes you want. The four leaf probabilities always add to 1.</div>
+    </div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div id="ctrlExp" class="btns">
+      <button class="go" onclick="roll(1)">Roll ×1</button>
+      <button onclick="roll(10)">×10</button>
+      <button onclick="roll(100)">×100</button>
+      <button onclick="roll(1000)">×1000</button>
+      <button onclick="resetRolls()">↻ Reset</button>
+    </div>
+    <div id="ctrlTree" class="row"><span class="name">P(spinner = 🔴)</span><input type="range" id="p" min="5" max="95" step="5" value="50" oninput="draw()"><span class="val" id="p-v">0.50</span></div>
+  </div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
+let W,H,mode='exp';
+let counts=[0,0,0,0,0,0],total=0,lastRoll=0;
+function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
+new ResizeObserver(resize).observe(cv);
+function setMode(m){mode=m;$('t-exp').classList.toggle('on',m==='exp');$('t-tree').classList.toggle('on',m==='tree');
+  $('ctrlExp').style.display=m==='exp'?'flex':'none';$('ctrlTree').style.display=m==='tree'?'flex':'none';
+  $('infoExp').style.display=m==='exp'?'block':'none';$('infoTree').style.display=m==='tree'?'block':'none';draw();}
+window.setMode=setMode;
+function roll(n){for(let i=0;i<n;i++){const r=1+Math.floor(Math.random()*6);counts[r-1]++;lastRoll=r;}total+=n;draw();}
+window.roll=roll;
+function resetRolls(){counts=[0,0,0,0,0,0];total=0;lastRoll=0;draw();}
+window.resetRolls=resetRolls;
+function pip(x,y){ctx.fillStyle='#0a1622';ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fill();}
+function die(cx,cy,n){const s=58;ctx.fillStyle='#eaf1f7';ctx.beginPath();ctx.roundRect(cx-s,cy-s,s*2,s*2,14);ctx.fill();
+  const o=26;const P={1:[[0,0]],2:[[-o,-o],[o,o]],3:[[-o,-o],[0,0],[o,o]],4:[[-o,-o],[o,-o],[-o,o],[o,o]],5:[[-o,-o],[o,-o],[0,0],[-o,o],[o,o]],6:[[-o,-o],[o,-o],[-o,0],[o,0],[-o,o],[o,o]]};
+  (P[n]||[]).forEach(function(d){pip(cx+d[0],cy+d[1]);});}
+function drawExp(){ctx.clearRect(0,0,W,H);const cx=W/2;
+  die(cx,H*0.30,lastRoll||1);
+  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText(total?('last roll: '+lastRoll):'press Roll to start',cx,H*0.30+86);
+  // bar chart 1..6
+  const bw=Math.min(W-120,460),bl=cx-bw/2,base=H*0.82,bh=H*0.30,gap=bw/6;
+  const theory=total/6;
+  for(let i=0;i<6;i++){const x=bl+gap*i+gap*0.15,w=gap*0.7;const h=total?Math.min(bh,counts[i]/Math.max(total*0.32,1)*bh):0;
+    ctx.fillStyle='#5b9bff';ctx.beginPath();ctx.roundRect(x,base-h,w,h,5);ctx.fill();
+    ctx.fillStyle='rgba(234,241,247,.85)';ctx.font='600 13px Hanken Grotesk';ctx.fillText(''+(i+1),x+w/2,base+18);
+    ctx.fillStyle='rgba(234,241,247,.6)';ctx.font='11px Hanken Grotesk';ctx.fillText(total?Math.round(counts[i]/total*100)+'%':'',x+w/2,base-h-7);}
+  // theoretical line
+  if(total){const th=Math.min(bh,theory/Math.max(total*0.32,1)*bh);ctx.strokeStyle='#f6a623';ctx.setLineDash([6,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bl,base-th);ctx.lineTo(bl+bw,base-th);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#f6a623';ctx.textAlign='left';ctx.font='600 11px Hanken Grotesk';ctx.fillText('theoretical 1/6',bl+bw-92,base-th-6);}
+  ctx.strokeStyle='rgba(234,241,247,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bl-6,base);ctx.lineTo(bl+bw,base);ctx.stroke();
+  $('o-total').textContent=total;
+}
+function drawTree(){ctx.clearRect(0,0,W,H);const p=+$('p').value/100;$('p-v').textContent=p.toFixed(2);
+  const x0=W*0.18,x1=W*0.46,x2=W*0.72,cy=H*0.46,sp=H*0.20,sp2=H*0.10;
+  function branch(ax,ay,bx,by,lab,col){ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.fillStyle=col;ctx.font='600 13px Hanken Grotesk';ctx.textAlign='center';ctx.fillText(lab,(ax+bx)/2,(ay+by)/2-6);}
+  function node(x,y,t){ctx.fillStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fill();if(t){ctx.fillStyle='#eaf1f7';ctx.font='18px serif';ctx.textAlign='left';ctx.fillText(t,x+8,y+6);}}
+  node(x0,cy,'');
+  const yT=cy-sp,yB=cy+sp;
+  branch(x0,cy,x1,yT,p.toFixed(2),'#ff7a7a');branch(x0,cy,x1,yB,(1-p).toFixed(2),'#7aa7ff');
+  node(x1,yT,'🔴');node(x1,yB,'⚪');
+  const leaves=[[yT-sp2,'🔴',p,'#ff7a7a',true],[yT+sp2,'⚪',1-p,'#7aa7ff',false],[yB-sp2,'🔴',p,'#ff7a7a',true],[yB+sp2,'⚪',1-p,'#7aa7ff',false]];
+  const parents=[yT,yT,yB,yB],reds=[true,false,true,false];
+  leaves.forEach(function(L,i){branch(x1,parents[i],x2,L[0],L[2].toFixed(2),L[3]);});
+  // leaf combined probs
+  const combos=[['🔴🔴',p*p],['🔴⚪',p*(1-p)],['⚪🔴',(1-p)*p],['⚪⚪',(1-p)*(1-p)]];
+  leaves.forEach(function(L,i){node(x2,L[0],L[1]);ctx.fillStyle='rgba(234,241,247,.9)';ctx.font='600 13px Hanken Grotesk';ctx.textAlign='left';ctx.fillText(combos[i][0]+'  '+combos[i][1].toFixed(2),x2+22,L[0]+5);});
+  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('Spin 1',x1,cy-sp-sp2-22);ctx.fillText('Spin 2',x2,cy-sp-sp2-22);
+  $('o-pp').textContent=(p*p).toFixed(2);$('o-p1').textContent=(2*p*(1-p)).toFixed(2);$('o-p0').textContent=((1-p)*(1-p)).toFixed(2);
+}
+function draw(){if(!W)return;if(mode==='exp')drawExp();else drawTree();}
+resize();
+</script>
+</body>
+</html>
