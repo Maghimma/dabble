@@ -111,7 +111,7 @@ function drawTree(){ctx.clearRect(0,0,W,H);const p=+$('p').value/100;$('p-v').te
   $('o-pp').textContent=(p*p).toFixed(2);$('o-p1').textContent=(2*p*(1-p)).toFixed(2);$('o-p0').textContent=((1-p)*(1-p)).toFixed(2);
 }
 function draw(){if(!W)return;if(mode==='exp')drawExp();else drawTree();}
-resize();
+resize();setMode('exp');
 </script>
 <script type="module">
 import * as THREE from 'three';
