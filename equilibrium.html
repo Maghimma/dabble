@@ -61,22 +61,25 @@ import * as THREE from 'three';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
 const canvas=$('gl');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,90,190);
 const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
 (()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
-const key=new THREE.DirectionalLight(0xffffff,1.05);key.position.set(18,30,22);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.4));
+const key=new THREE.DirectionalLight(0xffffff,1.3);key.position.set(22,36,18);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=160;key.shadow.camera.left=-46;key.shadow.camera.right=46;key.shadow.camera.top=46;key.shadow.camera.bottom=-46;key.shadow.bias=-0.0004;scene.add(key);
+scene.add(new THREE.AmbientLight(0xffffff,.28));
 const BX=22,BY=13,BZ=13;
-const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0x86c8e6,transparent:true,opacity:.07,roughness:.05,side:THREE.DoubleSide}));scene.add(glass);
-scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4})));
+const bench=new THREE.Mesh(new THREE.BoxGeometry(100,4,62),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.9}));bench.position.y=-BY-4;bench.receiveShadow=true;scene.add(bench);
+const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.11,roughness:.05,side:THREE.DoubleSide}));scene.add(glass);
+const lid=new THREE.Mesh(new THREE.BoxGeometry(BX*2+1.5,1.4,BZ*2+1.5),new THREE.MeshStandardMaterial({color:0x9fb0c0,roughness:.4,metalness:.3}));lid.position.y=BY+0.7;lid.castShadow=true;scene.add(lid);
+scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0xdaf0fb,transparent:true,opacity:.5})));
 function spriteLabel(text,x,y,z,col){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.fillStyle=col;g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(13,3.2,1);s.position.set(x,y,z);scene.add(s);return s;}
 spriteLabel('reactants (N₂ + H₂)',-12,BY+3,0,'#ffcf8a');spriteLabel('product (NH₃)',13,BY+3,0,'#9fe6dd');
 const geo=new THREE.SphereGeometry(1.4,12,10);
 const matR=new THREE.MeshStandardMaterial({color:0xf6a623,roughness:.4,emissive:0xf6a623,emissiveIntensity:.25});
 const matP=new THREE.MeshStandardMaterial({color:0x2ec4b6,roughness:.4,emissive:0x2ec4b6,emissiveIntensity:.25});
 const N=44,parts=[];
-for(let i=0;i<N;i++){const m=new THREE.Mesh(geo,matR);m.position.set(rnd()*2*(BX-2),rnd()*2*(BY-2),rnd()*2*(BZ-2));scene.add(m);parts.push({mesh:m,p:false,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(11)});}
+for(let i=0;i<N;i++){const m=new THREE.Mesh(geo,matR);m.castShadow=true;m.position.set(rnd()*2*(BX-2),rnd()*2*(BY-2),rnd()*2*(BZ-2));scene.add(m);parts.push({mesh:m,p:false,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(11)});}
 let cat=false, lastYield=50, vals={temp:350,pres:180,conc:5};
 function calcYield(){const T=+$('temp').value,P=+$('pres').value,C=+$('conc').value;
   const S=-(T-300)/120 + (P-185)/110 + (C-5)/5.5;

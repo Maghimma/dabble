@@ -69,17 +69,19 @@ import * as THREE from 'three';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;const lerp=(a,b,t)=>a+(b-a)*t;
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
 const canvas=$('gl');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,110,210);
 const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
 (()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
-const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(16,28,22);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.42));
+const key=new THREE.DirectionalLight(0xffffff,1.3);key.position.set(22,36,18);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=160;key.shadow.camera.left=-48;key.shadow.camera.right=48;key.shadow.camera.top=48;key.shadow.camera.bottom=-48;key.shadow.bias=-0.0004;scene.add(key);
+scene.add(new THREE.AmbientLight(0xffffff,.28));
+const bench=new THREE.Mesh(new THREE.BoxGeometry(110,4,64),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.9}));bench.position.y=-16;bench.receiveShadow=true;scene.add(bench);
 function lab(text,x,y,z,col,sc){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col||'#cfe0ee';g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));const k=(sc||3);s.scale.set(k*w/46,k,1);s.position.set(x,y,z);scene.add(s);return s;}
 // ===== TANK (diffusion + active transport) =====
 const gTank=new THREE.Group();scene.add(gTank);
 const BX=24,BY=12,BZ=11;
-const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0x86c8e6,transparent:true,opacity:.07,roughness:.05,side:THREE.DoubleSide}));gTank.add(glass);
+const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.12,roughness:.05,side:THREE.DoubleSide}));gTank.add(glass);
 const ge=new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4}));gTank.add(ge);
 const memb=new THREE.Mesh(new THREE.BoxGeometry(0.6,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0xb8c6d4,transparent:true,opacity:.18}));gTank.add(memb);
 const mlab=lab('partially permeable membrane',0,BY+3,0,'#cfe0ee',2.6);gTank.add(mlab);
@@ -94,8 +96,8 @@ function randPos(side){const x=side<0?-BX+2+Math.random()*(BX-3):2+Math.random()
 function reset(){parts.forEach(p=>gTank.remove(p.m));parts=[];
   const imb=+$('imb').value;$('imb-v').textContent=imb+'%';
   const NS=34,leftFrac=mode==='at'?0.62:0.5+imb/200,leftN=Math.round(NS*(mode==='at'?0.7:leftFrac));
-  for(let i=0;i<NS;i++){const side=i<leftN?-1:1;const m=new THREE.Mesh(sGeo,sMat);m.position.copy(randPos(side));gTank.add(m);parts.push({m,t:'s',v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(10)});}
-  for(let i=0;i<26;i++){const m=new THREE.Mesh(wGeo,wMat);m.position.copy(randPos(i%2?1:-1));gTank.add(m);parts.push({m,t:'w',v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(10)});}
+  for(let i=0;i<NS;i++){const side=i<leftN?-1:1;const m=new THREE.Mesh(sGeo,sMat);m.castShadow=true;m.position.copy(randPos(side));gTank.add(m);parts.push({m,t:'s',v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(10)});}
+  for(let i=0;i<26;i++){const m=new THREE.Mesh(wGeo,wMat);m.castShadow=true;m.position.copy(randPos(i%2?1:-1));gTank.add(m);parts.push({m,t:'w',v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(10)});}
 }
 window.reset=reset;
 // ===== CELL (osmosis) =====
