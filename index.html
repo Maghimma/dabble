@@ -59,6 +59,13 @@
   .sh p{font-size:clamp(15px,1.7vw,18px);color:var(--dim);margin-top:8px;font-weight:500}
   .subj{display:flex;align-items:center;gap:12px;margin:34px 0 0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
   .subj::after{content:"";flex:1;height:1px;background:rgba(0,0,0,.09)}
+  .filterbar{position:sticky;top:72px;z-index:20;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;width:max-content;max-width:100%;margin:0 auto 6px;
+    background:rgba(248,249,252,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(0,0,0,.07);border-radius:999px;padding:7px;box-shadow:0 6px 20px rgba(30,40,80,.1)}
+  .ftabs{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+  .ftab{font-family:inherit;font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:999px;padding:8px 14px;cursor:pointer;transition:background .15s,color .15s}
+  .ftab.on{background:var(--blue);color:#fff}.ftab:not(.on):hover{background:rgba(0,0,0,.05)}
+  .search{font-family:inherit;font-size:13px;border:1px solid var(--gb);border-radius:999px;padding:8px 16px;background:#fff;color:var(--ink);outline:none;width:160px}
+  @media(max-width:560px){.search{width:130px}.ftab{padding:7px 11px;font-size:12.5px}}
   .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:16px}
   @media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.tiles{grid-template-columns:1fr}}
@@ -106,6 +113,18 @@
       <p>5 subjects · physics, chemistry, maths, biology &amp; economics.</p>
     </div>
     <div class="wrap">
+      <div class="filterbar">
+        <div class="ftabs">
+          <button class="ftab on" data-f="all">All</button>
+          <button class="ftab" data-f="physics">Physics</button>
+          <button class="ftab" data-f="chemistry">Chemistry</button>
+          <button class="ftab" data-f="maths">Maths</button>
+          <button class="ftab" data-f="biology">Biology</button>
+          <button class="ftab" data-f="economics">Economics</button>
+        </div>
+        <input class="search" id="search" type="search" placeholder="Search sims…" />
+      </div>
+      <div class="subject" data-subj="physics">
       <div class="subj">⚛️ Physics</div>
       <div class="tiles">
         <a class="tile" href="hooke.html"><img class="media" src="shots/hooke.jpg" alt="Hooke's Law sim" loading="lazy"><div class="cap"><h3>🪝 Hooke's Law</h3><p>Stretch a spring, build the graph, find its limit.</p><span class="go">Open ›</span></div></a>
@@ -116,6 +135,8 @@
         <a class="tile" href="gravity.html"><img class="media" src="shots/gravity.jpg" alt="Centre of gravity sim" loading="lazy"><div class="cap"><h3>📦 Centre of Gravity</h3><p>Tilt it until it topples.</p><span class="go">Open ›</span></div></a>
         <a class="tile" href="pressure.html"><img class="media" src="shots/pressure.jpg" alt="Pressure sim" loading="lazy"><div class="cap"><h3>💧 Pressure</h3><p>Dive a probe, watch pressure climb.</p><span class="go">Open ›</span></div></a>
       </div>
+      </div>
+      <div class="subject" data-subj="chemistry">
       <div class="subj">🧪 Chemistry</div>
       <div class="tiles">
         <a class="tile" href="states.html"><img class="media" src="shots/states.jpg" alt="States of matter sim" loading="lazy"><div class="cap"><h3>🌡️ States of Matter</h3><p>Heat it up — watch particles melt &amp; boil between solid, liquid &amp; gas.</p><span class="go">Open ›</span></div></a>
@@ -125,16 +146,22 @@
         <a class="tile" href="equilibrium.html"><img class="media" src="shots/equilibrium.jpg" alt="Le Chatelier equilibrium sim" loading="lazy"><div class="cap"><h3>⚖️ Le Chatelier</h3><p>Reversible equilibrium — shift it with temperature, pressure &amp; concentration.</p><span class="go">Open ›</span></div></a>
         <a class="tile" href="electrolysis.html"><img class="media" src="shots/electrolysis.jpg" alt="Electrolysis sim" loading="lazy"><div class="cap"><h3>🔋 Electrolysis</h3><p>Molten or aqueous — ions migrate, electrons flow, products form at each electrode.</p><span class="go">Open ›</span></div></a>
       </div>
+      </div>
+      <div class="subject" data-subj="maths">
       <div class="subj">📐 Maths</div>
       <div class="tiles">
         <a class="tile" href="graphs.html"><img class="media" src="shots/graphs.jpg" alt="Graph transformations" loading="lazy"><div class="cap"><h3>📈 Graph Transformations</h3><p>Stretch &amp; shift lines and quadratics — watch the curve move live.</p><span class="go">Open ›</span></div></a>
         <a class="tile" href="solids.html"><img class="media" src="shots/solids.jpg" alt="3D solids" loading="lazy"><div class="cap"><h3>🧊 3D Solids</h3><p>10 shapes — volume, curved &amp; total surface area, slant height, plus a Solve mode.</p><span class="go">Open ›</span></div></a>
       </div>
+      </div>
+      <div class="subject" data-subj="biology">
       <div class="subj">🧬 Biology</div>
       <div class="tiles">
         <a class="tile" href="diffusion.html"><img class="media" src="shots/diffusion.jpg" alt="Diffusion sim" loading="lazy"><div class="cap"><h3>🫧 Diffusion, Osmosis &amp; Active Transport</h3><p>3 modes; osmosis shows turgid / flaccid / plasmolysed / burst cells.</p><span class="go">Open ›</span></div></a>
         <a class="tile" href="enzymes.html"><img class="media" src="shots/enzymes.jpg" alt="Enzymes sim" loading="lazy"><div class="cap"><h3>🧬 Enzymes</h3><p>Lock &amp; key — heat it past the optimum and watch it denature.</p><span class="go">Open ›</span></div></a>
       </div>
+      </div>
+      <div class="subject" data-subj="economics">
       <div class="subj">💰 Economics</div>
       <div class="tiles">
         <a class="tile" href="economics.html"><div class="media ph">💰</div><div class="cap"><h3>💰 Supply &amp; Demand</h3><p>Shift the curves, find equilibrium, set a price → surplus or shortage.</p><span class="go">Open ›</span></div></a>
@@ -142,11 +169,18 @@
         <a class="tile" href="taxes.html"><div class="media ph">🏛️</div><div class="cap"><h3>🏛️ Taxes &amp; Subsidies</h3><p>A tax or subsidy shifts supply — see prices, quantity &amp; who pays.</p><span class="go">Open ›</span></div></a>
         <a class="tile" href="ppc.html"><div class="media ph">⚙️</div><div class="cap"><h3>⚙️ Production Possibility Curve</h3><p>Opportunity cost, efficiency, spare capacity &amp; economic growth.</p><span class="go">Open ›</span></div></a>
       </div>
+      </div>
       <div class="soon">
         <div class="lab">More on the way</div><h3>New sims are coming to every subject.</h3>
       </div>
       <footer><div style="display:flex;align-items:flex-end;gap:6px"><span class="wm">dabble<span class="cur"><svg viewBox="0 0 80 80"><g fill="#1d1d1f" stroke="#1d1d1f" stroke-linecap="round" stroke-linejoin="round"><path d="M27 29 L46 75 L53 55 L73 48 Z" stroke-width="4"/><line x1="35" y1="15" x2="39" y2="4" stroke-width="5"/><line x1="19" y1="19" x2="9" y2="9" stroke-width="5"/><line x1="14" y1="34" x2="3" y2="36" stroke-width="5"/></g></svg></span></span> — learn by doing.</div><div>Made by <b>Maghimma</b> · © 2026</div></footer>
     </div>
   </section>
+<script>
+(function(){var tabs=[].slice.call(document.querySelectorAll('.ftab')),groups=[].slice.call(document.querySelectorAll('.subject')),search=document.getElementById('search'),f='all';
+function apply(){var q=(search.value||'').trim().toLowerCase();groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var ok=(f==='all'||f===g.dataset.subj)&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok)any=true;});g.style.display=any?'':'none';});}
+tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
+search.addEventListener('input',apply);apply();})();
+</script>
 </body>
 </html>
