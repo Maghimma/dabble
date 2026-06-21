@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Waves & Refraction — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--pink:#ff6b6b;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);min-height:100vh;
+    background:radial-gradient(70% 60% at 50% 0%,#16384f,transparent 60%),linear-gradient(170deg,#11314a,#0a1622);
+    display:flex;flex-direction:column;align-items:center;padding:16px}
+  .top{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .back{color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{font-family:'Fraunces',serif;font-weight:600;font-size:20px}
+  .wrap{width:100%;max-width:760px}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:10px;backdrop-filter:blur(12px);box-shadow:0 16px 40px -18px rgba(0,0,0,.5)}
+  .stage svg{width:100%;height:auto;display:block}
+  .info{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .stat{flex:1;min-width:90px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+  .stat small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:block}
+  .stat b{font-family:'Fraunces',serif;font-weight:600;font-size:22px}
+  .stat.in b{color:var(--amber)} .stat.out b{color:var(--teal)}
+  .ctrl{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px;backdrop-filter:blur(12px)}
+  .row{display:flex;align-items:center;gap:14px;margin-top:10px}.row:first-child{margin-top:0}
+  .row .name{flex:0 0 120px;font-weight:600;font-size:15px}
+  .row input{flex:1;accent-color:var(--teal);height:28px}
+  .row .val{flex:0 0 60px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
+  .seg{display:flex;gap:8px;margin-top:12px}
+  .seg button{flex:1;font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:9px;cursor:pointer}
+  .seg button.on{background:var(--teal);color:#04302c;border-color:var(--teal)}
+  .status{text-align:center;font-weight:600;font-size:14px;margin-top:14px;padding:8px;border-radius:10px}
+  .status.ok{background:rgba(46,196,182,.15);color:var(--teal)} .status.tir{background:rgba(255,107,107,.16);color:var(--pink)}
+  .note{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .note b{color:var(--amber)}
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+    <div class="title">🌊 Waves &amp; Refraction</div>
+    <span style="width:60px"></span>
+  </div>
+  <div class="wrap">
+    <div class="stage">
+      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+        <rect id="top" x="0" y="0" width="400" height="150" fill="#0d2233"/>
+        <rect id="bot" x="0" y="150" width="400" height="150" fill="#1c5b66"/>
+        <line x1="0" y1="150" x2="400" y2="150" stroke="#9fb6cf" stroke-width="2"/>
+        <line x1="200" y1="30" x2="200" y2="270" stroke="#9fb6cf" stroke-width="1.5" stroke-dasharray="5 5" opacity=".7"/>
+        <text id="lblTop" x="14" y="24" font-size="13" fill="#cfe0ee" font-family="Hanken Grotesk">air</text>
+        <text id="lblBot" x="14" y="170" font-size="13" fill="#cfe0ee" font-family="Hanken Grotesk">glass</text>
+        <text x="206" y="42" font-size="11" fill="#9fb6cf" font-family="Hanken Grotesk">normal</text>
+        <line id="incident" x1="0" y1="0" x2="200" y2="150" stroke="var(--amber)" stroke-width="3.5"/>
+        <line id="reflected" x1="200" y1="150" x2="0" y2="0" stroke="#ffd23f" stroke-width="2.5" opacity=".4"/>
+        <line id="refracted" x1="200" y1="150" x2="0" y2="0" stroke="var(--teal)" stroke-width="3.5"/>
+        <circle cx="200" cy="150" r="4" fill="#fff"/>
+      </svg>
+    </div>
+
+    <div class="info">
+      <div class="stat in"><small>Angle in (θ₁)</small><b id="w-a1">40°</b></div>
+      <div class="stat out"><small>Angle out (θ₂)</small><b id="w-a2">25°</b></div>
+      <div class="stat"><small>Refractive index n</small><b id="w-n">1.50</b></div>
+      <div class="stat"><small>Critical angle</small><b id="w-c">42°</b></div>
+    </div>
+
+    <div class="ctrl">
+      <div class="row"><span class="name">Angle of incidence</span><input type="range" id="a" min="0" max="88" value="40" oninput="upd()"><span class="val" id="a-v">40°</span></div>
+      <div class="row"><span class="name">Refractive index</span><input type="range" id="n" min="1" max="2" step="0.05" value="1.5" oninput="upd()"><span class="val" id="n-v">1.50</span></div>
+      <div class="seg" id="mode">
+        <button class="on" data-m="ag" onclick="setMode('ag',this)">Air → glass</button>
+        <button data-m="ga" onclick="setMode('ga',this)">Glass → air (try TIR)</button>
+      </div>
+      <div class="status ok" id="status">Bends toward the normal</div>
+      <div class="note"><b>n₁ sinθ₁ = n₂ sinθ₂.</b> Light slows in glass and bends toward the normal. Going glass→air, past the <b>critical angle</b> it can't escape — total internal reflection.</div>
+    </div>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const D=Math.PI/180, L=135, P={x:200,y:150};
+  let mode='ag';
+  function setMode(m,el){mode=m;document.querySelectorAll('#mode button').forEach(b=>b.classList.remove('on'));el.classList.add('on');upd();}
+  function upd(){
+    const th1=+$('a').value, n=+$('n').value;
+    $('a-v').textContent=th1+'°'; $('n-v').textContent=n.toFixed(2);
+    $('w-a1').textContent=th1+'°'; $('w-n').textContent=n.toFixed(2);
+    const crit=Math.asin(1/n)/D; $('w-c').textContent=crit.toFixed(0)+'°';
+    // shading + labels: glass region shaded teal
+    const glassTop = (mode==='ga');
+    $('top').setAttribute('fill', glassTop?'#1c5b66':'#0d2233');
+    $('bot').setAttribute('fill', glassTop?'#0d2233':'#1c5b66');
+    $('lblTop').textContent = glassTop?'glass':'air';
+    $('lblBot').textContent = glassTop?'air':'glass';
+    // incident ray (upper-left → P), travelling down-right
+    const ix=P.x - L*Math.sin(th1*D), iy=P.y - L*Math.cos(th1*D);
+    set('incident', ix,iy, P.x,P.y);
+    // reflected ray (upper-right)
+    set('reflected', P.x,P.y, P.x + L*Math.sin(th1*D), P.y - L*Math.cos(th1*D));
+    // refraction: n1 sinθ1 = n2 sinθ2
+    const n1 = (mode==='ga')? n:1, n2=(mode==='ga')?1:n;
+    const s2 = n1*Math.sin(th1*D)/n2;
+    const st=$('status'), refr=$('refracted'), refl=$('reflected');
+    if(s2>1){ // total internal reflection
+      refr.style.opacity=0; refl.style.opacity=1; refl.setAttribute('stroke-width','3.5');
+      $('w-a2').textContent='TIR';
+      st.className='status tir'; st.textContent='Total internal reflection — light can’t escape!';
+    } else {
+      const th2=Math.asin(s2)/D;
+      refr.style.opacity=1; refl.setAttribute('stroke-width','2.5'); refl.style.opacity=.4;
+      set('refracted', P.x,P.y, P.x + L*Math.sin(th2*D), P.y + L*Math.cos(th2*D));
+      $('w-a2').textContent=th2.toFixed(0)+'°';
+      st.className='status ok';
+      st.textContent = th2<th1 ? 'Bends toward the normal (entering denser glass)' : 'Bends away from the normal (entering lighter air)';
+    }
+  }
+  function set(id,x1,y1,x2,y2){const e=$(id);e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);}
+  upd();
+</script>
+</body>
+</html>

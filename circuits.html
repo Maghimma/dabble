@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Circuits & Ohm's Law — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--teal-d:#1f9d92;--amber:#f6a623;--pink:#ff6b6b;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);min-height:100vh;
+    background:radial-gradient(70% 60% at 50% 0%,#16384f,transparent 60%),linear-gradient(170deg,#11314a,#0a1622);
+    display:flex;flex-direction:column;align-items:center;padding:16px}
+  .top{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .back{color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{font-family:'Fraunces',serif;font-weight:600;font-size:20px}
+  .wrap{width:100%;max-width:760px}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:10px;backdrop-filter:blur(12px);box-shadow:0 16px 40px -18px rgba(0,0,0,.5)}
+  .stage svg{width:100%;height:auto;display:block}
+  .info{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .stat{flex:1;min-width:90px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+  .stat small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:block}
+  .stat b{font-family:'Fraunces',serif;font-weight:600;font-size:22px}
+  .stat.i b{color:var(--teal)} .stat.p b{color:var(--amber)}
+  .ctrl{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px;backdrop-filter:blur(12px)}
+  .row{display:flex;align-items:center;gap:14px;margin-top:10px}.row:first-child{margin-top:0}
+  .row .name{flex:0 0 120px;font-weight:600;font-size:15px}.row .name small{display:block;font-weight:500;font-size:11px;color:var(--dim)}
+  .row input{flex:1;accent-color:var(--teal);height:28px}
+  .row .val{flex:0 0 66px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
+  .law{text-align:center;font-family:'Fraunces',serif;font-size:18px;margin-top:14px;color:var(--ink)}
+  .law b{color:var(--amber)}
+  .note{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .note b{color:var(--amber)}
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+    <div class="title">⚡ Circuits &amp; Ohm's Law</div>
+    <span style="width:60px"></span>
+  </div>
+  <div class="wrap">
+    <div class="stage">
+      <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+        <defs><radialGradient id="glow"><stop offset="0" stop-color="#fff7cc"/><stop offset="50%" stop-color="#ffd23f"/><stop offset="100%" stop-color="#ffd23f" stop-opacity="0"/></radialGradient></defs>
+        <!-- conductor -->
+        <path d="M70 60 H330 V200 H70 Z" fill="none" stroke="#5d7488" stroke-width="5" stroke-linejoin="round"/>
+        <path id="flow" d="M70 60 H330 V200 H70 Z" fill="none" stroke="#7fe6dd" stroke-width="5" stroke-linejoin="round" stroke-dasharray="2 18" stroke-linecap="round"/>
+        <!-- bulb (top centre) -->
+        <circle id="bulbglow" cx="200" cy="60" r="46" fill="url(#glow)" opacity="0"/>
+        <circle cx="200" cy="60" r="20" fill="#0e2233" stroke="#9fb6cf" stroke-width="3"/>
+        <path d="M188 50 L212 70 M212 50 L188 70" stroke="#ffd23f" stroke-width="2.5" id="filament"/>
+        <!-- battery (bottom centre) -->
+        <g transform="translate(200,200)">
+          <line x1="-10" y1="-15" x2="-10" y2="15" stroke="#eaf1f7" stroke-width="3"/>
+          <line x1="6" y1="-8" x2="6" y2="8" stroke="#eaf1f7" stroke-width="6"/>
+          <text x="-2" y="34" text-anchor="middle" font-size="11" fill="#9fb6cf" font-family="Hanken Grotesk">battery</text>
+        </g>
+        <!-- ammeter (left wire) -->
+        <circle cx="70" cy="130" r="18" fill="#0e2233" stroke="#5d7488" stroke-width="3"/>
+        <text x="70" y="135" text-anchor="middle" font-size="15" fill="var(--teal)" font-family="Fraunces" font-weight="600">A</text>
+      </svg>
+    </div>
+
+    <div class="info">
+      <div class="stat"><small>Voltage</small><b id="o-v">6 V</b></div>
+      <div class="stat"><small>Resistance</small><b id="o-r">3 Ω</b></div>
+      <div class="stat i"><small>Current (V÷R)</small><b id="o-i">2.0 A</b></div>
+      <div class="stat p"><small>Power (V×I)</small><b id="o-p">12 W</b></div>
+    </div>
+
+    <div class="ctrl">
+      <div class="row"><span class="name">Voltage<small>the push from the battery</small></span><input type="range" id="v" min="0" max="12" step="0.5" value="6" oninput="upd()"><span class="val" id="v-v">6 V</span></div>
+      <div class="row"><span class="name">Resistance<small>how hard to push through</small></span><input type="range" id="r" min="1" max="20" step="1" value="3" oninput="upd()"><span class="val" id="r-v">3 Ω</span></div>
+      <div class="law" id="status">More voltage → more current. More resistance → less.</div>
+      <div class="note"><b>V = I × R.</b> Current = voltage ÷ resistance. Watch the dots flow faster (more current) and the bulb glow brighter as power (V×I) rises.</div>
+    </div>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+  function upd(){
+    const V=+$('v').value, R=+$('r').value;
+    const I=V/R, P=V*I;
+    $('v-v').textContent=V+' V'; $('r-v').textContent=R+' Ω';
+    $('o-v').textContent=V+' V'; $('o-r').textContent=R+' Ω';
+    $('o-i').textContent=I.toFixed(2)+' A'; $('o-p').textContent=P.toFixed(1)+' W';
+    // bulb glow ∝ power
+    const b=clamp(P/40,0,1);
+    $('bulbglow').setAttribute('opacity',(b*0.95).toFixed(2));
+    $('filament').setAttribute('stroke',`rgba(255,210,63,${(0.4+b*0.6).toFixed(2)})`);
+    // current flow speed ∝ I
+    const f=$('flow');
+    if(I<0.05){f.style.animation='none';f.style.opacity=.15;}
+    else{f.style.opacity=1;f.style.animation=`flow ${(1.6/I).toFixed(2)}s linear infinite`;}
+    const st=$('status');
+    if(V===0)st.textContent='No voltage → no current. The bulb is off.';
+    else if(P>26)st.innerHTML='Bright! High power — careful, real bulbs would blow 💥';
+    else st.textContent='V = I × R — try changing each slider.';
+  }
+  // inject keyframe
+  const s=document.createElement('style');s.textContent='@keyframes flow{to{stroke-dashoffset:-20}}';document.head.appendChild(s);
+  upd();
+</script>
+</body>
+</html>
