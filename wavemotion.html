@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Wave Motion — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--panel:rgba(16,28,46,.55)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(216px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
+  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:17px}.rr .v.s{color:var(--amber)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:700px;margin:0 auto}
+  .row{display:flex;align-items:center;gap:14px;margin-top:10px}.row:first-child{margin-top:0}
+  .row .name{flex:0 0 116px;font-weight:600;font-size:14px}
+  .row input{flex:1;accent-color:var(--teal);height:28px}
+  .row .val{flex:0 0 64px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--teal)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
+  body.preview .back,body.preview .title,body.preview .typetoggle,body.preview .info,body.preview .ctrl{display:none!important}
+</style>
+</head>
+<body>
+  <div id="loader">making waves…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">〰️ Wave Motion</div>
+  <div class="typetoggle">
+    <button id="t-trans" class="on" onclick="setType('trans')">Transverse</button>
+    <button id="t-long" onclick="setType('long')">Longitudinal</button>
+  </div>
+  <div class="info">
+    <div class="rr"><span>Type</span><span class="v" id="o-type">Transverse</span></div>
+    <div class="rr"><span>Frequency f</span><span class="v" id="o-f">1.0 Hz</span></div>
+    <div class="rr"><span>Wavelength λ</span><span class="v" id="o-l">20 cm</span></div>
+    <div class="rr"><span>Speed v = fλ</span><span class="v s" id="o-v">20 cm/s</span></div>
+    <div class="rr"><span>Period T = 1/f</span><span class="v" id="o-t">1.0 s</span></div>
+    <div class="note" id="o-tip"><b>Transverse:</b> particles move ⟂ to the wave (water, light). The amber dot just bobs in place — energy travels, matter doesn't.</div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="row"><span class="name">Frequency</span><input type="range" id="f" min="0.2" max="2.4" step="0.1" value="1" oninput="upd()"><span class="val" id="f-v">1.0 Hz</span></div>
+    <div class="row"><span class="name">Wavelength</span><input type="range" id="l" min="8" max="44" step="1" value="20" oninput="upd()"><span class="val" id="l-v">20 cm</span></div>
+    <div class="row"><span class="name">Amplitude</span><input type="range" id="a" min="1" max="8" step="0.5" value="5" oninput="upd()"><span class="val" id="a-v">5</span></div>
+  </div></div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x0e1f33,120,220);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,500);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1b3656');gr.addColorStop(.55,'#11243a');gr.addColorStop(1,'#0a1626');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
+const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(18,34,22);scene.add(key);
+scene.add(new THREE.AmbientLight(0xffffff,.35));
+const grid=new THREE.GridHelper(120,24,0x2c4a6c,0x213a55);grid.position.y=-16;scene.add(grid);
+// particles (the medium)
+const N=64, X0=-36, X1=36, dx=(X1-X0)/(N-1);
+const pgeo=new THREE.SphereGeometry(1.05,14,12);
+const pmat=new THREE.MeshStandardMaterial({color:0x6fd3e6,emissive:0x18505e,emissiveIntensity:.5,roughness:.35});
+const hmat=new THREE.MeshStandardMaterial({color:0xffd23f,emissive:0xf6a623,emissiveIntensity:1,roughness:.3});
+const parts=[]; const HI=Math.round(N*0.28);
+for(let i=0;i<N;i++){const m=new THREE.Mesh(pgeo,i===HI?hmat:pmat);m.userData.x=X0+i*dx;scene.add(m);parts.push(m);}
+// connecting line (transverse)
+const lgeo=new THREE.BufferGeometry();const lpos=new Float32Array(N*3);lgeo.setAttribute('position',new THREE.BufferAttribute(lpos,3));
+const line=new THREE.Line(lgeo,new THREE.LineBasicMaterial({color:0x9fe6dd,transparent:true,opacity:.6}));scene.add(line);
+// guide for the highlighted particle (shows it stays at one x / oscillates about rest)
+const guide=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,20,6),new THREE.MeshBasicMaterial({color:0xf6a623,transparent:true,opacity:.35}));scene.add(guide);
+let type='trans', t=0;
+function setType(tp){type=tp;$('t-trans').classList.toggle('on',tp==='trans');$('t-long').classList.toggle('on',tp==='long');
+  line.visible=(tp==='trans');
+  $('o-tip').innerHTML = tp==='trans'
+    ? '<b>Transverse:</b> particles move ⟂ to the wave (water, light). The amber dot just bobs in place.'
+    : '<b>Longitudinal:</b> particles move along the wave — see the <b>compressions &amp; rarefactions</b> (sound).';
+  upd();}
+window.setType=setType;
+let A=5,L=20,F=1;
+function upd(){F=+$('f').value;L=+$('l').value;A=+$('a').value;
+  $('f-v').textContent=F.toFixed(1)+' Hz';$('l-v').textContent=L+' cm';$('a-v').textContent=A;
+  $('o-type').textContent=type==='trans'?'Transverse':'Longitudinal';
+  $('o-f').textContent=F.toFixed(1)+' Hz';$('o-l').textContent=L+' cm';$('o-v').textContent=(F*L).toFixed(0)+' cm/s';$('o-t').textContent=(1/F).toFixed(2)+' s';
+}
+window.upd=upd;
+const orbit={th:0.0,ph:1.16,R:96,tgt:new THREE.Vector3(0,0,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.5,1.45);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);t+=dt;
+  if(!orbit.drag)orbit.th+=dt*.04;applyCam();
+  const k=2*Math.PI/L, w=2*Math.PI*F;
+  for(let i=0;i<N;i++){const m=parts[i],rx=m.userData.x,ph=k*rx-w*t,d=A*Math.sin(ph);
+    if(type==='trans'){m.position.set(rx,d,0);} else {m.position.set(rx+d*0.7,0,0);}
+    if(type==='trans'){lpos[i*3]=rx;lpos[i*3+1]=d;lpos[i*3+2]=0;}}
+  if(type==='trans')lgeo.attributes.position.needsUpdate=true;
+  // guide tracks the highlighted particle's rest x
+  const hrx=parts[HI].userData.x;
+  if(type==='trans'){guide.visible=true;guide.rotation.set(0,0,0);guide.position.set(hrx,0,0);guide.scale.y=Math.max(.1,A/10);}
+  else{guide.visible=true;guide.rotation.set(0,0,Math.PI/2);guide.position.set(hrx,0,0);guide.scale.y=Math.max(.1,A*0.7/10);}
+  renderer.render(scene,camera);}
+if(PREVIEW){$('f').value=1.2;$('l').value=18;$('a').value=6;}
+upd();resize();applyCam();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
+</script>
+</body>
+</html>
