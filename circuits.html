@@ -15,8 +15,11 @@
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
   .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
   .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
-  .hint{position:fixed;top:54px;left:0;right:0;text-align:center;z-index:8;color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none}
-  .info{position:fixed;top:80px;right:14px;z-index:9;width:min(218px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .hint{position:fixed;top:92px;left:0;right:0;text-align:center;z-index:8;color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none}
+  .typetoggle{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 16px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:118px;right:14px;z-index:9;width:min(218px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
   .rr{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
   .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:17px}.rr .v.i{color:var(--teal)}
   .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
@@ -44,6 +47,10 @@
   <canvas id="gl"></canvas>
   <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
   <div class="title">⚡ Circuits &amp; Ohm's Law</div>
+  <div class="typetoggle">
+    <button id="b-series" class="on" onclick="setMode('series')">Series</button>
+    <button id="b-parallel" onclick="setMode('parallel')">Parallel</button>
+  </div>
   <div class="hint">drag to look around ↻</div>
   <div class="info">
     <div class="rr"><span>Wiring</span><span class="v" id="o-mode">Series</span></div>
@@ -56,10 +63,6 @@
   </div>
   <div class="ctrl"><div class="wrap2">
     <div class="topline">
-      <div class="seg" style="flex:1">
-        <button id="b-series" class="on" onclick="setMode('series')">Series</button>
-        <button id="b-parallel" onclick="setMode('parallel')">Parallel</button>
-      </div>
       <div class="seg"><button id="b-switch" class="sw on" onclick="toggleSwitch()">Switch: ON</button></div>
       <div class="stepper"><button onclick="addBulb(-1)">−</button><b id="b-count">1 bulb</b><button onclick="addBulb(1)">+</button></div>
     </div>
