@@ -84,9 +84,16 @@ const lgeo=new THREE.BufferGeometry();const lpos=new Float32Array(N*3);lgeo.setA
 const line=new THREE.Line(lgeo,new THREE.LineBasicMaterial({color:0x9fe6dd,transparent:true,opacity:.6}));scene.add(line);
 // guide for the highlighted particle (shows it stays at one x / oscillates about rest)
 const guide=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,20,6),new THREE.MeshBasicMaterial({color:0xf6a623,transparent:true,opacity:.35}));scene.add(guide);
+// labels + measure lines
+function labelSprite(text,color){const c=document.createElement('canvas');c.width=320;c.height=64;const g=c.getContext('2d');g.fillStyle=color||'#dfeaf5';g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,160,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(13,2.6,1);scene.add(s);return s;}
+const eqLine=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,76,6),new THREE.MeshBasicMaterial({color:0x9fb6cf,transparent:true,opacity:.45}));eqLine.rotation.z=Math.PI/2;scene.add(eqLine);
+const ampLine=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,1,6),new THREE.MeshBasicMaterial({color:0xf6a623}));scene.add(ampLine);
+const L_crest=labelSprite('crest','#bdeee6'),L_trough=labelSprite('trough','#bdeee6'),L_amp=labelSprite('amplitude','#ffd98a'),L_eq=labelSprite('equilibrium','#9fb6cf'),L_comp=labelSprite('compression','#ff9a8a'),L_rare=labelSprite('rarefaction','#8fd6e6');
+L_comp.visible=false;L_rare.visible=false;
 let type='trans', t=0;
 function setType(tp){type=tp;$('t-trans').classList.toggle('on',tp==='trans');$('t-long').classList.toggle('on',tp==='long');
   line.visible=(tp==='trans');
+  const tr=(tp==='trans');[eqLine,ampLine,L_crest,L_trough,L_amp,L_eq].forEach(o=>o.visible=tr);[L_comp,L_rare].forEach(o=>o.visible=!tr);
   $('o-tip').innerHTML = tp==='trans'
     ? '<b>Transverse:</b> particles move ⟂ to the wave (water, light). The amber dot just bobs in place.'
     : '<b>Longitudinal:</b> particles move along the wave — see the <b>compressions &amp; rarefactions</b> (sound).';
@@ -118,6 +125,13 @@ function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.
   const hrx=parts[HI].userData.x;
   if(type==='trans'){guide.visible=true;guide.rotation.set(0,0,0);guide.position.set(hrx,0,0);guide.scale.y=Math.max(.1,A/10);}
   else{guide.visible=true;guide.rotation.set(0,0,Math.PI/2);guide.position.set(hrx,0,0);guide.scale.y=Math.max(.1,A*0.7/10);}
+  // position the labels on the nearest crest / trough / compression / rarefaction
+  const lam=L, feat=(tp)=>{let x=(tp+w*t)/k;return x-Math.round((x+6)/lam)*lam;};
+  if(type==='trans'){const cx=feat(Math.PI/2),tx=feat(-Math.PI/2);
+    L_crest.position.set(cx,A+4,0);L_trough.position.set(tx,-A-4,0);
+    ampLine.position.set(cx,A/2,0);ampLine.scale.y=Math.max(.1,A);L_amp.position.set(cx-7,A/2,0);
+    L_eq.position.set(30,3,0);}
+  else{L_comp.position.set(feat(Math.PI),7,0);L_rare.position.set(feat(0),7,0);}
   renderer.render(scene,camera);}
 if(PREVIEW){$('f').value=1.2;$('l').value=18;$('a').value=6;}
 upd();resize();applyCam();tick();
