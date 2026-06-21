@@ -12,87 +12,115 @@
   body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:radial-gradient(60% 50% at 50% 22%,#23314d,transparent 60%),#0a1622}
   .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
   .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px}
-  .trait{position:fixed;top:48px;left:0;right:0;text-align:center;z-index:9;font-size:12px;color:var(--dim)}.trait b{color:var(--dom)}.trait i{color:var(--rec);font-style:normal}
-  .stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:96px 16px 220px}
+  .typetoggle{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .trait{position:fixed;top:92px;left:0;right:0;text-align:center;z-index:9;font-size:12px;color:var(--dim);padding:0 12px}.trait b{color:var(--dom)}.trait i{color:var(--rec);font-style:normal}
+  .stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:120px 16px 230px}
   .parents{display:flex;gap:30px;align-items:center}
   .parent{text-align:center}.parent .lbl{font-size:12px;color:var(--dim);margin-bottom:7px;font-weight:600}
   .alleles{display:flex;gap:6px}
-  .al{width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--ink);cursor:pointer;transition:transform .1s}
+  .al{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--ink);cursor:pointer;transition:transform .1s}
   .al:active{transform:scale(.92)}
   .cross{font-size:22px;color:var(--dim);align-self:center;margin-top:18px}
   .grid{display:grid;grid-template-columns:auto auto auto;gap:6px}
-  .gc{width:62px;height:62px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:22px;border-radius:12px}
+  .gc{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:20px;border-radius:12px}
   .gh{background:transparent;color:var(--dim);font-size:20px}
   .cell.dom{background:rgba(123,108,255,.3);color:#cdc6ff;border:1px solid rgba(123,108,255,.5)}
   .cell.rec{background:rgba(255,184,74,.26);color:#ffe0a8;border:1px solid rgba(255,184,74,.5)}
-  .info{position:fixed;top:84px;right:14px;z-index:9;width:min(212px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .cell.gA{background:rgba(255,107,107,.26);color:#ffc4c4;border:1px solid rgba(255,107,107,.5)}
+  .cell.gB{background:rgba(91,155,255,.26);color:#bcd4ff;border:1px solid rgba(91,155,255,.5)}
+  .cell.gAB{background:rgba(155,120,255,.3);color:#d8ccff;border:1px solid rgba(155,120,255,.55)}
+  .cell.gO{background:rgba(150,160,175,.22);color:#e6ebf0;border:1px solid rgba(150,160,175,.45)}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(214px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
   .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}.rr .v{font-family:'Fraunces',serif;font-weight:600}
-  .pheno{display:flex;gap:6px;margin-top:10px}
-  .pheno div{flex:1;text-align:center;border-radius:9px;padding:8px 4px;font-size:12px;font-weight:600}
-  .pheno .pd{background:rgba(123,108,255,.22);color:#cdc6ff}.pheno .pr{background:rgba(255,184,74,.2);color:#ffe0a8}
+  .pheno{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+  .pheno div{flex:1;min-width:42px;text-align:center;border-radius:9px;padding:7px 4px;font-size:11.5px;font-weight:600}
   .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
   .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
   .wrap2{max-width:560px;margin:0 auto;text-align:center}
   .hint{font-size:12px;color:var(--dim);margin-bottom:10px}
   .presets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-  .presets button{font-family:inherit;font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
+  .presets button{font-family:'Fraunces',serif;font-weight:600;font-size:14px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
   .presets button:hover{background:rgba(255,255,255,.13)}
 </style>
 </head>
 <body>
   <a class="back" href="index.html">← Dabble</a>
   <div class="title">🧬 Genetics — Punnett Square</div>
-  <div class="trait">Eye colour · <b>B</b> = brown (dominant) · <i>b</i> = blue (recessive)</div>
+  <div class="typetoggle">
+    <button id="t-eye" class="on" onclick="setMode('eye')">Eye colour</button>
+    <button id="t-blood" onclick="setMode('blood')">Blood group</button>
+  </div>
+  <div class="trait" id="trait"></div>
   <div class="stage">
     <div class="parents">
-      <div class="parent"><div class="lbl">Parent 1</div><div class="alleles"><button class="al" data-p="0" data-i="0">B</button><button class="al" data-p="0" data-i="1">b</button></div></div>
+      <div class="parent"><div class="lbl">Parent 1</div><div class="alleles"><button class="al" data-p="0" data-i="0"></button><button class="al" data-p="0" data-i="1"></button></div></div>
       <div class="cross">×</div>
-      <div class="parent"><div class="lbl">Parent 2</div><div class="alleles"><button class="al" data-p="1" data-i="0">B</button><button class="al" data-p="1" data-i="1">b</button></div></div>
+      <div class="parent"><div class="lbl">Parent 2</div><div class="alleles"><button class="al" data-p="1" data-i="0"></button><button class="al" data-p="1" data-i="1"></button></div></div>
     </div>
     <div class="grid" id="grid"></div>
   </div>
   <div class="info">
     <div class="rr"><span>Cross</span><span class="v" id="o-cross">—</span></div>
-    <div class="pheno"><div class="pd" id="o-pd">—</div><div class="pr" id="o-pr">—</div></div>
-    <div class="rr"><span>Genotype ratio</span><span class="v" id="o-geno" style="font-size:13px">—</span></div>
-    <div class="note" id="o-note">Tap any allele to switch it B↔b. Each parent passes <b>one</b> allele; the square shows every equally-likely combination.</div>
+    <div class="pheno" id="o-pheno"></div>
+    <div class="rr"><span>Genotype ratio</span><span class="v" id="o-geno" style="font-size:12.5px">—</span></div>
+    <div class="note" id="o-note">—</div>
   </div>
   <div class="ctrl"><div class="wrap2">
-    <div class="hint">Tap the letters above to change the parents, or pick a classic cross:</div>
-    <div class="presets">
-      <button onclick="preset('Bb','Bb')">Bb × Bb</button>
-      <button onclick="preset('Bb','bb')">Bb × bb</button>
-      <button onclick="preset('BB','bb')">BB × bb</button>
-      <button onclick="preset('Bb','BB')">Bb × BB</button>
-    </div>
+    <div class="hint" id="hint">Tap the letters above to change the parents, or pick a classic cross:</div>
+    <div class="presets" id="presets"></div>
   </div></div>
 
 <script>
 const $=id=>document.getElementById(id);
+let mode='eye';
 let P=[['B','b'],['B','b']];
-function toggle(p,i){P[p][i]=P[p][i]==='B'?'b':'B';render();}
-function preset(a,b){P=[[a[0],a[1]],[b[0],b[1]]];render();}
-window.preset=preset;
-function sortG(x,y){return [x,y].sort(function(a,b){return a<b?-1:a>b?1:0;}).join('');} // B before b
+const CFG={
+  eye:{alleles:['B','b'],col:{B:'#cdc6ff',b:'#ffe0a8'},order:['B','b'],
+    trait:'Eye colour · <b>B</b> = brown (dominant) · <i>b</i> = blue (recessive)',
+    presets:[['Bb','Bb'],['Bb','bb'],['BB','bb'],['Bb','BB']]},
+  blood:{alleles:['A','B','O'],col:{A:'#ff9b9b',B:'#8fb6ff',O:'#c2ccd6'},order:['A','B','O'],
+    trait:'Blood group · <b>Iᴬ (A)</b> &amp; <b>Iᴮ (B)</b> are <b>codominant</b> · <i>i (O)</i> is recessive',
+    presets:[['AO','BO'],['AB','OO'],['AA','BB'],['AO','AO']]}
+};
+function setMode(m){mode=m;$('t-eye').classList.toggle('on',m==='eye');$('t-blood').classList.toggle('on',m==='blood');
+  const pr=CFG[m].presets[0];P=[[pr[0][0],pr[0][1]],[pr[1][0],pr[1][1]]];
+  $('trait').innerHTML=CFG[m].trait;buildPresets();render();}
+window.setMode=setMode;
+function buildPresets(){const wrap=$('presets');wrap.innerHTML='';CFG[mode].presets.forEach(function(pr){const b=document.createElement('button');b.textContent=pr[0]+' × '+pr[1];b.onclick=function(){P=[[pr[0][0],pr[0][1]],[pr[1][0],pr[1][1]]];render();};wrap.appendChild(b);});}
+function nextAllele(a){const al=CFG[mode].alleles;return al[(al.indexOf(a)+1)%al.length];}
+function toggle(p,i){P[p][i]=nextAllele(P[p][i]);render();}
+function sortG(x,y){const o=CFG[mode].order;return [x,y].sort(function(a,b){return o.indexOf(a)-o.indexOf(b);}).join('');}
+function bloodGroup(combo){const hasA=combo.indexOf('A')>=0,hasB=combo.indexOf('B')>=0;if(hasA&&hasB)return'AB';if(hasA)return'A';if(hasB)return'B';return'O';}
 function render(){
-  // update allele buttons
-  document.querySelectorAll('.al').forEach(function(btn){const p=+btn.dataset.p,i=+btn.dataset.i;btn.textContent=P[p][i];btn.style.color=P[p][i]==='B'?'#cdc6ff':'#ffe0a8';});
-  // grid
+  document.querySelectorAll('.al').forEach(function(btn){const p=+btn.dataset.p,i=+btn.dataset.i;const a=P[p][i];btn.textContent=a;btn.style.color=CFG[mode].col[a];});
   const g=$('grid');g.innerHTML='';
-  const corner=document.createElement('div');corner.className='gc gh';corner.textContent='';g.appendChild(corner);
-  P[1].forEach(function(a){const h=document.createElement('div');h.className='gc gh';h.textContent=a;g.appendChild(h);});
-  const counts={};let dom=0;
-  P[0].forEach(function(a){const h=document.createElement('div');h.className='gc gh';h.textContent=a;g.appendChild(h);
-    P[1].forEach(function(b){const geno=sortG(a,b);const isDom=geno.indexOf('B')>=0;if(isDom)dom++;counts[geno]=(counts[geno]||0)+1;
-      const c=document.createElement('div');c.className='gc cell '+(isDom?'dom':'rec');c.textContent=geno;g.appendChild(c);});});
-  $('o-cross').textContent=P[0].slice().sort().join('')+' × '+P[1].slice().sort().join('');
-  $('o-pd').textContent='Brown '+dom+'/4';$('o-pr').textContent='Blue '+(4-dom)+'/4';
-  const order=['BB','Bb','bb'];$('o-geno').textContent=order.map(function(k){return (counts[k]||0);}).join(' : ')+'  (BB:Bb:bb)';
-  const ratio=dom===4?'all brown':dom===0?'all blue':dom===3?'3 brown : 1 blue':dom===2?'1:1 (half brown)':'1 brown : 3 blue';
-  $('o-note').innerHTML='Offspring: <b>'+ratio+'</b>. Each parent passes <b>one</b> allele at random; the 4 boxes are the equally-likely combinations.';
+  g.appendChild(Object.assign(document.createElement('div'),{className:'gc gh'}));
+  P[1].forEach(function(a){const h=document.createElement('div');h.className='gc gh';h.textContent=a;h.style.color=CFG[mode].col[a];g.appendChild(h);});
+  const counts={};let phen={};
+  P[0].forEach(function(a){const h=document.createElement('div');h.className='gc gh';h.textContent=a;h.style.color=CFG[mode].col[a];g.appendChild(h);
+    P[1].forEach(function(b){const geno=sortG(a,b);counts[geno]=(counts[geno]||0)+1;
+      const c=document.createElement('div');c.className='gc cell';c.textContent=geno;
+      if(mode==='eye'){const dom=geno.indexOf('B')>=0;c.className+=dom?' dom':' rec';phen[dom?'Brown':'Blue']=(phen[dom?'Brown':'Blue']||0)+1;}
+      else{const grp=bloodGroup(geno);c.className+=' g'+grp;phen[grp]=(phen[grp]||0)+1;}
+      g.appendChild(c);});});
+  $('o-cross').textContent=P[0].slice().sort(function(a,b){return CFG[mode].order.indexOf(a)-CFG[mode].order.indexOf(b);}).join('')+' × '+P[1].slice().sort(function(a,b){return CFG[mode].order.indexOf(a)-CFG[mode].order.indexOf(b);}).join('');
+  // phenotype chips
+  const ph=$('o-pheno');ph.innerHTML='';
+  const groups=mode==='eye'?[['Brown','dom'],['Blue','rec']]:[['A','gA'],['B','gB'],['AB','gAB'],['O','gO']];
+  groups.forEach(function(gp){const d=document.createElement('div');d.className=gp[1]==='dom'?'':'';d.textContent=gp[0]+' '+(phen[gp[0]]||0)+'/4';
+    const cmap={dom:'rgba(123,108,255,.22)',rec:'rgba(255,184,74,.2)',gA:'rgba(255,107,107,.22)',gB:'rgba(91,155,255,.22)',gAB:'rgba(155,120,255,.24)',gO:'rgba(150,160,175,.2)'};
+    d.style.background=cmap[gp[1]];d.style.color='#eaf1f7';ph.appendChild(d);});
+  // genotype ratio + note
+  if(mode==='eye'){const o=['BB','Bb','bb'];$('o-geno').textContent=o.map(function(k){return counts[k]||0;}).join(' : ')+'  (BB:Bb:bb)';
+    const dom=phen['Brown']||0;const ratio=dom===4?'all brown':dom===0?'all blue':dom===3?'3 brown : 1 blue':dom===2?'1 : 1':'1 brown : 3 blue';
+    $('o-note').innerHTML='Offspring: <b>'+ratio+'</b>. Each parent passes <b>one</b> allele at random; the 4 boxes are the equally-likely combinations.';}
+  else{const present=['A','B','AB','O'].filter(function(k){return phen[k];});$('o-geno').textContent=present.map(function(k){return k+' '+phen[k];}).join(' · ')||'—';
+    $('o-note').innerHTML='Blood groups from the cross: <b>'+present.join(', ')+'</b>. <b>Iᴬ</b> &amp; <b>Iᴮ</b> show together as <b>AB</b> (codominance); group <b>O</b> needs two <i>i</i> alleles.';}
 }
 document.querySelectorAll('.al').forEach(function(btn){btn.addEventListener('click',function(){toggle(+btn.dataset.p,+btn.dataset.i);});});
-render();
+setMode('eye');
 </script>
 </body>
 </html>

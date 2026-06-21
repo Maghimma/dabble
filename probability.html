@@ -11,6 +11,7 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
   body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #die{position:fixed;top:92px;left:50%;transform:translateX(-50%);width:200px;height:200px;z-index:4;display:none;pointer-events:none}
   .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
   .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
   .typetoggle{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
@@ -33,6 +34,7 @@
 </head>
 <body>
   <canvas id="gl"></canvas>
+  <canvas id="die"></canvas>
   <a class="back" href="index.html">← Dabble</a>
   <div class="title">🎲 Probability</div>
   <div class="typetoggle">
@@ -63,46 +65,30 @@
     <div id="ctrlTree" class="row"><span class="name">P(spinner = 🔴)</span><input type="range" id="p" min="5" max="95" step="5" value="50" oninput="draw()"><span class="val" id="p-v">0.50</span></div>
   </div></div>
 
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
 <script>
 const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
 let W,H,mode='exp';
-let counts=[0,0,0,0,0,0],total=0,lastRoll=0,dispFace=1,animEnd=0;
+let counts=[0,0,0,0,0,0],total=0,lastRoll=0;
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
 new ResizeObserver(resize).observe(cv);
 function setMode(m){mode=m;$('t-exp').classList.toggle('on',m==='exp');$('t-tree').classList.toggle('on',m==='tree');
   $('ctrlExp').style.display=m==='exp'?'flex':'none';$('ctrlTree').style.display=m==='tree'?'flex':'none';
-  $('infoExp').style.display=m==='exp'?'block':'none';$('infoTree').style.display=m==='tree'?'block':'none';draw();}
+  $('infoExp').style.display=m==='exp'?'block':'none';$('infoTree').style.display=m==='tree'?'block':'none';
+  $('die').style.display=m==='exp'?'block':'none';draw();}
 window.setMode=setMode;
-function roll(n){for(let i=0;i<n;i++){const r=1+Math.floor(Math.random()*6);counts[r-1]++;lastRoll=r;}total+=n;dispFace=lastRoll;animEnd=performance.now()+460;requestAnimationFrame(anim);}
+function roll(n){for(let i=0;i<n;i++){const r=1+Math.floor(Math.random()*6);counts[r-1]++;lastRoll=r;}total+=n;if(window.tumbleDie)window.tumbleDie(lastRoll);draw();}
 window.roll=roll;
-function anim(now){if(mode!=='exp')return;if(now<animEnd){dispFace=1+Math.floor(Math.random()*6);drawExp();requestAnimationFrame(anim);}else{dispFace=lastRoll;drawExp();}}
 function resetRolls(){counts=[0,0,0,0,0,0];total=0;lastRoll=0;draw();}
 window.resetRolls=resetRolls;
-function pip(x,y){ctx.fillStyle='#0a1622';ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fill();}
-function die3d(cx,cy,n){const animating=performance.now()<animEnd;const wob=animating?(Math.random()-0.5)*0.16:0;
-  ctx.save();ctx.translate(cx,cy);ctx.rotate(wob);ctx.translate(-cx,-cy);
-  const s=46,d=22,Lf=cx-s,Rf=cx+s,Tf=cy-s,Bf=cy+s;
-  ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(cx+8,Bf+22,s*0.95,11,0,0,7);ctx.fill();
-  // top face
-  ctx.fillStyle='#c4cedb';ctx.beginPath();ctx.moveTo(Lf,Tf);ctx.lineTo(Rf,Tf);ctx.lineTo(Rf+d,Tf-d);ctx.lineTo(Lf+d,Tf-d);ctx.closePath();ctx.fill();
-  // right face
-  ctx.fillStyle='#95a1b1';ctx.beginPath();ctx.moveTo(Rf,Tf);ctx.lineTo(Rf,Bf);ctx.lineTo(Rf+d,Bf-d);ctx.lineTo(Rf+d,Tf-d);ctx.closePath();ctx.fill();
-  // front face
-  const g=ctx.createLinearGradient(Lf,Tf,Rf,Bf);g.addColorStop(0,'#fbfdff');g.addColorStop(1,'#dbe5ef');ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(Lf,Tf,2*s,2*s,13);ctx.fill();ctx.strokeStyle='rgba(120,140,160,.4)';ctx.lineWidth=1;ctx.stroke();
-  const o=s*0.46;const P={1:[[0,0]],2:[[-o,-o],[o,o]],3:[[-o,-o],[0,0],[o,o]],4:[[-o,-o],[o,-o],[-o,o],[o,o]],5:[[-o,-o],[o,-o],[0,0],[-o,o],[o,o]],6:[[-o,-o],[o,-o],[-o,0],[o,0],[-o,o],[o,o]]};
-  (P[n]||[]).forEach(function(p2){pip(cx+p2[0],cy+p2[1]);});
-  ctx.restore();}
 function drawExp(){ctx.clearRect(0,0,W,H);const cx=W/2;
-  die3d(cx,H*0.30,dispFace||1);
-  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText(total?('last roll: '+lastRoll):'press Roll to start',cx,H*0.30+86);
-  // bar chart 1..6
-  const bw=Math.min(W-120,460),bl=cx-bw/2,base=H*0.82,bh=H*0.30,gap=bw/6;
+  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText(total?('last roll: '+lastRoll):'press Roll to start',cx,H*0.30+128);
+  const bw=Math.min(W-120,460),bl=cx-bw/2,base=H*0.84,bh=H*0.28,gap=bw/6;
   const theory=total/6;
   for(let i=0;i<6;i++){const x=bl+gap*i+gap*0.15,w=gap*0.7;const h=total?Math.min(bh,counts[i]/Math.max(total*0.32,1)*bh):0;
     ctx.fillStyle='#5b9bff';ctx.beginPath();ctx.roundRect(x,base-h,w,h,5);ctx.fill();
     ctx.fillStyle='rgba(234,241,247,.85)';ctx.font='600 13px Hanken Grotesk';ctx.fillText(''+(i+1),x+w/2,base+18);
     ctx.fillStyle='rgba(234,241,247,.6)';ctx.font='11px Hanken Grotesk';ctx.fillText(total?Math.round(counts[i]/total*100)+'%':'',x+w/2,base-h-7);}
-  // theoretical line
   if(total){const th=Math.min(bh,theory/Math.max(total*0.32,1)*bh);ctx.strokeStyle='#f6a623';ctx.setLineDash([6,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bl,base-th);ctx.lineTo(bl+bw,base-th);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle='#f6a623';ctx.textAlign='left';ctx.font='600 11px Hanken Grotesk';ctx.fillText('theoretical 1/6',bl+bw-92,base-th-6);}
   ctx.strokeStyle='rgba(234,241,247,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bl-6,base);ctx.lineTo(bl+bw,base);ctx.stroke();
@@ -116,17 +102,41 @@ function drawTree(){ctx.clearRect(0,0,W,H);const p=+$('p').value/100;$('p-v').te
   const yT=cy-sp,yB=cy+sp;
   branch(x0,cy,x1,yT,p.toFixed(2),'#ff7a7a');branch(x0,cy,x1,yB,(1-p).toFixed(2),'#7aa7ff');
   node(x1,yT,'🔴');node(x1,yB,'⚪');
-  const leaves=[[yT-sp2,'🔴',p,'#ff7a7a',true],[yT+sp2,'⚪',1-p,'#7aa7ff',false],[yB-sp2,'🔴',p,'#ff7a7a',true],[yB+sp2,'⚪',1-p,'#7aa7ff',false]];
-  const parents=[yT,yT,yB,yB],reds=[true,false,true,false];
-  leaves.forEach(function(L,i){branch(x1,parents[i],x2,L[0],L[2].toFixed(2),L[3]);});
-  // leaf combined probs
+  const leaves=[[yT-sp2,p,'#ff7a7a'],[yT+sp2,1-p,'#7aa7ff'],[yB-sp2,p,'#ff7a7a'],[yB+sp2,1-p,'#7aa7ff']];
+  const parents=[yT,yT,yB,yB];
+  leaves.forEach(function(L,i){branch(x1,parents[i],x2,L[0],L[1].toFixed(2),L[2]);});
   const combos=[['🔴🔴',p*p],['🔴⚪',p*(1-p)],['⚪🔴',(1-p)*p],['⚪⚪',(1-p)*(1-p)]];
-  leaves.forEach(function(L,i){node(x2,L[0],L[1]);ctx.fillStyle='rgba(234,241,247,.9)';ctx.font='600 13px Hanken Grotesk';ctx.textAlign='left';ctx.fillText(combos[i][0]+'  '+combos[i][1].toFixed(2),x2+22,L[0]+5);});
+  leaves.forEach(function(L,i){node(x2,L[0],'');ctx.fillStyle='rgba(234,241,247,.9)';ctx.font='600 13px Hanken Grotesk';ctx.textAlign='left';ctx.fillText(combos[i][0]+'  '+combos[i][1].toFixed(2),x2+22,L[0]+5);});
   ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('Spin 1',x1,cy-sp-sp2-22);ctx.fillText('Spin 2',x2,cy-sp-sp2-22);
   $('o-pp').textContent=(p*p).toFixed(2);$('o-p1').textContent=(2*p*(1-p)).toFixed(2);$('o-p0').textContent=((1-p)*(1-p)).toFixed(2);
 }
 function draw(){if(!W)return;if(mode==='exp')drawExp();else drawTree();}
 resize();
+</script>
+<script type="module">
+import * as THREE from 'three';
+const dc=document.getElementById('die');
+const rn=new THREE.WebGLRenderer({canvas:dc,antialias:true,alpha:true});rn.setPixelRatio(Math.min(devicePixelRatio,2));
+const sc=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(36,1,0.1,100);cam.position.set(1.5,1.7,5.4);cam.lookAt(0,0,0);
+sc.add(new THREE.HemisphereLight(0xffffff,0x3a4658,1.05));
+const dl=new THREE.DirectionalLight(0xffffff,1.25);dl.position.set(4,7,6);sc.add(dl);
+sc.add(new THREE.AmbientLight(0xffffff,.25));
+function faceTex(n){const c=document.createElement('canvas');c.width=c.height=160;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,160,160);gr.addColorStop(0,'#fdfeff');gr.addColorStop(1,'#dde6f0');g.fillStyle=gr;g.fillRect(0,0,160,160);g.strokeStyle='rgba(120,140,160,.35)';g.lineWidth=4;g.strokeRect(2,2,156,156);g.fillStyle='#15273e';const o=42,c2=80,P={1:[[0,0]],2:[[-o,-o],[o,o]],3:[[-o,-o],[0,0],[o,o]],4:[[-o,-o],[o,-o],[-o,o],[o,o]],5:[[-o,-o],[o,-o],[0,0],[-o,o],[o,o]],6:[[-o,-o],[o,-o],[-o,0],[o,0],[-o,o],[o,o]]};P[n].forEach(function(p){g.beginPath();g.arc(c2+p[0],c2+p[1],15,0,7);g.fill();});return new THREE.CanvasTexture(c);}
+const faceNum=[3,4,2,5,1,6];
+const mats=faceNum.map(function(n){return new THREE.MeshStandardMaterial({map:faceTex(n),roughness:.42,metalness:.04});});
+const cube=new THREE.Mesh(new THREE.BoxGeometry(2.2,2.2,2.2),mats);sc.add(cube);
+const numNormal={3:[1,0,0],4:[-1,0,0],2:[0,1,0],5:[0,-1,0],1:[0,0,1],6:[0,0,-1]};
+function targetQuat(v){const n=numNormal[v];const q=new THREE.Quaternion();q.setFromUnitVectors(new THREE.Vector3(n[0],n[1],n[2]).normalize(),new THREE.Vector3(0,0,1));return q;}
+let tumbling=false,tEnd=0,settleQ=targetQuat(1),vx=0,vy=0,vz=0;cube.quaternion.copy(settleQ);
+window.tumbleDie=function(v){tumbling=true;tEnd=performance.now()+780;settleQ=targetQuat(v);vx=(Math.random()*2-1)*17;vy=(Math.random()*2-1)*17;vz=(Math.random()*2-1)*17;};
+function dresize(){const s=dc.clientWidth||200;rn.setSize(s,s,false);}
+new ResizeObserver(dresize).observe(dc);dresize();
+let lt=performance.now();
+function tick(now){requestAnimationFrame(tick);const dt=Math.min((now-lt)/1000,.05);lt=now;
+  if(tumbling){if(now<tEnd){cube.rotation.x+=vx*dt;cube.rotation.y+=vy*dt;cube.rotation.z+=vz*dt;}else{cube.quaternion.slerp(settleQ,0.2);if(cube.quaternion.angleTo(settleQ)<0.02){cube.quaternion.copy(settleQ);tumbling=false;}}}
+  rn.render(sc,cam);}
+requestAnimationFrame(tick);
 </script>
 </body>
 </html>
