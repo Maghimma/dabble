@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Price Elasticity — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--demand:#5b9bff;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(228px,50vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}.rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:16px}.rr .v.p{color:var(--amber)}
+  .status{text-align:center;font-weight:700;font-size:14px;margin-top:11px;padding:7px;border-radius:9px;background:rgba(46,196,182,.14);color:var(--teal)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.55;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .wrap2 .name{flex:0 0 90px;font-weight:600;font-size:14px}
+  .wrap2 input{flex:1;accent-color:var(--amber);height:30px}
+  .wrap2 .val{flex:0 0 60px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--amber)}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">📊 Price Elasticity</div>
+  <div class="typetoggle">
+    <button id="t-el" class="on" onclick="setType('el')">Elastic (flat)</button>
+    <button id="t-in" onclick="setType('in')">Inelastic (steep)</button>
+  </div>
+  <div class="info">
+    <div class="rr"><span>Price</span><span class="v p" id="o-p">$40</span></div>
+    <div class="rr"><span>Quantity</span><span class="v" id="o-q">—</span></div>
+    <div class="rr"><span>PED</span><span class="v" id="o-ped">—</span></div>
+    <div class="rr"><span>Total revenue</span><span class="v" id="o-tr">—</span></div>
+    <div class="status" id="o-status">elastic</div>
+    <div class="note" id="o-note">PED = % change in quantity ÷ % change in price. The shaded box is <b>total revenue</b> (price × quantity).</div>
+  </div>
+  <div class="ctrl"><div class="wrap2"><span class="name">Price</span><input type="range" id="p" min="5" max="85" step="1" value="40" oninput="draw()"><span class="val" id="p-v">$40</span></div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');let W,H,type='el';
+function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
+new ResizeObserver(resize).observe(cv);
+const QMAX=100,PMAX=100;
+function plot(){const w=Math.min(W-110,540),h=Math.min(H-300,360),L=Math.max(60,(W-w)/2),T=110,B=T+h,R=L+w;return{L,R,T,B,w,h};}
+const mX=q=>{const p=plot();return p.L+q/QMAX*p.w;},mY=v=>{const p=plot();return p.B-v/PMAX*p.h;};
+function setType(t){type=t;$('t-el').classList.toggle('on',t==='el');$('t-in').classList.toggle('on',t==='in');draw();}
+window.setType=setType;
+function draw(){if(!W)return;const p=plot();ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(234,241,247,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.L,p.T);ctx.lineTo(p.L,p.B);ctx.lineTo(p.R,p.B);ctx.stroke();
+  ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='600 12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('Quantity →',(p.L+p.R)/2,p.B+28);ctx.save();ctx.translate(p.L-40,(p.T+p.B)/2);ctx.rotate(-Math.PI/2);ctx.fillText('Price →',0,0);ctx.restore();
+  // demand: P=a-b*Q
+  const a=type==='el'?70:118, b=type==='el'?0.62:1.9;
+  const P=+$('p').value;$('p-v').textContent='$'+P;
+  const Q=Math.max(0,(a-P)/b);
+  // TR rectangle
+  ctx.fillStyle='rgba(246,166,35,.2)';ctx.fillRect(p.L,mY(P),mX(Q)-p.L,p.B-mY(P));
+  // demand line
+  const q0=Math.min(a/b,QMAX),pAt0=a;ctx.strokeStyle='#5b9bff';ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(mX(0),mY(Math.min(a,PMAX)));ctx.lineTo(mX(q0),mY(Math.max(a-b*q0,0)));ctx.stroke();
+  ctx.fillStyle='#5b9bff';ctx.font='700 14px Hanken Grotesk';ctx.textAlign='left';ctx.fillText('Demand',mX(q0)-66,mY(Math.max(a-b*q0,0))-8);
+  // price + quantity guides
+  ctx.setLineDash([5,5]);ctx.strokeStyle='rgba(246,166,35,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.L,mY(P));ctx.lineTo(mX(Q),mY(P));ctx.lineTo(mX(Q),p.B);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#f6a623';ctx.beginPath();ctx.arc(mX(Q),mY(P),6,0,7);ctx.fill();
+  const ped=Q>0?(1/b)*(P/Q):99;const TR=P*Q;
+  $('o-p').textContent='$'+P;$('o-q').textContent=Math.round(Q);$('o-ped').textContent=ped.toFixed(2);$('o-tr').textContent='$'+Math.round(TR);
+  const cls=ped>1.05?'Elastic (PED > 1)':ped<0.95?'Inelastic (PED < 1)':'Unit elastic (PED = 1)';
+  $('o-status').textContent=cls;
+  $('o-note').innerHTML=ped>1.05?'Demand is <b>elastic</b>: quantity reacts a lot. Raising price <b>lowers</b> total revenue.':ped<0.95?'Demand is <b>inelastic</b>: quantity barely reacts. Raising price <b>raises</b> total revenue.':'<b>Unit elastic</b>: total revenue is at its maximum here.';
+}
+resize();
+</script>
+</body>
+</html>

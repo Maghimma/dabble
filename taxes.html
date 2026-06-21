@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Taxes &amp; Subsidies — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--demand:#5b9bff;--supply:#ff8f6b;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(232px,52vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:7px}.rr:first-child{margin-top:0}.rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:15px}.rr .v.c{color:#9fc4ff}.rr .v.pr{color:#ffb38f}.rr .v.g{color:var(--amber)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .wrap2 .name{flex:0 0 110px;font-weight:600;font-size:14px}
+  .wrap2 input{flex:1;accent-color:var(--amber);height:30px}
+  .wrap2 .val{flex:0 0 64px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--amber)}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">🏛️ Taxes &amp; Subsidies</div>
+  <div class="typetoggle">
+    <button id="t-tax" class="on" onclick="setType('tax')">Tax</button>
+    <button id="t-sub" onclick="setType('sub')">Subsidy</button>
+  </div>
+  <div class="info">
+    <div class="rr"><span>Price consumers pay</span><span class="v c" id="o-pc">—</span></div>
+    <div class="rr"><span>Price producers get</span><span class="v pr" id="o-pp">—</span></div>
+    <div class="rr"><span>Quantity</span><span class="v" id="o-q">—</span></div>
+    <div class="rr"><span id="o-glab">Govt revenue</span><span class="v g" id="o-gov">—</span></div>
+    <div class="note" id="o-note"></div>
+  </div>
+  <div class="ctrl"><div class="wrap2"><span class="name" id="amlab">Tax per unit</span><input type="range" id="amt" min="0" max="40" step="2" value="20" oninput="draw()"><span class="val" id="amt-v">$20</span></div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');let W,H,type='tax';
+function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
+new ResizeObserver(resize).observe(cv);
+const QMAX=100,PMAX=100;
+function plot(){const w=Math.min(W-110,540),h=Math.min(H-300,360),L=Math.max(60,(W-w)/2),T=110,B=T+h,R=L+w;return{L,R,T,B,w,h};}
+const mX=q=>{const p=plot();return p.L+q/QMAX*p.w;},mY=v=>{const p=plot();return p.B-v/PMAX*p.h;};
+function setType(t){type=t;$('t-tax').classList.toggle('on',t==='tax');$('t-sub').classList.toggle('on',t==='sub');$('amlab').textContent=t==='tax'?'Tax per unit':'Subsidy per unit';$('o-glab').textContent=t==='tax'?'Govt revenue':'Govt cost';draw();}
+window.setType=setType;
+function line(q1,p1,q2,p2,col,wd,dash){ctx.strokeStyle=col;ctx.lineWidth=wd||3.2;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(mX(q1),mY(p1));ctx.lineTo(mX(q2),mY(p2));ctx.stroke();ctx.setLineDash([]);}
+function draw(){if(!W)return;const p=plot();ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(234,241,247,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.L,p.T);ctx.lineTo(p.L,p.B);ctx.lineTo(p.R,p.B);ctx.stroke();
+  ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='600 12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('Quantity →',(p.L+p.R)/2,p.B+28);ctx.save();ctx.translate(p.L-40,(p.T+p.B)/2);ctx.rotate(-Math.PI/2);ctx.fillText('Price →',0,0);ctx.restore();
+  const Dint=90,Dslope=0.78,Sint=12,Sslope=0.78;
+  const t=+$('amt').value*(type==='tax'?1:-1);$('amt-v').textContent='$'+Math.abs(t);
+  // original equilibrium
+  const Q0=(Dint-Sint)/(Dslope+Sslope),P0=Sint+Sslope*Q0;
+  // new supply: Sint2 = Sint + t (tax shifts up, subsidy down)
+  const Sint2=Sint+t;
+  const Qn=Math.max(0,(Dint-Sint2)/(Dslope+Sslope));const Pc=Dint-Dslope*Qn;const Pp=Pc-t;
+  // demand + original supply (faint) + new supply
+  line(0,Dint,Dint/Dslope,0,'#5b9bff');
+  line(0,Sint,QMAX,Sint+Sslope*QMAX,'rgba(255,143,107,.35)',2,[5,5]);
+  line(0,Sint2,QMAX,Sint2+Sslope*QMAX,'#ff8f6b');
+  // govt revenue/cost rectangle (between Pc and Pp, 0..Qn)
+  ctx.fillStyle=type==='tax'?'rgba(246,166,35,.22)':'rgba(140,233,154,.2)';ctx.fillRect(mX(0),mY(Math.max(Pc,Pp)),mX(Qn)-mX(0),Math.abs(mY(Pp)-mY(Pc)));
+  // markers
+  ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(p.L,mY(Pc));ctx.lineTo(mX(Qn),mY(Pc));ctx.moveTo(p.L,mY(Pp));ctx.lineTo(mX(Qn),mY(Pp));ctx.moveTo(mX(Qn),mY(Pc));ctx.lineTo(mX(Qn),p.B);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#9fc4ff';ctx.beginPath();ctx.arc(mX(Qn),mY(Pc),5,0,7);ctx.fill();ctx.fillStyle='#ffb38f';ctx.beginPath();ctx.arc(mX(Qn),mY(Pp),5,0,7);ctx.fill();
+  const gov=Math.abs(t)*Qn;
+  $('o-pc').textContent='$'+Math.round(Pc);$('o-pp').textContent='$'+Math.round(Pp);$('o-q').textContent=Math.round(Qn)+' (was '+Math.round(Q0)+')';$('o-gov').textContent='$'+Math.round(gov);
+  $('o-note').innerHTML=type==='tax'
+    ?'A <b>tax</b> shifts supply <b>up</b> by the tax. Consumers pay more ($'+Math.round(Pc)+'), producers keep less ($'+Math.round(Pp)+'), quantity falls. The gap × quantity = <b>government revenue</b>.'
+    :'A <b>subsidy</b> shifts supply <b>down</b>. Consumers pay less ($'+Math.round(Pc)+'), producers receive more ($'+Math.round(Pp)+'), quantity rises. It <b>costs</b> the government.';
+}
+resize();
+</script>
+</body>
+</html>

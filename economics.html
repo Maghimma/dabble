@@ -54,7 +54,7 @@ let W,H,pc=false;
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
 new ResizeObserver(resize).observe(cv);
 const QMAX=100,PMAX=100;
-function plot(){const L=64,R=W-30,T=96,B=H-150;return{L,R,T,B,w:R-L,h:B-T};}
+function plot(){const w=Math.min(W-110,540),h=Math.min(H-300,360),L=Math.max(60,(W-w)/2),T=104,B=T+h,R=L+w;return{L,R,T,B,w,h};}
 const mX=q=>{const p=plot();return p.L+q/QMAX*p.w;};
 const mY=v=>{const p=plot();return p.B-v/PMAX*p.h;};
 function togglePC(){pc=!pc;$('pcBtn').classList.toggle('on',pc);$('pcBtn').textContent=pc?'ON':'OFF';$('prow').classList.toggle('on',pc);draw();}
