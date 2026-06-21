@@ -13,121 +13,116 @@
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
   .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
   .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
-  .eqn{position:fixed;top:48px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-size:16px}
-  .eqn b{color:var(--amber)}.eqn .p{color:var(--teal)}.eqn small{display:block;font-family:'Hanken Grotesk';font-size:11px;color:var(--dim);margin-top:2px}
-  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(236px,52vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
-  .yield{text-align:center}.yield .n{font-family:'Fraunces',serif;font-weight:600;font-size:38px;color:var(--teal);line-height:1}.yield .l{font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
-  .gauge{height:10px;border-radius:6px;background:linear-gradient(90deg,#f6a623,#2ec4b6);margin:12px 0 4px;position:relative}
-  .gauge .ndl{position:absolute;top:-4px;width:4px;height:18px;background:#fff;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,.6);transition:left .5s}
-  .gauge-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--dim)}
-  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px;min-height:54px}.note b{color:var(--amber)}.note .r{color:var(--teal)}
-  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
-  .wrap2{max-width:720px;margin:0 auto}
-  .row{display:flex;align-items:center;gap:14px;margin-top:9px}.row:first-child{margin-top:0}
+  .eqn{position:fixed;top:48px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-size:15px}.eqn b{color:#c98a4a}.eqn .p{color:#9fd0e0}.eqn small{display:block;font-family:'Hanken Grotesk';font-size:11px;color:var(--dim);margin-top:2px}
+  .info{position:fixed;top:100px;right:14px;z-index:9;width:min(232px,52vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .state{font-family:'Fraunces',serif;font-size:19px;text-align:center}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.55;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px;min-height:48px}.note b{color:var(--amber)}.note .r{color:#c98a4a}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:680px;margin:0 auto}
+  .row{display:flex;align-items:center;gap:14px;margin-top:10px}.row:first-child{margin-top:0}
   .row .name{flex:0 0 120px;font-weight:600;font-size:14px}
-  .row input[type=range]{flex:1;accent-color:var(--teal);height:28px}
-  .row .val{flex:0 0 74px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--teal)}
-  .seg button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
-  .seg button.on{background:var(--teal);color:#04302c;border-color:var(--teal)}
+  .row input{flex:1;height:30px}
+  #temp{accent-color:#ff7a4a}#pres{accent-color:#9fb6cf}
+  .row .val{flex:0 0 92px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--teal)}
   #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
   #loader.hide{opacity:0;pointer-events:none}
   body.preview .back,body.preview .title,body.preview .eqn,body.preview .info,body.preview .ctrl{display:none!important}
 </style>
 </head>
 <body>
-  <div id="loader">reaching equilibrium…</div>
+  <div id="loader">sealing the gas tube…</div>
   <canvas id="gl"></canvas>
   <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
   <div class="title">⚖️ Le Chatelier</div>
-  <div class="eqn"><b>N₂ + 3H₂</b> ⇌ <span class="p">2NH₃</span><small>forward reaction is exothermic (gives out heat) · 4 gas molecules → 2</small></div>
+  <div class="eqn"><span class="p">N₂O₄</span> (pale) ⇌ <b>2NO₂</b> (brown)<small>forward is endothermic (takes in heat) · 1 gas molecule → 2</small></div>
   <div class="info">
-    <div class="yield"><div class="n" id="o-yield">50%</div><div class="l">yield of NH₃</div></div>
-    <div class="gauge"><div class="ndl" id="ndl" style="left:50%"></div></div>
-    <div class="gauge-lbl"><span>← more reactants</span><span>more product →</span></div>
-    <div class="note" id="o-note">Change a condition below — the equilibrium <b>shifts</b> to oppose it (Le Chatelier's principle).</div>
+    <div class="state" id="o-state">—</div>
+    <div class="note" id="o-note">Heat the water bath or squeeze the syringe — watch the gas change colour as the equilibrium shifts.</div>
   </div>
   <div class="ctrl"><div class="wrap2">
-    <div class="row"><span class="name">Temperature</span><input type="range" id="temp" min="100" max="500" step="10" value="350" oninput="change('temp')"><span class="val" id="temp-v">350 °C</span></div>
-    <div class="row"><span class="name">Pressure</span><input type="range" id="pres" min="20" max="350" step="10" value="180" oninput="change('pres')"><span class="val" id="pres-v">180 atm</span></div>
-    <div class="row"><span class="name">Reactants added</span><input type="range" id="conc" min="1" max="10" step="1" value="5" oninput="change('conc')"><span class="val" id="conc-v">×5</span></div>
-    <div class="row"><span class="name">Catalyst</span><div class="seg"><button id="cat" onclick="toggleCat()">OFF</button></div><span class="val" id="cat-note" style="flex:1;text-align:left;color:var(--dim);font-family:Hanken Grotesk;font-size:12px;font-weight:500">no shift — just faster</span></div>
+    <div class="row"><span class="name">Temperature</span><input type="range" id="temp" min="0" max="100" step="2" value="50" oninput="change('temp')"><span class="val" id="temp-v">warm</span></div>
+    <div class="row"><span class="name">Pressure (syringe)</span><input type="range" id="pres" min="0" max="100" step="2" value="35" oninput="change('pres')"><span class="val" id="pres-v">low</span></div>
   </div></div>
 
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
 <script type="module">
-const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,150);l.style.color='#ff9a8a';}};
 window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
 import * as THREE from 'three';
-const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;const lerp=(a,b,t)=>a+(b-a)*t;
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
 const canvas=$('gl');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,90,190);
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,90,200);
 const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
-(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
-scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
-const key=new THREE.DirectionalLight(0xffffff,1.3);key.position.set(22,36,18);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=160;key.shadow.camera.left=-46;key.shadow.camera.right=46;key.shadow.camera.top=46;key.shadow.camera.bottom=-46;key.shadow.bias=-0.0004;scene.add(key);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#24405c');gr.addColorStop(.6,'#15293f');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x202a38,.9));
+const key=new THREE.DirectionalLight(0xffffff,1.35);key.position.set(16,30,18);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=120;key.shadow.camera.left=-34;key.shadow.camera.right=34;key.shadow.camera.top=34;key.shadow.camera.bottom=-34;key.shadow.bias=-0.0004;scene.add(key);
 scene.add(new THREE.AmbientLight(0xffffff,.28));
-const BX=22,BY=13,BZ=13;
-const bench=new THREE.Mesh(new THREE.BoxGeometry(100,4,62),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.9}));bench.position.y=-BY-4;bench.receiveShadow=true;scene.add(bench);
-const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.11,roughness:.05,side:THREE.DoubleSide}));scene.add(glass);
-const lid=new THREE.Mesh(new THREE.BoxGeometry(BX*2+1.5,1.4,BZ*2+1.5),new THREE.MeshStandardMaterial({color:0x9fb0c0,roughness:.4,metalness:.3}));lid.position.y=BY+0.7;lid.castShadow=true;scene.add(lid);
-scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0xdaf0fb,transparent:true,opacity:.5})));
-function spriteLabel(text,x,y,z,col){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.fillStyle=col;g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(13,3.2,1);s.position.set(x,y,z);scene.add(s);return s;}
-spriteLabel('reactants (N₂ + H₂)',-12,BY+3,0,'#ffcf8a');spriteLabel('product (NH₃)',13,BY+3,0,'#9fe6dd');
-const geo=new THREE.SphereGeometry(1.4,12,10);
-const matR=new THREE.MeshStandardMaterial({color:0xf6a623,roughness:.4,emissive:0xf6a623,emissiveIntensity:.25});
-const matP=new THREE.MeshStandardMaterial({color:0x2ec4b6,roughness:.4,emissive:0x2ec4b6,emissiveIntensity:.25});
-const N=44,parts=[];
-for(let i=0;i<N;i++){const m=new THREE.Mesh(geo,matR);m.castShadow=true;m.position.set(rnd()*2*(BX-2),rnd()*2*(BY-2),rnd()*2*(BZ-2));scene.add(m);parts.push({mesh:m,p:false,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(11)});}
-let cat=false, lastYield=50, vals={temp:350,pres:180,conc:5};
-function calcYield(){const T=+$('temp').value,P=+$('pres').value,C=+$('conc').value;
-  const S=-(T-300)/120 + (P-185)/110 + (C-5)/5.5;
-  return Math.round(clamp(50+S*24,6,94));}
-function targetProducts(y){return Math.round(N*y/100);}
+function lab(text,x,y,z,col){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2.4*w/46,2.4,1);s.position.set(x,y,z);scene.add(s);return s;}
+const FLOOR=-12;
+const bench=new THREE.Mesh(new THREE.BoxGeometry(70,4,44),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.9}));bench.position.y=FLOOR-2;bench.receiveShadow=true;scene.add(bench);
+// water bath beaker
+const BR=11,BH=15;
+const bath=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR,BH,48,1,true),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.14,roughness:.06,side:THREE.DoubleSide}));bath.position.y=FLOOR+BH/2;scene.add(bath);
+const bathBase=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR*.96,1.2,48),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.28}));bathBase.position.y=FLOOR+.6;scene.add(bathBase);
+const water=new THREE.Mesh(new THREE.CylinderGeometry(BR-.5,BR-.5,BH-3,40),new THREE.MeshStandardMaterial({color:0x4a90d9,transparent:true,opacity:.34,roughness:.2}));water.position.y=FLOOR+(BH-3)/2+.6;scene.add(water);
+lab('water bath',0,FLOOR-3.6,0,'#9fc4ff');
+// gas tube (sealed) standing in the bath
+const GR=3.6, gasFloor=FLOOR+1.5, tubeTop=22;
+const tube=new THREE.Mesh(new THREE.CylinderGeometry(GR+.5,GR+.5,tubeTop-gasFloor,40,1,true),new THREE.MeshStandardMaterial({color:0xdaf0fb,transparent:true,opacity:.14,roughness:.05,side:THREE.DoubleSide}));tube.position.y=(gasFloor+tubeTop)/2;scene.add(tube);
+const tubeBase=new THREE.Mesh(new THREE.CylinderGeometry(GR+.5,GR+.5,.8,40),new THREE.MeshStandardMaterial({color:0xdaf0fb,transparent:true,opacity:.3}));tubeBase.position.y=gasFloor;scene.add(tubeBase);
+// gas tint cylinder (recoloured by NO2 fraction); height tracks plunger
+const gas=new THREE.Mesh(new THREE.CylinderGeometry(GR,GR,1,32),new THREE.MeshStandardMaterial({color:0xb87a3a,transparent:true,opacity:.3,roughness:.4}));scene.add(gas);
+// plunger (syringe piston)
+const plunger=new THREE.Group();const disc=new THREE.Mesh(new THREE.CylinderGeometry(GR+.3,GR+.3,1.2,32),new THREE.MeshStandardMaterial({color:0x3a4654,roughness:.5}));plunger.add(disc);const rod=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,6,12),new THREE.MeshStandardMaterial({color:0x9fb0c0,metalness:.4,roughness:.4}));rod.position.y=3.6;plunger.add(rod);plunger.traverse(o=>o.castShadow=true);scene.add(plunger);
+lab('gas syringe',0,tubeTop+2.5,0,'#ffcf8a');
+// molecules
+const N=26,parts=[];const mNO2=new THREE.MeshStandardMaterial({color:0xb05a22,emissive:0x3a1808,emissiveIntensity:.4,roughness:.4});const mN2O4=new THREE.MeshStandardMaterial({color:0xcfe6ee,emissive:0x223038,emissiveIntensity:.25,roughness:.3});
+const pg=new THREE.SphereGeometry(.78,12,10);
+for(let i=0;i<N;i++){const m=new THREE.Mesh(pg,mN2O4);m.castShadow=true;m.position.set(rnd()*2*(GR-1),gasFloor+1+Math.random()*8,rnd()*2*(GR-1));scene.add(m);parts.push({m,no2:false,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(7)});}
+let lastF=0.5;
+function frac(){const T=+$('temp').value,P=+$('pres').value;return clamp(0.5+(T-50)/95-(P-50)/120,0.05,0.95);}
 function change(which){
-  $('temp-v').textContent=$('temp').value+' °C';$('pres-v').textContent=$('pres').value+' atm';$('conc-v').textContent='×'+$('conc').value;
-  const y=calcYield();$('o-yield').textContent=y+'%';$('ndl').style.left=y+'%';
-  const dir = y>lastYield?'right':(y<lastYield?'left':'same');
-  const word = dir==='right'?'<b class="r">RIGHT → more NH₃</b>':dir==='left'?'<b>LEFT → less NH₃</b>':'no change';
-  const why={
-    temp: (+$('temp').value> vals.temp)?'You <b>raised temperature</b>. The forward reaction is exothermic, so heat favours the <b>endothermic (reverse)</b> direction → shifts '+word:'You <b>lowered temperature</b>. Less heat favours the exothermic forward reaction → shifts '+word,
-    pres: (+$('pres').value> vals.pres)?'You <b>raised pressure</b>. The system shifts to the side with <b>fewer gas molecules (2)</b> → shifts '+word:'You <b>lowered pressure</b>. The system shifts to the side with <b>more gas molecules (4)</b> → shifts '+word,
-    conc:(+$('conc').value> vals.conc)?'You <b>added reactants</b>. The system shifts to <b>use them up</b> → '+word:'You <b>removed reactants</b>. The system shifts to <b>replace them</b> → '+word
-  };
-  if(which)$('o-note').innerHTML=why[which];
-  vals={temp:+$('temp').value,pres:+$('pres').value,conc:+$('conc').value};lastYield=y;
+  const T=+$('temp').value,P=+$('pres').value;
+  $('temp-v').textContent=T<25?'cold ❄️':T<55?'warm':'hot 🔥';$('pres-v').textContent=P<35?'low':P<65?'medium':'high';
+  const f=frac();const up=f>lastF+0.005,dn=f<lastF-0.005;
+  if(which==='temp')$('o-note').innerHTML=(T> (lastT??50))?'You <b>heated</b> it. The forward reaction is <b>endothermic</b>, so heat pushes it toward <b class="r">more NO₂ (browner)</b> → shifts right.':'You <b>cooled</b> it. Less heat favours the exothermic reverse → <b class="p" style="color:#9fd0e0">more N₂O₄ (paler)</b> → shifts left.';
+  else if(which==='pres')$('o-note').innerHTML=(P> (lastP??50))?'You <b>increased pressure</b>. The system shifts to the side with <b>fewer molecules (N₂O₄)</b> → <b class="p" style="color:#9fd0e0">paler</b>.':'You <b>lowered pressure</b>. It shifts to the side with <b>more molecules (NO₂)</b> → <b class="r">browner</b>.';
+  $('o-state').innerHTML=f>0.6?'<span style="color:#c98a4a">Brown — mostly NO₂</span>':f<0.4?'<span style="color:#9fd0e0">Pale — mostly N₂O₄</span>':'In between';
+  lastT=T;lastP=P;
 }
-window.change=change;
-function toggleCat(){cat=!cat;$('cat').classList.toggle('on',cat);$('cat').textContent=cat?'ON':'OFF';
-  $('o-note').innerHTML='A <b>catalyst</b> speeds up forward and reverse <b>equally</b> — equilibrium is reached faster but the <b>position (yield) does not change</b>.';}
-window.toggleCat=toggleCat;
-const R=1.4;
-function step(dt){const tgt=targetProducts(calcYield());let np=parts.filter(p=>p.p).length;
-  // nudge composition toward target
-  if(np<tgt){const c=parts.find(p=>!p.p);if(c&&Math.random()<0.25*(cat?2.4:1)){c.p=true;c.mesh.material=matP;}}
-  else if(np>tgt){const c=parts.find(p=>p.p);if(c&&Math.random()<0.25*(cat?2.4:1)){c.p=false;c.mesh.material=matR;}}
-  const sp=14;
-  for(const p of parts){const v=p.v,m=p.mesh.position;m.addScaledVector(v,dt);
-    if(m.x<-BX+R){m.x=-BX+R;v.x=Math.abs(v.x);}if(m.x>BX-R){m.x=BX-R;v.x=-Math.abs(v.x);}
-    if(m.y<-BY+R){m.y=-BY+R;v.y=Math.abs(v.y);}if(m.y>BY-R){m.y=BY-R;v.y=-Math.abs(v.y);}
-    if(m.z<-BZ+R){m.z=-BZ+R;v.z=Math.abs(v.z);}if(m.z>BZ-R){m.z=BZ-R;v.z=-Math.abs(v.z);}
-    const s=v.length();if(s>0.01)v.multiplyScalar(clamp(sp/s,0.8,1.25));
-  }
-}
-const orbit={th:0.3,ph:1.1,R:78,tgt:new THREE.Vector3(0,0,0),drag:false,px:0,py:0};
+let lastT=50,lastP=35;window.change=change;
+const orbit={th:0.4,ph:1.0,R:54,tgt:new THREE.Vector3(0,4,0),drag:false,px:0,py:0};
 function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
-function zoom(f){orbit.R=clamp(orbit.R*f,8,340);applyCam();}
-canvas.addEventListener('wheel',function(e){e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
-(function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:132px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
+function zoom(f){orbit.R=clamp(orbit.R*f,22,130);applyCam();}
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
+(function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:150px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
 canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
-addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.5,1.4);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.45,1.4);orbit.px=e.clientX;orbit.py=e.clientY;});
 addEventListener('pointerup',()=>orbit.drag=false);
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(canvas);
-const clock=new THREE.Clock();
-function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);if(!orbit.drag)orbit.th+=dt*.05;applyCam();step(dt);renderer.render(scene,camera);}
-if(PREVIEW){orbit.R=84;}
+const clock=new THREE.Clock();const brown=new THREE.Color(0xb87a3a),pale=new THREE.Color(0xdfeef4);
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);if(!orbit.drag)orbit.th+=dt*.05;applyCam();
+  const f=frac();lastF=lerp(lastF,f,0.05);
+  const P=+$('pres').value;const plungerY=lerp(tubeTop-1.5,gasFloor+7,P/100);
+  // gas column from gasFloor to plungerY
+  const gh=plungerY-gasFloor;gas.scale.y=gh;gas.position.y=gasFloor+gh/2;
+  gas.material.color.copy(pale).lerp(brown,lastF);gas.material.opacity=0.12+0.5*lastF;
+  plunger.position.y=plungerY+0.6;
+  // water bath colour by temp
+  const T=+$('temp').value;water.material.color.set(0x4a90d9).lerp(new THREE.Color(0xd9694a),clamp((T-20)/80,0,1));
+  // molecules: ratio -> NO2 fraction; bounce within gas column
+  const target=Math.round(N*lastF);let cur=parts.filter(p=>p.no2).length;
+  if(cur<target){const p=parts.find(x=>!x.no2);if(p&&Math.random()<.3){p.no2=true;p.m.material=mNO2;}}
+  else if(cur>target){const p=parts.find(x=>x.no2);if(p&&Math.random()<.3){p.no2=false;p.m.material=mN2O4;}}
+  for(const p of parts){const v=p.v,m=p.m.position;m.addScaledVector(v,dt);
+    const r=Math.hypot(m.x,m.z),lim=GR-1;if(r>lim){const nx=m.x/r,nz=m.z/r;m.x=nx*lim;m.z=nz*lim;const d=v.x*nx+v.z*nz;v.x-=2*d*nx;v.z-=2*d*nz;}
+    if(m.y<gasFloor+1){m.y=gasFloor+1;v.y=Math.abs(v.y);}if(m.y>plungerY-1){m.y=plungerY-1;v.y=-Math.abs(v.y);}
+    const s=v.length(),tgt=6+T*0.05;if(s>0.01)v.multiplyScalar(clamp(tgt/s,0.7,1.3));}
+  renderer.render(scene,camera);}
+if(PREVIEW){$('temp').value=85;orbit.R=58;}
 change();resize();applyCam();tick();
 setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>
