@@ -84,14 +84,14 @@ label('carbon electrodes',0,-7,9.5,'#9fb6cf',13);
 const prodC=label('',-9,FLOOR-3.5,0,'#ff9a9a');const prodA=label('',9,FLOOR-3.5,0,'#9fd0ff');
 const nameLab=label('',0,FLOOR-7,0,'#cfe0ee',20);
 // battery + wires
-const batt=new THREE.Group();batt.add(new THREE.Mesh(new THREE.BoxGeometry(12,4.5,4),mat(0x2e4a66)));batt.position.set(0,27,0);scene.add(batt);
-label('battery (d.c. supply)',0,31,0,'#cfe0ee',17);label('−',-6.4,27,0,'#ff9a9a',5);label('+',6.4,27,0,'#9fd0ff',5);
+const batt=new THREE.Group();batt.add(new THREE.Mesh(new THREE.BoxGeometry(12,4.5,4),mat(0x2e4a66)));batt.position.set(0,21,0);scene.add(batt);
+label('battery (d.c. supply)',0,25.5,0,'#cfe0ee',17);label('−',-6.4,21,0,'#ff9a9a',5);label('+',6.4,21,0,'#9fd0ff',5);
 function wireCurve(a,b){return new THREE.CatmullRomCurve3([a,new THREE.Vector3((a.x+b.x)/2,a.y+1,0),b]);}
-const wN=wireCurve(new THREE.Vector3(-5,27,0),new THREE.Vector3(-9,15,0)); // battery(−) -> cathode  (electrons go this way)
-const wP=wireCurve(new THREE.Vector3(9,15,0),new THREE.Vector3(5,27,0));   // anode -> battery(+)      (electrons go this way)
+const wN=wireCurve(new THREE.Vector3(-5,21,0),new THREE.Vector3(-9,15,0)); // battery(−) -> cathode  (electrons go this way)
+const wP=wireCurve(new THREE.Vector3(9,15,0),new THREE.Vector3(5,21,0));   // anode -> battery(+)      (electrons go this way)
 scene.add(new THREE.Mesh(new THREE.TubeGeometry(wN,24,0.4,6),mat(0x9fb6cf,{m:.5})));
 scene.add(new THREE.Mesh(new THREE.TubeGeometry(wP,24,0.4,6),mat(0x9fb6cf,{m:.5})));
-label('electron flow ▶',-7.6,23,0,'#ffe066',13);label('▶ electron flow',7.6,23,0,'#ffe066',13);
+label("electron flow ▶",-7.6,19,0,'#ffe066',13);label("▶ electron flow",7.6,19,0,'#ffe066',13);
 // electrons in wires
 const eGeoS=new THREE.SphereGeometry(0.5,8,8);const eMat=new THREE.MeshStandardMaterial({color:0xffe066,emissive:0xf6a623,emissiveIntensity:1});
 const elecs=[];[wN,wP].forEach(cv=>{for(let i=0;i<6;i++){const m=new THREE.Mesh(eGeoS,eMat);scene.add(m);elecs.push({m,cv,u:i/6});}});
