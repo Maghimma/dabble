@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Physics Lab — a virtual world (IGCSE Physics 0625)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0d1726;--ink:#eaf1f7;--muted:rgba(234,241,247,.6);--line:rgba(234,241,247,.16);
+    --acc:#5ad1c0;--acc2:#ffb454;--pink:#ff6b6b;--blue:#5b9bff;--panel:rgba(16,28,46,.78);}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);background:#0a1320;display:flex;justify-content:center;overflow:hidden}
+  .app{width:100%;max-width:560px;height:100vh;position:relative;background:#0a1320}
+  #gl{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+
+  .top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px}
+  .title{font-family:'Fraunces',serif;font-weight:600;font-size:18px;letter-spacing:.01em;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+  .title span{color:var(--acc)}
+  .tabs{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:5px;backdrop-filter:blur(12px)}
+  .tab{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--muted);background:none;border:none;padding:9px 13px;border-radius:10px;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .tab.on{background:var(--acc);color:#04261f}
+  @media(max-width:430px){.tab{font-size:12px;padding:8px 9px}}
+
+  .hint{position:absolute;top:120px;left:50%;transform:translateX(-50%);z-index:8;color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase;pointer-events:none;transition:opacity .5s}
+
+  /* info panel (graph / readouts) */
+  .info{position:absolute;top:118px;right:12px;z-index:9;width:min(232px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:13px;backdrop-filter:blur(12px);display:none}
+  .info.on{display:block}
+  .info h4{font-family:'Fraunces',serif;font-weight:600;font-size:15px;margin-bottom:8px}
+  .readout{display:flex;flex-direction:column;gap:7px;font-size:13px}
+  .rr{display:flex;justify-content:space-between;align-items:center}
+  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:16px}
+  .rr .v.acc{color:var(--acc)} .rr .v.amber{color:var(--acc2)} .rr .v.pink{color:var(--pink)} .rr .v.blue{color:var(--blue)}
+  .status{margin-top:9px;font-weight:600;font-size:13px;padding:7px 10px;border-radius:9px;text-align:center}
+  .status.ok{background:rgba(90,209,192,.16);color:var(--acc)} .status.warn{background:rgba(255,107,107,.16);color:var(--pink)} .status.neu{background:rgba(255,180,84,.16);color:var(--acc2)}
+  .info svg{width:100%;height:auto;background:rgba(255,255,255,.04);border-radius:8px;margin-top:4px}
+  .note{font-size:11px;color:var(--muted);line-height:1.4;margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}
+  .note b{color:var(--acc2)}
+
+  /* controls */
+  .ctrl{position:absolute;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);
+    border-radius:20px 20px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px);display:none}
+  .ctrl.on{display:block}
+  .ctrl .lab{font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;font-weight:600}
+  .row{display:flex;align-items:center;gap:12px;margin-top:8px}
+  .row .name{flex:0 0 96px;font-size:14px;font-weight:600}
+  .row input[type=range]{flex:1;accent-color:var(--acc);height:28px}
+  .row .val{flex:0 0 56px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--acc)}
+  .massbtns{display:flex;align-items:center;justify-content:center;gap:16px;margin:6px 0}
+  .mbtn{width:56px;height:56px;border-radius:18px;border:none;background:var(--acc);color:#04261f;font-family:'Fraunces',serif;font-weight:600;font-size:30px;cursor:pointer;line-height:1}
+  .mbtn:active{transform:scale(.92)} .mbtn.minus{background:#2a4258;color:var(--ink)}
+  .mcount{font-family:'Fraunces',serif;font-weight:600;font-size:18px;min-width:120px;text-align:center}
+  .seg{display:flex;gap:6px;margin-top:8px}
+  .seg button{flex:1;font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:9px;cursor:pointer}
+  .seg button.on{background:var(--acc2);color:#3a2400;border-color:var(--acc2)}
+  .reset{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--muted);background:none;border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;margin-top:8px;width:100%}
+
+  #loader{position:absolute;inset:0;background:#0a1320;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:30;transition:opacity .8s}
+  #loader.hide{opacity:0;pointer-events:none}
+  .lm{font-family:'Fraunces',serif;font-size:24px;color:var(--ink)} .ls{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+
+  /* help button + tutorial */
+  .help{position:absolute;top:13px;right:13px;z-index:12;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);font-family:'Fraunces',serif;font-weight:600;font-size:17px;cursor:pointer;backdrop-filter:blur(10px)}
+  .help:hover{border-color:var(--acc);color:var(--acc)}
+  .credit{font-size:11.5px;color:var(--muted);font-family:'Hanken Grotesk';letter-spacing:.04em;text-align:center;margin-top:-2px}
+  .credit b{color:var(--ink);font-weight:600}
+  .tut{position:absolute;inset:0;z-index:40;background:rgba(8,16,28,.8);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;padding:24px;animation:fade .35s}
+  .tut.on{display:flex}@keyframes fade{from{opacity:0}to{opacity:1}}
+  .tut-card{position:relative;background:linear-gradient(160deg,#1a2e49,#0e1c30);border:1px solid var(--line);border-radius:24px;padding:32px 24px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 26px 64px rgba(0,0,0,.55)}
+  .tut-skip{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer}
+  .tut-skip:hover{color:var(--ink)}
+  .tut-icon{font-size:62px;display:inline-block;animation:tbob 2.6s ease-in-out infinite}@keyframes tbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .tut-card h3{font-family:'Fraunces',serif;font-weight:600;font-size:23px;margin-top:6px;color:var(--ink)}
+  .tut-card p{font-size:14.5px;color:rgba(234,241,247,.78);line-height:1.55;margin-top:10px;min-height:70px}
+  .tut-card p b{color:var(--acc);font-weight:600}
+  .tut-dots{display:flex;justify-content:center;gap:7px;margin:14px 0 16px}
+  .tut-dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:all .3s}
+  .tut-dots i.on{background:var(--acc);width:18px;border-radius:4px}
+  .tut-nav{display:flex;gap:10px}
+  .tut-nav button{flex:1;font-family:'Hanken Grotesk';font-weight:600;font-size:15px;border:none;border-radius:13px;padding:12px;cursor:pointer}
+  .tut-back{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line)}
+  .tut-next{background:var(--acc);color:#04261f}
+  .tut-next:active,.tut-back:active{transform:scale(.97)}
+
+  /* ---- mobile ---- */
+  @media(max-width:560px){
+    .top{padding:10px 8px;gap:7px}
+    .title{font-size:16px}
+    .tabs{flex-wrap:wrap;justify-content:center;gap:5px;padding:4px}
+    .tab{font-size:12px;padding:7px 10px}
+    .help{top:10px;right:10px;width:30px;height:30px;font-size:15px}
+    .info{width:min(170px,50vw);top:152px;right:8px;padding:11px}
+    .info h4{font-size:13px;margin-bottom:6px}
+    .info .readout{font-size:12px;gap:5px} .info .rr .v{font-size:14px}
+    .info .status{font-size:12px;padding:6px 8px}
+    .info .note{font-size:10px;margin-top:7px;padding-top:6px}
+    .ctrl{padding:11px 12px calc(13px + env(safe-area-inset-bottom))}
+    .ctrl .row .name{flex-basis:78px;font-size:13px}
+    .mbtn{width:50px;height:50px;font-size:26px}
+    .seg button{font-size:11.5px;padding:8px 6px}
+    .info{top:178px}
+  }
+
+  /* practice */
+  .practice-btn{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:#04261f;background:var(--acc);border:none;border-radius:999px;padding:8px 18px;cursor:pointer;box-shadow:0 4px 14px -4px rgba(90,209,192,.5)}
+  .practice-btn:active{transform:scale(.97)}
+  .ov{position:fixed;inset:0;max-width:480px;margin:0 auto;background:rgba(8,16,28,.82);backdrop-filter:blur(6px);display:none;flex-direction:column;justify-content:center;align-items:center;padding:24px;z-index:60;animation:fade .3s}
+  .ov.on{display:flex}
+  .prac-card{position:relative;background:linear-gradient(160deg,#1a2e49,#0e1c30);border:1px solid var(--line);border-radius:22px;padding:26px 20px 20px;max-width:390px;width:100%;box-shadow:0 26px 64px rgba(0,0,0,.55);max-height:92vh;overflow:auto}
+  .prac-head{font-size:12px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px}
+  .prac-head b{color:var(--acc)}
+  .prac-q{font-family:'Fraunces',serif;font-size:18px;line-height:1.35;color:var(--ink);margin-bottom:14px}
+  .prac-opt{display:block;width:100%;text-align:left;font-family:'Hanken Grotesk';font-size:14px;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+  .prac-opt:hover{border-color:var(--acc)}
+  .prac-opt.correct{background:rgba(90,209,192,.18);border-color:var(--acc);color:#bff3ec}
+  .prac-opt.wrong{background:rgba(255,107,107,.16);border-color:var(--pink);color:#ffc9c9}
+  .prac-num{display:flex;gap:8px;align-items:center}
+  .prac-num input{flex:1;min-width:0;font-family:'Hanken Grotesk';font-size:16px;padding:11px 12px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink)}
+  .prac-num span{color:var(--muted);font-size:14px;min-width:28px}
+  .prac-fb{font-size:13.5px;line-height:1.5;margin-top:12px;color:var(--muted)}
+  .prac-fb.ok{color:var(--acc)} .prac-fb.no{color:#ffb0a0}
+  .pbtn{font-family:'Hanken Grotesk';font-weight:600;font-size:15px;border:none;border-radius:13px;padding:12px;background:var(--acc);color:#04261f;cursor:pointer;width:100%}
+  .pbtn.small{width:auto;padding:11px 16px;font-size:14px}
+  .pbtn:active{transform:scale(.98)}
+  /* interactive challenge banner */
+  .chal{position:fixed;top:150px;left:50%;transform:translateX(-50%);z-index:13;width:min(420px,94vw);background:var(--panel);border:1px solid var(--acc);border-radius:16px;padding:14px 16px;backdrop-filter:blur(12px);display:none;box-shadow:0 16px 40px -16px rgba(0,0,0,.55)}
+  .chal.on{display:block}
+  .chal-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .chal-q{font-family:'Fraunces',serif;font-size:15px;line-height:1.3;color:var(--ink)}
+  .chal-x{background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;line-height:1}
+  .chal-live{font-family:'Fraunces',serif;font-size:20px;color:var(--acc);margin-top:8px}
+  .chal-live b{color:var(--ink)}
+  .chal-step2{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .chal-step2 input{flex:1;min-width:0;font-size:16px;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink)}
+  .chal-fb{font-size:13px;line-height:1.5;margin-top:10px;color:var(--muted)}
+  .chal-fb.ok{color:var(--acc)} .chal-fb.no{color:#ffb0a0}
+</style>
+</head>
+<body data-lock="hooke">
+<div class="app" id="app">
+  <div id="loader"><div class="lm">⚙ Physics Lab</div><div class="ls">setting up the apparatus…</div></div>
+  <canvas id="gl"></canvas>
+  <button class="help" id="helpBtn" title="How to use" onclick="TUT.open()">?</button>
+  <div class="tut" id="tutorial">
+    <div class="tut-card">
+      <button class="tut-skip" onclick="TUT.skip()">Skip ✕</button>
+      <div class="tut-icon" id="tut-icon">🔬</div>
+      <h3 id="tut-title"></h3>
+      <p id="tut-text"></p>
+      <div class="tut-dots" id="tut-dots"></div>
+      <div class="tut-nav">
+        <button class="tut-back" id="tut-back" onclick="TUT.prev()">Back</button>
+        <button class="tut-next" id="tut-next" onclick="TUT.next()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chal" id="chal">
+    <div class="chal-row"><span class="chal-q" id="chal-q"></span><button class="chal-x" onclick="CHAL.stop()">✕</button></div>
+    <div class="chal-live" id="chal-live"></div>
+    <div class="chal-step2" id="chal-step2" style="display:none">
+      <input type="number" id="chal-input" step="any" placeholder="k in N/m" />
+      <button class="pbtn small" onclick="CHAL.checkK()">Check</button>
+    </div>
+    <div class="chal-fb" id="chal-fb"></div>
+  </div>
+
+  <div class="top">
+    <div class="title">Virtual <span>Physics Lab</span></div>
+    <div class="credit">made by <b>Maghimma</b></div>
+    <div class="tabs">
+      <button class="tab on" data-topic="hooke">🪝 Hooke</button>
+      <button class="tab" data-topic="moments">⚖️ Moments</button>
+      <button class="tab" data-topic="cog">📦 Gravity</button>
+      <button class="tab" data-topic="pressure">💧 Pressure</button>
+    </div>
+  </div>
+  <div class="hint" id="hint">drag to look around ↻</div>
+
+  <!-- INFO PANELS -->
+  <div class="info on" id="info-hooke">
+    <h4>Force–extension</h4>
+    <div id="hooke-graph"></div>
+    <div class="readout" style="margin-top:8px">
+      <div class="rr"><span>Load (weight)</span><span class="v amber" id="h-force">0 N</span></div>
+      <div class="rr"><span>Extension</span><span class="v acc" id="h-ext">0 cm</span></div>
+      <div class="rr"><span>Spring constant k</span><span class="v blue" id="h-k">—</span></div>
+    </div>
+    <div class="status ok" id="h-status">Add masses to begin</div>
+    <div class="note"><b>Exam:</b> the straight line through the origin shows extension ∝ load (Hooke's law). Where it starts to curve = the <b>limit of proportionality</b>.</div>
+  </div>
+
+  <div class="info" id="info-moments">
+    <h4>Principle of moments</h4>
+    <div class="readout">
+      <div class="rr"><span>Anticlockwise (left)</span><span class="v blue" id="m-acw">0 N·m</span></div>
+      <div class="rr"><span>Clockwise (right)</span><span class="v amber" id="m-cw">0 N·m</span></div>
+    </div>
+    <div class="status neu" id="m-status">Set the weights</div>
+    <div class="note"><b>Exam:</b> the beam balances when <b>sum of clockwise moments = sum of anticlockwise moments</b>. Moment = force × perpendicular distance from pivot.</div>
+  </div>
+
+  <div class="info" id="info-cog">
+    <h4>Stability</h4>
+    <div class="readout">
+      <div class="rr"><span>Tilt angle</span><span class="v acc" id="c-angle">0°</span></div>
+      <div class="rr"><span>Topples at</span><span class="v amber" id="c-limit">—</span></div>
+      <div class="rr"><span>Equilibrium</span><span class="v blue" id="c-type">Stable</span></div>
+    </div>
+    <div class="status ok" id="c-status">Stable</div>
+    <div class="note"><b>Exam:</b> an object topples once its <b>centre of gravity</b> passes beyond the edge of its base. Three types: <b>stable</b> (CoG rises when tilted), <b>unstable</b> (CoG falls), <b>neutral</b> (CoG stays level — a ball).</div>
+  </div>
+
+  <div class="info" id="info-pressure">
+    <h4>Pressure</h4>
+    <div class="readout">
+      <div class="rr"><span>Probe depth</span><span class="v acc" id="p-depth">0.0 m</span></div>
+      <div class="rr"><span>Liquid pressure</span><span class="v amber" id="p-liq">0 kPa</span></div>
+      <div class="rr"><span>Total (with air)</span><span class="v" id="p-total">101 kPa</span></div>
+      <div class="rr"><span>Box on sand</span><span class="v blue" id="p-box">100 Pa</span></div>
+    </div>
+    <div class="status ok" id="p-status">Move the probe down — pressure rises with depth</div>
+    <div class="note"><b>Exam:</b> Δp = ρg∆h — pressure grows with depth &amp; density, acts in all directions, and ignores the container shape. Also p = F/A: small area → big pressure.</div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="ctrl on" id="ctrl-hooke">
+    <div class="lab">Hang 100 g masses on the spring</div>
+    <div class="massbtns">
+      <button class="mbtn minus" onclick="LAB.hooke.add(-1)">−</button>
+      <span class="mcount" id="h-count">0 masses · 0 g</span>
+      <button class="mbtn" onclick="LAB.hooke.add(1)">+</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="reset" onclick="LAB.hooke.unload()">Remove all masses ↓</button>
+      <button class="reset" onclick="LAB.hooke.reset()">New spring (start over) ↺</button>
+    </div>
+    <button class="practice-btn" style="width:100%;margin-top:9px" onclick="CHAL.start()">🎯 Try a challenge</button>
+  </div>
+
+  <div class="ctrl" id="ctrl-moments">
+    <div class="lab">Pick an object, then stack it on a side</div>
+    <div class="seg" id="mom-type">
+      <button class="on" data-t="apple" onclick="LAB.moments.type('apple',this)">🍎 Apple · 1N</button>
+      <button data-t="disc" onclick="LAB.moments.type('disc',this)">⬤ Disc · 2N</button>
+      <button data-t="block" onclick="LAB.moments.type('block',this)">▭ Block · 3N</button>
+    </div>
+    <div class="row" style="gap:8px;margin-top:9px">
+      <button class="reset" style="flex:1" onclick="LAB.moments.add('l')">＋ Left (<span id="m-lcount">0 N</span>)</button>
+      <button class="reset" style="flex:1" onclick="LAB.moments.add('r')">＋ Right (<span id="m-rcount">0 N</span>)</button>
+    </div>
+    <div class="row"><span class="name">Left dist</span><input type="range" id="m-ld" min="1" max="6" value="3" oninput="LAB.moments.update()"><span class="val" id="m-ld-v">0.3 m</span></div>
+    <div class="row"><span class="name">Right dist</span><input type="range" id="m-rd" min="1" max="6" value="3" oninput="LAB.moments.update()"><span class="val" id="m-rd-v">0.3 m</span></div>
+    <button class="reset" onclick="LAB.moments.clear()">Clear all ↺</button>
+  </div>
+
+  <div class="ctrl" id="ctrl-cog">
+    <div class="lab">Tilt the object until it topples</div>
+    <div class="row"><span class="name">Tilt</span><input type="range" id="c-tilt" min="0" max="60" value="0" oninput="LAB.cog.update()"><span class="val" id="c-tilt-v">0°</span></div>
+    <div class="lab" style="margin-top:6px">Shape</div>
+    <div class="seg" id="cog-shape">
+      <button class="on" data-shape="tallnarrow" onclick="LAB.cog.shape('tallnarrow',this)">Tall &amp; narrow</button>
+      <button data-shape="shortwide" onclick="LAB.cog.shape('shortwide',this)">Short &amp; wide</button>
+      <button data-shape="ball" onclick="LAB.cog.shape('ball',this)">⚪ Ball</button>
+    </div>
+    <button class="reset" onclick="LAB.cog.reset()">Stand it back up ↺</button>
+  </div>
+
+  <div class="ctrl" id="ctrl-pressure">
+    <div class="lab">Liquid pressure — drag the probe down</div>
+    <div class="row"><span class="name">Depth</span><input type="range" id="p-depthr" min="0" max="50" value="0" oninput="LAB.pressure.update()"><span class="val" id="p-depthr-v">0.0 m</span></div>
+    <div class="lab" style="margin-top:6px">Liquid (denser = more pressure)</div>
+    <div class="seg" id="p-liquid">
+      <button class="on" data-d="1000" onclick="LAB.pressure.liquid(1000,this)">Water</button>
+      <button data-d="1025" onclick="LAB.pressure.liquid(1025,this)">Seawater</button>
+      <button data-d="800" onclick="LAB.pressure.liquid(800,this)">Oil</button>
+    </div>
+    <div class="lab" style="margin-top:8px">Box on sand — p = force ÷ area</div>
+    <div class="row"><span class="name">Force</span><input type="range" id="p-force" min="10" max="200" step="10" value="60" oninput="LAB.pressure.fa()"><span class="val" id="p-force-v">60 N</span></div>
+    <div class="row"><span class="name">Contact area</span><input type="range" id="p-area" min="2" max="100" value="60" oninput="LAB.pressure.fa()"><span class="val" id="p-area-v">0.60 m²</span></div>
+  </div>
+</div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.classList.remove('hide');const s=l.querySelector('.ls');if(s){s.textContent=String(m).slice(0,140);s.style.color='#ff9a8a';}}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error||e.filename)));
+window.addEventListener('unhandledrejection',e=>__err('PROMISE: '+(e.reason&&e.reason.message||e.reason)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+/* ===== scene ===== */
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16273f,55,110);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);
+  gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#16273f');gr.addColorStop(1,'#0e1c30');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,0.9));
+const key=new THREE.DirectionalLight(0xffffff,1.4);key.position.set(16,30,18);key.castShadow=true;key.shadow.mapSize.set(1024,1024);
+key.shadow.camera.near=1;key.shadow.camera.far=90;key.shadow.camera.left=-30;key.shadow.camera.right=30;key.shadow.camera.top=30;key.shadow.camera.bottom=-30;key.shadow.bias=-0.0008;scene.add(key);
+scene.add(new THREE.AmbientLight(0xffffff,0.3));
+// floor
+const floor=new THREE.Mesh(new THREE.CylinderGeometry(40,40,1,56),new THREE.MeshStandardMaterial({color:0x223550,roughness:.95}));floor.position.y=-0.5;floor.receiveShadow=true;scene.add(floor);
+const gridH=new THREE.GridHelper(60,30,0x3a5a82,0x2a4060);gridH.position.y=0.02;scene.add(gridH);
+
+function mat(color,o={}){return new THREE.MeshStandardMaterial({color,roughness:o.rough??0.6,metalness:o.metal??0.1,...(o.emissive?{emissive:o.emissive,emissiveIntensity:o.ei??0.4}:{})});}
+function box(w,h,d,color,o={}){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,o));m.castShadow=true;m.receiveShadow=true;return m;}
+function cyl(rt,rb,h,color,seg=16,o={}){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat(color,o));m.castShadow=true;m.receiveShadow=true;return m;}
+
+/* ===== camera orbit ===== */
+const orbit={theta:0.6,phi:1.05,R:34,tgt:new THREE.Vector3(0,8,0),drag:false,px:0,py:0};
+function applyCam(){const{theta,phi,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(phi)*Math.sin(theta),tgt.y+R*Math.cos(phi),tgt.z+R*Math.sin(phi)*Math.cos(theta));camera.lookAt(tgt);}
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;$('hint').style.opacity=0;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.theta-=(e.clientX-orbit.px)*0.006;orbit.phi=clamp(orbit.phi-(e.clientY-orbit.py)*0.005,0.45,1.45);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();fitCam();}
+new ResizeObserver(resize).observe(canvas);
+
+/* ===== three topic groups ===== */
+const gHooke=new THREE.Group(),gMoments=new THREE.Group(),gCog=new THREE.Group(),gPressure=new THREE.Group();
+scene.add(gHooke,gMoments,gCog,gPressure);
+
+/* ---------- HOOKE'S LAW ---------- */
+const HOOKE={armY:14,L0:4,cap:9,n:0,peak:0,curLen:4,targetLen:4,spring:null,hanger:null,discs:[]};
+function springGeom(len){const pts=[],turns=8,r=0.8,N=turns*10;for(let i=0;i<=N;i++){const f=i/N,a=f*turns*Math.PI*2;pts.push(new THREE.Vector3(Math.cos(a)*r,-f*len,Math.sin(a)*r));}
+  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),N,0.13,6,false);}
+function buildHooke(){
+  const base=cyl(3,3.4,0.6,0x44607f);base.position.y=0.3;gHooke.add(base);
+  const rod=cyl(0.35,0.35,15,0x6b86a6,12);rod.position.set(-2.6,7.5,0);gHooke.add(rod);
+  const arm=box(3.4,0.5,0.6,0x6b86a6);arm.position.set(-1.1,HOOKE.armY,0);gHooke.add(arm);
+  const ring=cyl(0.5,0.5,0.3,0x8aa6c6,12);ring.rotation.x=Math.PI/2;ring.position.set(0,HOOKE.armY-0.3,0);gHooke.add(ring);
+  HOOKE.spring=new THREE.Mesh(springGeom(HOOKE.L0),mat(0xcfd8e6,{metal:.4,rough:.35}));HOOKE.spring.castShadow=true;HOOKE.spring.position.set(0,HOOKE.armY-0.4,0);gHooke.add(HOOKE.spring);
+  HOOKE.hanger=new THREE.Group();
+  const hook=cyl(0.12,0.12,0.8,0xb9c4d4,10);hook.position.y=0.4;HOOKE.hanger.add(hook);
+  const plate=cyl(0.9,0.9,0.18,0x8aa6c6,16);plate.position.y=0;HOOKE.hanger.add(plate);
+  gHooke.add(HOOKE.hanger);
+  for(let i=0;i<HOOKE.cap;i++){const d=cyl(0.85,0.85,0.42,0xffb454,16,{emissive:0x5a3a00,ei:.25});d.visible=false;HOOKE.discs.push(d);HOOKE.hanger.add(d);}
+  HOOKE.curLen=HOOKE.L0;updateHooke();applyHookeLen(HOOKE.curLen);
+}
+function applyHookeLen(len){HOOKE.spring.geometry.dispose();HOOKE.spring.geometry=springGeom(len);
+  const bottom=HOOKE.armY-0.4-len;HOOKE.hanger.position.set(0,bottom-0.4,0);}
+function extCm(W){return W<=5?W*2:10+(W-5)*4;}      // loading curve; limit of proportionality at 5 N (10 cm)
+function residualCm(mW){return mW>5?extCm(mW)*0.7:0;} // most of the stretch stays — permanent (plastic) set
+function currentExtCm(){const W=HOOKE.n,mW=HOOKE.peak;
+  if(mW<=5)return W*2;                                // never passed limit → fully elastic, springs right back to 0
+  if(W>=mW)return extCm(W);                           // still on the loading curve
+  const res=residualCm(mW);
+  return res+(W/mW)*(extCm(mW)-res);                  // unloading: recovers only a little, keeps a big permanent set
+}
+function updateHooke(){
+  HOOKE.peak=Math.max(HOOKE.peak,HOOKE.n);
+  const W=HOOKE.n, ec=currentExtCm(), deformed=HOOKE.peak>5;
+  HOOKE.targetLen=HOOKE.L0+ec*0.34;
+  if(HOOKE.spring)HOOKE.spring.material.color.set(deformed?0xff8a72:0xcfd8e6);   // tint when permanently deformed
+  HOOKE.discs.forEach((d,i)=>{d.visible=i<HOOKE.n;d.position.y=-0.25-i*0.44;});
+  $('h-force').textContent=W.toFixed(0)+' N';$('h-ext').textContent=ec.toFixed(1)+' cm';
+  $('h-count').textContent=HOOKE.n+' masses · '+(HOOKE.n*100)+' g';
+  if($('h-k'))$('h-k').textContent=(HOOKE.n>0||HOOKE.peak>0)?'50 N/m':'—';   // k = gradient of straight section (5 N ÷ 0.10 m)
+  const st=$('h-status');
+  if(W===0){
+    if(deformed){st.className='status warn';st.textContent='Did NOT spring back — permanent stretch of '+ec.toFixed(1)+' cm';}
+    else{st.className='status ok';st.textContent='Back to its natural length — elastic ✓';}
+  } else if(!deformed){st.className='status ok';st.textContent='Proportional — it will spring back ✓';}
+  else if(W>=HOOKE.peak){st.className='status warn';st.textContent='Past the limit — stretching permanently';}
+  else{st.className='status neu';st.textContent='Unloading — it won’t fully return now';}
+  drawHookeGraph();
+  if(window.CHAL&&CHAL.active)CHAL.update();
+}
+function drawHookeGraph(){
+  const W=HOOKE.n,mW=HOOKE.peak,deformed=mW>5;
+  const GW=210,GH=150,m={l:30,r:8,t:10,b:24},maxF=10,maxX=30;
+  const px=x=>m.l+x/maxX*(GW-m.l-m.r),py=f=>(GH-m.b)-f/maxF*(GH-m.t-m.b);
+  let g=`<svg viewBox="0 0 ${GW} ${GH}" xmlns="http://www.w3.org/2000/svg">`;
+  g+=`<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${GH-m.b}" stroke="#52708f"/>`;
+  g+=`<line x1="${m.l}" y1="${GH-m.b}" x2="${GW-m.r}" y2="${GH-m.b}" stroke="#52708f"/>`;
+  g+=`<text x="${m.l-4}" y="${m.t+8}" text-anchor="end" font-size="8" fill="#9fb6cf">F/N</text>`;
+  g+=`<text x="${GW-m.r}" y="${GH-m.b+16}" text-anchor="end" font-size="8" fill="#9fb6cf">ext/cm</text>`;
+  // loading curve up to the peak load reached
+  if(mW>0){let pts=[];for(let w=0;w<=mW;w+=0.5)pts.push(px(extCm(w))+','+py(w));
+    g+=`<polyline points="${pts.join(' ')}" fill="none" stroke="#5ad1c0" stroke-width="2.4"/>`;}
+  // unloading line + permanent set (only once past the limit)
+  if(deformed){const res=residualCm(mW);
+    g+=`<line x1="${px(extCm(mW))}" y1="${py(mW)}" x2="${px(res)}" y2="${py(0)}" stroke="#ff6b6b" stroke-width="2" stroke-dasharray="4 3"/>`;
+    g+=`<circle cx="${px(res)}" cy="${py(0)}" r="3.4" fill="#ff6b6b"/>`;
+    g+=`<text x="${px(res)}" y="${py(0)-5}" text-anchor="middle" font-size="7" fill="#ff6b6b">perm. set</text>`;}
+  // limit of proportionality marker
+  g+=`<circle cx="${px(10)}" cy="${py(5)}" r="3.2" fill="#ffb454"/>`;
+  g+=`<text x="${px(10)+4}" y="${py(5)-3}" font-size="7.5" fill="#ffb454">limit</text>`;
+  // current state point
+  g+=`<circle cx="${px(currentExtCm())}" cy="${py(W)}" r="4" fill="#fff" stroke="#5ad1c0" stroke-width="2"/>`;
+  $('hooke-graph').innerHTML=g+`</svg>`;
+}
+
+/* ---------- MOMENTS ---------- */
+const OBJTYPES={apple:{w:1,h:1.05},disc:{w:2,h:0.36},block:{w:3,h:0.74}};
+const MOM={beam:null,panL:null,panR:null,left:[],right:[],type:'apple'};
+function buildMoments(){
+  const base=box(5,0.8,4,0x44607f);base.position.y=0.4;gMoments.add(base);
+  const wedge=new THREE.Mesh(new THREE.ConeGeometry(1.5,3.2,4),mat(0x6b86a6));wedge.position.y=2.2;wedge.rotation.y=Math.PI/4;gMoments.add(wedge);
+  MOM.beam=new THREE.Group();
+  const plank=box(16,0.5,2,0xd9a066,{rough:.7});MOM.beam.add(plank);
+  for(let i=-7;i<=7;i++){if(i===0)continue;const t=box(0.07,0.55,2.02,0x8a5a36);t.position.set(i,0,0);MOM.beam.add(t);}
+  const cm=box(0.2,0.62,2.04,0x44607f);MOM.beam.add(cm);                 // pivot centre mark
+  MOM.beam.position.y=4.0;gMoments.add(MOM.beam);
+  MOM.panL=makePan();MOM.panR=makePan();MOM.beam.add(MOM.panL,MOM.panR);
+  updateMoments();
+}
+function makePan(){const g=new THREE.Group();const p=box(2.6,0.22,2.6,0x8aa6c6,{metal:.3});p.position.y=0.36;g.add(p);g.userData.top=0.48;return g;}
+function makeObject(type){const g=new THREE.Group();
+  if(type==='apple'){const a=new THREE.Mesh(new THREE.SphereGeometry(0.52,16,12),mat(0xe23b3b,{rough:.4}));a.castShadow=true;a.position.y=0.5;g.add(a);
+    const st=cyl(0.06,0.06,0.3,0x6b4226,6);st.position.y=0.92;g.add(st);
+    const lf=new THREE.Mesh(new THREE.SphereGeometry(0.18,8,6),mat(0x3fae5a));lf.scale.set(1.7,.4,1);lf.position.set(0.22,0.98,0);g.add(lf);}
+  else if(type==='disc'){const d=cyl(0.64,0.64,0.34,0xffb454,20,{metal:.4,emissive:0x5a3a00,ei:.2});d.castShadow=true;d.position.y=0.17;g.add(d);}
+  else{const b=box(1.05,0.7,1.05,0x5b9bff,{emissive:0x10325a,ei:.2});b.castShadow=true;b.position.y=0.35;g.add(b);}
+  return g;}
+function restack(side){const pan=side==='l'?MOM.panL:MOM.panR, arr=side==='l'?MOM.left:MOM.right;
+  for(let i=pan.children.length-1;i>=1;i--)pan.remove(pan.children[i]);   // keep platform (index 0)
+  let y=pan.userData.top;arr.forEach(t=>{const o=makeObject(t);o.position.y=y;pan.add(o);y+=OBJTYPES[t].h+0.06;});}
+function sideForce(arr){return arr.reduce((s,t)=>s+OBJTYPES[t].w,0);}
+function updateMoments(){
+  const ld=+$('m-ld').value, rd=+$('m-rd').value;
+  $('m-ld-v').textContent=(ld/10).toFixed(1)+' m';$('m-rd-v').textContent=(rd/10).toFixed(1)+' m';
+  MOM.panL.position.set(-ld,0.25,0);MOM.panR.position.set(rd,0.25,0);
+  const lf=sideForce(MOM.left),rf=sideForce(MOM.right);
+  const acw=lf*(ld/10), cw=rf*(rd/10), net=cw-acw;
+  $('m-acw').textContent=acw.toFixed(2)+' N·m';$('m-cw').textContent=cw.toFixed(2)+' N·m';
+  if($('m-lcount'))$('m-lcount').textContent=lf+' N';if($('m-rcount'))$('m-rcount').textContent=rf+' N';
+  MOM.beam.rotation.z=clamp(-net*0.045,-0.3,0.3);
+  const st=$('m-status');
+  if(lf===0&&rf===0){st.className='status neu';st.textContent='Add objects to each side';}
+  else if(Math.abs(net)<0.05){st.className='status ok';st.textContent='Balanced! ⚖️ moments are equal';}
+  else if(net>0){st.className='status neu';st.textContent='Tips right — clockwise moment is bigger';}
+  else{st.className='status neu';st.textContent='Tips left — anticlockwise moment is bigger';}
+}
+
+/* ---------- CENTRE OF GRAVITY ---------- */
+function makeTag(text){const c=document.createElement('canvas');c.width=512;c.height=110;const g=c.getContext('2d');
+  g.fillStyle='rgba(18,28,46,.88)';if(g.roundRect){g.beginPath();g.roundRect(6,24,500,62,18);g.fill();}else g.fillRect(6,24,500,62);
+  g.fillStyle='#ff8a8a';g.font='600 38px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,256,56);
+  const t=new THREE.CanvasTexture(c);t.minFilter=THREE.LinearFilter;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));s.renderOrder=1000;s.scale.set(7,1.5,1);return s;}
+const COG={obj:null,body:null,cogDot:null,gLabel:null,plumb:null,baseMark:null,shape:'tallnarrow',w:2.4,h:7,tilt:0,toppling:false,topAngle:0,groundY:0.5};
+function buildCog(){
+  const ground=box(16,0.5,8,0x3a5572);ground.position.y=0.25;gCog.add(ground);
+  COG.obj=new THREE.Group();gCog.add(COG.obj);
+  COG.plumb=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1,6),new THREE.MeshBasicMaterial({color:0xff3b3b}));
+  COG.plumb.material.depthTest=false;COG.plumb.renderOrder=998;gCog.add(COG.plumb);
+  COG.baseMark=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0xffb454,transparent:true,opacity:.4,side:THREE.DoubleSide}));
+  COG.baseMark.rotation.x=-Math.PI/2;COG.baseMark.position.y=0.52;gCog.add(COG.baseMark);
+  // base-edge posts + the spot where the line of weight meets the ground
+  COG.edgeL=box(0.18,0.55,2.6,0xffb454,{cast:false});COG.edgeR=box(0.18,0.55,2.6,0xffb454,{cast:false});
+  COG.edgeL.position.y=0.6;COG.edgeR.position.y=0.6;gCog.add(COG.edgeL,COG.edgeR);
+  COG.foot=new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.36,0.14,18),new THREE.MeshBasicMaterial({color:0x7fe6da}));
+  COG.foot.position.y=0.56;COG.foot.renderOrder=997;COG.foot.material.depthTest=false;gCog.add(COG.foot);
+  rebuildCogBody();updateCog();
+}
+function rebuildCogBody(){
+  while(COG.obj.children.length)COG.obj.remove(COG.obj.children[0]);
+  COG.obj.rotation.z=0;
+  const dotMat=()=>{const m=new THREE.MeshBasicMaterial({color:0xff3b3b});m.depthTest=false;return m;};
+  if(COG.shape==='ball'){
+    COG.isBall=true;const r=2.7;
+    COG.body=new THREE.Mesh(new THREE.SphereGeometry(r,24,18),new THREE.MeshStandardMaterial({color:0x5ad1c0,transparent:true,opacity:.42,roughness:.5}));
+    COG.body.castShadow=true;COG.body.position.set(0,r,0);COG.obj.add(COG.body);
+    COG.cogLocal=new THREE.Vector3(0,r,0);COG.obj.position.set(0,COG.groundY,0);
+  } else {
+    COG.isBall=false;const w=COG.w,h=COG.h;
+    COG.body=new THREE.Mesh(new THREE.BoxGeometry(w,h,w*0.9),new THREE.MeshStandardMaterial({color:0x5ad1c0,transparent:true,opacity:.42,roughness:.5}));
+    COG.body.castShadow=true;COG.body.position.set(-w/2,h/2,0);COG.obj.add(COG.body);   // body sits left of the pivot edge (local x=0)
+    COG.cogLocal=new THREE.Vector3(-w/2,h/2,0);COG.obj.position.set(w/2,COG.groundY,0);   // base centred at world 0, tips about right edge
+  }
+  COG.cogDot=new THREE.Mesh(new THREE.SphereGeometry(0.4,18,14),dotMat());COG.cogDot.renderOrder=999;COG.cogDot.position.copy(COG.cogLocal);COG.obj.add(COG.cogDot);
+  COG.gLabel=makeTag('G — centre of gravity');COG.gLabel.position.set(COG.cogLocal.x,COG.cogLocal.y+1.1,0);COG.obj.add(COG.gLabel);
+}
+function updateCog(){
+  if(COG.isBall){                                                                    // neutral equilibrium
+    COG.body.rotation.z=COG.tilt*Math.PI/180;COG.obj.updateMatrixWorld(true);
+    const cog=COG.cogLocal.clone();COG.obj.localToWorld(cog);
+    const top=cog.y,bot=COG.groundY,len=Math.max(0.1,top-bot);
+    COG.plumb.geometry.dispose();COG.plumb.geometry=new THREE.CylinderGeometry(0.06,0.06,len,6);
+    COG.plumb.position.set(cog.x,(top+bot)/2,cog.z);COG.plumb.material.color.set(0x7fe6da);
+    COG.foot.position.set(cog.x,0.56,cog.z);COG.foot.material.color.set(0x7fe6da);
+    COG.edgeL.visible=COG.edgeR.visible=COG.baseMark.visible=false;
+    $('c-limit').textContent='—';$('c-angle').textContent='—';$('c-type').textContent='Neutral';
+    const st=$('c-status');st.className='status ok';st.textContent='Neutral — CoG stays level, it rests anywhere';return;
+  }
+  COG.edgeL.visible=COG.edgeR.visible=COG.baseMark.visible=true;
+  const w=COG.w,h=COG.h,limitDeg=Math.atan(w/h)*180/Math.PI;
+  $('c-limit').textContent=limitDeg.toFixed(0)+'°';
+  if(COG.tilt>=limitDeg && !COG.toppling){COG.toppling=true;COG.topAngle=COG.tilt*Math.PI/180;}
+  const ang=COG.toppling?COG.topAngle:COG.tilt*Math.PI/180;
+  COG.obj.rotation.z=-ang;COG.obj.updateMatrixWorld(true);
+  const cog=COG.cogLocal.clone();COG.obj.localToWorld(cog);
+  const top=cog.y,bot=COG.groundY,len=Math.max(0.1,top-bot);
+  COG.plumb.geometry.dispose();COG.plumb.geometry=new THREE.CylinderGeometry(0.06,0.06,len,6);
+  COG.plumb.position.set(cog.x,(top+bot)/2,cog.z);
+  COG.baseMark.scale.set(w,w*0.9,1);COG.baseMark.position.set(0,0.52,0);
+  const outside=cog.x>w/2+0.02||cog.x<-w/2-0.02;
+  COG.edgeL.position.set(-w/2,0.6,0);COG.edgeR.position.set(w/2,0.6,0);COG.edgeL.scale.z=COG.edgeR.scale.z=(w*0.9)/2.6;
+  COG.foot.position.set(cog.x,0.56,cog.z);COG.foot.material.color.set(outside?0xff3b3b:0x7fe6da);
+  $('c-angle').textContent=Math.round(ang*180/Math.PI)+'°';
+  const st=$('c-status');
+  if(COG.toppling||outside){COG.plumb.material.color.set(0xff3b3b);$('c-type').textContent='Unstable (toppling)';st.className='status warn';st.textContent='Topples! Its line of weight fell outside the base';}
+  else if(COG.tilt>limitDeg*0.7){COG.plumb.material.color.set(0xffb454);$('c-type').textContent='Near unstable';st.className='status neu';st.textContent='Getting unstable — CoG near the edge';}
+  else{COG.plumb.material.color.set(0x7fe6da);$('c-type').textContent='Stable';st.className='status ok';st.textContent='Stable — weight acts inside the base';}
+}
+
+/* ---------- PRESSURE ---------- */
+const PRES={rho:1000,depth:0,faForce:60,faArea:0.6,liquid:null,probe:null,block:null,tankTop:13,tankBot:1.5,cx:2,wallX:6,maxDepthM:5,sandX:-9,sandTop:1.4};
+function buildPressure(){
+  const g=box(28,0.5,12,0x3a5572);g.position.set(-2,0.25,0);gPressure.add(g);
+  const tw=8,th=12,td=6,cx=2,baseY=1;PRES.cx=cx;
+  const stand=box(tw+1.4,1,td+1.4,0x44607f);stand.position.set(cx,0.5,0);gPressure.add(stand);
+  const glass=new THREE.Mesh(new THREE.BoxGeometry(tw,th,td),new THREE.MeshStandardMaterial({color:0xcfe8ff,transparent:true,opacity:.12,roughness:.05,side:THREE.DoubleSide}));
+  glass.position.set(cx,baseY+th/2,0);gPressure.add(glass);
+  PRES.liquid=new THREE.Mesh(new THREE.BoxGeometry(tw-0.4,th-1,td-0.4),new THREE.MeshStandardMaterial({color:0x3aa0e0,transparent:true,opacity:.5,roughness:.3}));
+  PRES.liquid.position.set(cx,baseY+(th-1)/2,0);gPressure.add(PRES.liquid);
+  PRES.tankTop=baseY+th-0.6;PRES.tankBot=baseY+0.6;PRES.wallX=cx+tw/2;
+  PRES.probe=new THREE.Mesh(new THREE.TorusGeometry(0.62,0.15,10,22),new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0xff3b3b,emissiveIntensity:.4}));
+  PRES.probe.position.set(cx,PRES.tankTop,td/2+0.06);gPressure.add(PRES.probe);
+  [0.3,0.6,0.9].forEach(fr=>{                                  // 3 holes, lower one squirts farther
+    const hy=PRES.tankTop-fr*(PRES.tankTop-PRES.tankBot);
+    const hole=cyl(0.24,0.24,0.4,0x10283a,12);hole.rotation.z=Math.PI/2;hole.position.set(PRES.wallX,hy,0);gPressure.add(hole);
+    const range=2.6+fr*8,drop=hy-PRES.tankBot+0.5,pts=[];
+    for(let t=0;t<=1.0001;t+=0.1)pts.push(new THREE.Vector3(PRES.wallX+range*t,hy-drop*t*t,0));
+    const jet=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),28,0.13,6),new THREE.MeshStandardMaterial({color:0x6fd0ff,transparent:true,opacity:.82,emissive:0x1a4a6a,emissiveIntensity:.3}));
+    gPressure.add(jet);
+  });
+  // shape-independence: a thin tube filled to the SAME level — same depth → same pressure
+  const tubeX=-4;
+  const tubeGlass=new THREE.Mesh(new THREE.CylinderGeometry(1.05,1.05,th,20,1,true),new THREE.MeshStandardMaterial({color:0xcfe8ff,transparent:true,opacity:.12,roughness:.05,side:THREE.DoubleSide}));
+  tubeGlass.position.set(tubeX,baseY+th/2,0);gPressure.add(tubeGlass);
+  PRES.tubeLiquid=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,th-1,20),new THREE.MeshStandardMaterial({color:0x3aa0e0,transparent:true,opacity:.5,roughness:.3}));
+  PRES.tubeLiquid.position.set(tubeX,baseY+(th-1)/2,0);gPressure.add(PRES.tubeLiquid);
+  PRES.probe2=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.12,8,18),new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0xff3b3b,emissiveIntensity:.4}));
+  PRES.probe2.position.set(tubeX,PRES.tankTop,1.15);gPressure.add(PRES.probe2);
+  const tlbl=makeTag('thin tube — same pressure!');tlbl.scale.set(6.4,1.35,1);tlbl.position.set(tubeX,baseY+th+1.4,0);gPressure.add(tlbl);
+  const sand=box(7,1.4,6,0xd8b77a,{rough:1});sand.position.set(PRES.sandX,0.7,0);gPressure.add(sand);
+  PRES.block=box(3,0.8,3,0x5b9bff,{emissive:0x10325a,ei:.2});PRES.block.position.set(PRES.sandX,PRES.sandTop+0.4,0);gPressure.add(PRES.block);
+  const lbl=makeTag('p = F ÷ A');lbl.scale.set(5.5,1.2,1);lbl.position.set(PRES.sandX,5.2,0);gPressure.add(lbl);
+  updatePressure();
+}
+function updatePressure(){
+  const p=PRES.rho*10*PRES.depth;
+  $('p-depth').textContent=PRES.depth.toFixed(1)+' m';$('p-liq').textContent=(p/1000).toFixed(1)+' kPa';
+  PRES.probe.position.y=PRES.tankTop-(PRES.depth/PRES.maxDepthM)*(PRES.tankTop-PRES.tankBot);
+  PRES.liquid.material.color.set(PRES.rho>=1025?0x1f9d92:PRES.rho<=800?0xd6a52a:0x3aa0e0);
+  if($('p-total'))$('p-total').textContent=Math.round((101000+p)/1000)+' kPa';   // total = atmospheric + ρg∆h
+  if(PRES.probe2)PRES.probe2.position.y=PRES.probe.position.y;                   // same depth in the thin tube
+  if(PRES.tubeLiquid)PRES.tubeLiquid.material.color.copy(PRES.liquid.material.color);
+  const F=PRES.faForce,A=PRES.faArea,pb=F/A;$('p-box').textContent=Math.round(pb)+' Pa';
+  const s=clamp(Math.sqrt(A)*4,0.7,4.2),h=2.6,t=clamp(pb/4000,0,1),sink=t*2.0;   // smaller area / bigger force → more pressure → sinks deeper
+  PRES.block.scale.set(s/3,h/0.8,s/3);PRES.block.position.set(PRES.sandX,PRES.sandTop+h/2-sink,0);
+  PRES.block.material.color.setRGB(0.36+0.6*t,0.6-0.32*t,1-0.7*t);                // blue (low p) → red (high p)
+  const st=$('p-status');
+  if(PRES.depth===0){st.className='status ok';st.textContent='Move the probe down — pressure rises with depth';}
+  else{st.className='status '+(PRES.depth>3.2?'warn':'neu');st.textContent='Pressure here = ρ × g × depth';}
+}
+
+/* ===== topic switching ===== */
+const cams={hooke:{tgt:new THREE.Vector3(0,8,0),R:30},moments:{tgt:new THREE.Vector3(0,3.5,0),R:30},cog:{tgt:new THREE.Vector3(0,4,0),R:28},pressure:{tgt:new THREE.Vector3(-1,6,0),R:40}};
+let curTopic='hooke';
+function fitCam(){const c=cams[curTopic];if(!c)return;const narrow=innerWidth<560,portrait=innerHeight>=innerWidth;orbit.R=c.R*(narrow?(portrait?1.9:1.35):1);}  // pull back on small/portrait screens so the whole apparatus fits
+function setTopic(t){
+  if(window.CHAL)CHAL.hide();
+  gHooke.visible=t==='hooke';gMoments.visible=t==='moments';gCog.visible=t==='cog';gPressure.visible=t==='pressure';
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.topic===t));
+  ['hooke','moments','cog','pressure'].forEach(k=>{$('info-'+k).classList.toggle('on',k===t);$('ctrl-'+k).classList.toggle('on',k===t);});
+  curTopic=t;orbit.tgt.copy(cams[t].tgt);orbit.theta=0.6;orbit.phi=1.02;fitCam();
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTopic(b.dataset.topic));
+
+/* ===== LAB api for buttons ===== */
+window.LAB={
+  hooke:{add(d){HOOKE.n=clamp(HOOKE.n+d,0,HOOKE.cap);updateHooke();},
+    unload(){HOOKE.n=0;updateHooke();},                       // remove load, keep any permanent stretch
+    reset(){HOOKE.n=0;HOOKE.peak=0;updateHooke();}},           // straighten + clear deformation
+  moments:{type(t,el){MOM.type=t;document.querySelectorAll('#mom-type button').forEach(b=>b.classList.remove('on'));el.classList.add('on');},
+    add(side){const arr=side==='l'?MOM.left:MOM.right;if(arr.length<6){arr.push(MOM.type);restack(side);updateMoments();}},
+    update(){updateMoments();},
+    clear(){MOM.left=[];MOM.right=[];restack('l');restack('r');updateMoments();}},
+  cog:{update(){COG.tilt=+$('c-tilt').value;$('c-tilt-v').textContent=COG.tilt+'°';if(COG.tilt<2)COG.toppling=false;updateCog();},
+    shape(s,el){COG.shape=s;document.querySelectorAll('#cog-shape button').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+      if(s==='tallnarrow'){COG.w=2.4;COG.h=7;}else if(s==='shortwide'){COG.w=6;COG.h=2.6;}COG.toppling=false;COG.tilt=0;$('c-tilt').value=0;$('c-tilt-v').textContent='0°';rebuildCogBody();updateCog();},
+    reset(){COG.tilt=0;COG.toppling=false;$('c-tilt').value=0;$('c-tilt-v').textContent='0°';updateCog();}},
+  pressure:{update(){PRES.depth=+$('p-depthr').value/10;$('p-depthr-v').textContent=PRES.depth.toFixed(1)+' m';updatePressure();},
+    liquid(d,el){PRES.rho=d;document.querySelectorAll('#p-liquid button').forEach(b=>b.classList.remove('on'));el.classList.add('on');updatePressure();},
+    fa(){PRES.faForce=+$('p-force').value;PRES.faArea=+$('p-area').value/100;
+      $('p-force-v').textContent=PRES.faForce+' N';$('p-area-v').textContent=PRES.faArea.toFixed(2)+' m²';updatePressure();}}
+};
+
+/* ===== tutorial ===== */
+const TUT={i:0,steps:[
+  {icon:'🔬',title:'Welcome to the Lab',text:'A little 3D world for three physics topics — you learn them by <b>doing</b>, not just reading.'},
+  {icon:'🖱️',title:'Look around',text:'<b>Drag</b> anywhere to spin the camera around the apparatus. Use the <b>tabs</b> at the top to switch experiment.'},
+  {icon:'🪝',title:'Hooke’s Law',text:'Hang masses on the spring and watch the <b>force–extension graph</b> draw itself. Go past the limit and it stays <b>permanently stretched</b>.'},
+  {icon:'⚖️',title:'Moments',text:'Stack <b>apples, discs & blocks</b> on each side, slide them in or out, and balance the beam: clockwise = anticlockwise.'},
+  {icon:'📦',title:'Centre of Gravity',text:'Tilt the block — when its <b>line of weight</b> leaves the base, it <b>topples</b>.'},
+  {icon:'✅',title:'You’re all set!',text:'Each panel has an <b>“Exam”</b> note tying it to what your exam asks. Tap the <b>?</b> top-right to see this again.'}
+],
+  open(){this.i=0;this.render();$('tutorial').classList.add('on');},
+  render(){const s=this.steps[this.i];$('tut-icon').textContent=s.icon;$('tut-title').textContent=s.title;$('tut-text').innerHTML=s.text;
+    $('tut-dots').innerHTML=this.steps.map((_,k)=>`<i class="${k===this.i?'on':''}"></i>`).join('');
+    $('tut-back').style.visibility=this.i===0?'hidden':'visible';
+    $('tut-next').textContent=this.i===this.steps.length-1?'Start exploring 🚀':'Next →';},
+  next(){if(this.i<this.steps.length-1){this.i++;this.render();}else this.skip();},
+  prev(){if(this.i>0){this.i--;this.render();}},
+  skip(){$('tutorial').classList.remove('on');}
+};
+window.TUT=TUT;
+
+/* ===== interactive challenge (answer by doing it in the sim) ===== */
+const CHAL={active:false,step:0,target:8,
+  start(){this.active=true;this.step=1;$('info-hooke').classList.remove('on');$('chal').classList.add('on');
+    $('chal-q').textContent='🎯 Hang masses until the spring extends exactly 8.0 cm';
+    $('chal-step2').style.display='none';$('chal-fb').textContent='';$('chal-fb').className='chal-fb';this.update();},
+  stop(){this.hide();if(curTopic==='hooke')$('info-hooke').classList.add('on');},
+  hide(){this.active=false;$('chal').classList.remove('on');},
+  update(){if(!this.active)return;const ec=currentExtCm();
+    $('chal-live').innerHTML=`now: <b>${ec.toFixed(1)} cm</b> &nbsp;·&nbsp; ${HOOKE.n} masses`;
+    if(this.step===1 && Math.abs(ec-this.target)<0.05){this.step=2;
+      $('chal-q').innerHTML='✓ Nailed it — 8.0 cm with 4 masses (4 N load).';
+      $('chal-fb').className='chal-fb';$('chal-fb').innerHTML='Now read it off your own result: what is the spring constant <b>k</b>?';
+      $('chal-step2').style.display='flex';}},
+  checkK(){const v=parseFloat($('chal-input').value);if(isNaN(v)){$('chal-fb').className='chal-fb';$('chal-fb').textContent='Type a number first.';return;}
+    const ok=Math.abs(v-50)<=1;$('chal-fb').className='chal-fb '+(ok?'ok':'no');
+    $('chal-fb').innerHTML=(ok?'✓ Exactly! ':'✗ Close — ')+'k = F ÷ x = 4 N ÷ 0.08 m = <b>50 N/m</b>.';
+    if(ok)$('chal-q').innerHTML='🏆 Challenge complete!';}
+};
+window.CHAL=CHAL;
+
+/* ===== build + loop ===== */
+buildHooke();buildMoments();buildCog();buildPressure();
+const _q=new URLSearchParams(location.search), _pick=['hooke','moments','cog','pressure'];
+const LOCKMAP={hooke:"🪝 Hooke's Law",moments:"⚖️ Moments",cog:"📦 Centre of Gravity",pressure:"💧 Pressure"};
+const _lock=document.body.dataset.lock||_q.get('only'), _t0=_q.get('topic');
+if(_pick.includes(_lock)){                                   // standalone single-topic page → full screen, topic-branded
+  setTopic(_lock);
+  const tb=document.querySelector('.tabs'); if(tb)tb.style.display='none';
+  const tt=document.querySelector('.title'); if(tt)tt.innerHTML=LOCKMAP[_lock];
+  const cr=document.querySelector('.credit'); if(cr)cr.style.display='none';
+  const ap=document.querySelector('.app'); if(ap)ap.style.maxWidth='none';
+}else setTopic(_pick.includes(_t0)?_t0:'hooke');
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),0.05);
+  if(!orbit.drag)orbit.theta+=dt*0.04;applyCam();
+  // spring recoil / stretch animation
+  if(gHooke.visible&&Math.abs(HOOKE.curLen-HOOKE.targetLen)>0.015){HOOKE.curLen+=(HOOKE.targetLen-HOOKE.curLen)*0.16;applyHookeLen(HOOKE.curLen);}
+  // CoG topple animation
+  if(COG.toppling&&gCog.visible){COG.topAngle=Math.min(COG.topAngle+dt*1.6,Math.PI/2-0.04);updateCog();}
+  renderer.render(scene,camera);}
+resize();applyCam();tick();
+const _embed=new URLSearchParams(location.search).has('embed');   // clean embed for the Dabble hero (no tutorial/help/credit)
+if(_embed){const h=$('helpBtn');if(h)h.style.display='none';document.querySelectorAll('.credit').forEach(c=>c.style.display='none');}
+setTimeout(()=>{$('loader').classList.add('hide');if(!_embed)TUT.open();},800);
+</script>
+</body>
+</html>
