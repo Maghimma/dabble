@@ -89,6 +89,7 @@ function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;ctx.clearRect
   events=events.filter(e=>now-e<3000);$('o-rate').textContent=(events.length/3).toFixed(1)+' /s';
   requestAnimationFrame(loop);}
 init();upd();requestAnimationFrame(loop);
+setTimeout(()=>$('loader').classList.add('hide'),300);
 addEventListener('resize',()=>{resize();});
 </script>
 </body>
