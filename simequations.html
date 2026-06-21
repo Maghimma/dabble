@@ -42,7 +42,7 @@
     <div class="chk" id="c1"></div>
     <div class="chk" id="c2"></div>
     <div class="status mid" id="o-status">Drag the dot onto a line…</div>
-    <div class="work" id="work"><div class="st" id="o-steps"></div></div>
+    <div class="work" id="work"><div class="st" id="o-steps"></div><button id="nextBtn" onclick="nextStep()" style="margin-top:10px;font-family:inherit;font-weight:600;font-size:12.5px;color:#04302c;background:var(--teal);border:0;border-radius:9px;padding:7px 15px;cursor:pointer">Next step ▸</button></div>
   </div>
   <div class="ctrl"><div class="wrap2">
     <div class="hint">Drag the white dot. It must fit <b style="color:#5b9bff">both</b> lines at once — that crossing point is the answer.</div>
@@ -63,7 +63,7 @@ const PR=[
  {a1:3,b1:2,c1:12, a2:1,b2:2,c2:8, x:2,y:3, steps:["Subtract to cancel <b>2y</b>:","(3x + 2y) − (x + 2y) = 12 − 8","2x = 4  →  <b>x = 2</b>","Put x = 2 into x + 2y = 8:","2 + 2y = 8  →  <b>y = 3</b>"]},
  {a1:1,b1:2,c1:11, a2:2,b2:-1,c2:7, x:5,y:3, steps:["Multiply eq 2 by 2 so <b>y</b> matches:","4x − 2y = 14","Add to x + 2y = 11:","5x = 25  →  <b>x = 5</b>","Put x = 5 into 2x − y = 7:","10 − y = 7  →  <b>y = 3</b>"]}
 ];
-let cur=0,dot={x:0,y:0};
+let cur=0,dot={x:0,y:0},stepIdx=0;
 const XMIN=-2,XMAX=9,YMIN=-2,YMAX=9;
 function plot(){const w=Math.min(W-300,500),h=Math.min(W-300,500,H-300),L=Math.max(56,((W-280)-w)/2+10),T=Math.max(96,(H-150-h)/2),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 function gx(x){const p=plot();return p.L+(x-XMIN)/(XMAX-XMIN)*p.w;}
@@ -73,13 +73,15 @@ function iy(py){const p=plot();return YMIN+(p.B-py)/p.h*(YMAX-YMIN);}
 function t1(co,v){if(co===0)return'';const n=Math.abs(co)===1?'':Math.abs(co);return (co<0?'−':'')+n+v;}
 function t2(co,v){if(co===0)return'';const n=Math.abs(co)===1?'':Math.abs(co);return (co<0?' − ':' + ')+n+v;}
 function eqStr(a,b,c){return t1(a,'x')+t2(b,'y')+' = '+c;}
-function setPreset(i){cur=i;dot={x:0,y:0};buildPresets();render();}
+function setPreset(i){cur=i;dot={x:0,y:0};stepIdx=0;buildPresets();render();}
 window.setPreset=setPreset;
 function buildPresets(){const w=$('presets');w.innerHTML='';PR.forEach(function(p,i){const b=document.createElement('button');b.textContent='Problem '+(i+1);b.className=i===cur?'act':'';b.onclick=function(){setPreset(i);};w.appendChild(b);});}
 function reveal(){const p=PR[cur];dot={x:p.x,y:p.y};render();}
 window.reveal=reveal;
-function toggleWork(){$('work').classList.toggle('on');$('wbtn').classList.toggle('act',$('work').classList.contains('on'));}
+function toggleWork(){const open=$('work').classList.toggle('on');$('wbtn').classList.toggle('act',open);if(open){stepIdx=0;render();}}
 window.toggleWork=toggleWork;
+function nextStep(){const P=PR[cur];if(stepIdx<P.steps.length-1)stepIdx++;render();}
+window.nextStep=nextStep;
 function lineEnds(a,b,c){if(b===0){return[[c/a,YMIN],[c/a,YMAX]];}return[[XMIN,(c-a*XMIN)/b],[XMAX,(c-a*XMAX)/b]];}
 function draw(){if(!W)return;const p=plot();ctx.clearRect(0,0,W,H);const P=PR[cur];
   // grid
@@ -105,7 +107,10 @@ function render(){const P=PR[cur];$('eq1').textContent=eqStr(P.a1,P.b1,P.c1);$('
   const s=$('o-status');if(ok1&&ok2){s.className='status win';s.innerHTML='🎉 Fits BOTH → the solution is x = '+P.x+', y = '+P.y;}
   else if(ok1||ok2){s.className='status mid';s.innerHTML='On <b>one</b> line only. The answer must fit both — find the crossing point.';}
   else{s.className='status mid';s.textContent='Not on either line yet. Drag onto where they cross.';}
-  $('o-steps').innerHTML=P.steps.map(function(t){return '• '+t;}).join('<br>')+'<br>• <b>✓ x = '+P.x+', y = '+P.y+'</b>';
+  const shown=P.steps.slice(0,stepIdx+1).map(function(t){return '• '+t;});const done=stepIdx>=P.steps.length-1;
+  let sh=shown.join('<br>');if(done)sh+='<br>• <b>✓ x = '+P.x+', y = '+P.y+'</b>';
+  $('o-steps').innerHTML='<b style="color:#eaf1f7">Method: elimination</b> — cancel one letter, solve, then substitute back.<br><br>'+sh;
+  const nb=$('nextBtn');if(nb)nb.style.display=done?'none':'inline-block';
   draw();}
 // dragging
 let drag=false;
