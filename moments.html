@@ -642,7 +642,7 @@ const _q=new URLSearchParams(location.search), _pick=['hooke','moments','cog','p
 const LOCKMAP={hooke:"🪝 Hooke's Law",moments:"⚖️ Moments",cog:"📦 Centre of Gravity",pressure:"💧 Pressure"};
 const _lock=document.body.dataset.lock||_q.get('only'), _t0=_q.get('topic');
 if(_pick.includes(_lock)){                                   // standalone single-topic page → full screen, topic-branded
-  setTopic(_lock);document.title=LOCKMAP[_lock]+" — Dabble";
+  setTopic(_lock);
   const tb=document.querySelector('.tabs'); if(tb)tb.style.display='none';
   const tt=document.querySelector('.title'); if(tt)tt.innerHTML=LOCKMAP[_lock];
   const cr=document.querySelector('.credit'); if(cr)cr.style.display='none'; const hb=document.getElementById('helpBtn'); if(hb)hb.style.display='none';

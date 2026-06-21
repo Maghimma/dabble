@@ -57,15 +57,18 @@
   .sh .tag{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
   .sh h2{font-size:clamp(27px,3.4vw,40px);font-weight:700;letter-spacing:-.02em;margin-top:8px}
   .sh p{font-size:clamp(15px,1.7vw,18px);color:var(--dim);margin-top:8px;font-weight:500}
-  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:36px}
-  @media(max-width:720px){.tiles{grid-template-columns:1fr}}
-  .tile{background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.05);box-shadow:0 8px 30px rgba(30,40,80,.08);
-    border-radius:22px;padding:34px 30px;text-align:center;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;align-items:center;transition:transform .25s,box-shadow .25s;backdrop-filter:blur(10px)}
-  .tile:hover{transform:translateY(-6px);box-shadow:0 18px 44px rgba(30,40,80,.14)}
-  .tile h3{font-size:21px;font-weight:700;letter-spacing:-.01em}
-  .tile p{font-size:14.5px;color:var(--dim);font-weight:500;margin-top:6px;max-width:26ch}
-  .tile .go{color:var(--bluelink);font-size:14.5px;font-weight:600;margin-top:11px}
-  .tile .art{font-size:54px;margin-top:22px;line-height:1}
+  .tiles{column-count:3;column-gap:16px;margin-top:36px}
+  @media(max-width:900px){.tiles{column-count:2}}
+  @media(max-width:560px){.tiles{column-count:1}}
+  .tile{display:inline-block;width:100%;break-inside:avoid;margin:0 0 16px;background:rgba(255,255,255,.72);
+    border:1px solid rgba(0,0,0,.05);box-shadow:0 8px 30px rgba(30,40,80,.08);border-radius:22px;overflow:hidden;
+    text-decoration:none;color:var(--ink);transition:transform .25s,box-shadow .25s;backdrop-filter:blur(10px)}
+  .tile:hover{transform:translateY(-6px);box-shadow:0 18px 44px rgba(30,40,80,.16)}
+  .tile img{width:100%;display:block;background:#0e2233}
+  .tile .cap{padding:15px 18px 18px}
+  .tile h3{font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .tile p{font-size:13.5px;color:var(--dim);font-weight:500;margin-top:4px}
+  .tile .go{color:var(--bluelink);font-size:13.5px;font-weight:600;margin-top:9px;display:inline-block}
   .soon{background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.05);border-radius:22px;padding:32px;text-align:center;margin-top:16px;backdrop-filter:blur(10px)}
   .soon .lab{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
   .soon h3{font-size:21px;font-weight:700;margin-top:6px;letter-spacing:-.01em}
@@ -91,12 +94,6 @@
       <a class="btn solid" href="#sims">Start exploring</a>
       <a class="btn ghost" href="hooke.html">Open a sim ›</a>
     </div>
-    <div class="display glass">
-      <div class="screen">
-        <iframe src="hooke.html?embed=1" loading="lazy" title="Live physics simulation"></iframe>
-        <a class="open" href="hooke.html">Open full ↗</a>
-      </div>
-    </div>
     <a class="scrollcue" href="#sims"><span>The simulations</span><span class="arr">↓</span></a>
   </header>
 
@@ -108,12 +105,12 @@
     </div>
     <div class="wrap">
       <div class="tiles">
-        <a class="tile" href="hooke.html"><h3>Hooke's Law</h3><p>Stretch a spring, build the graph, find its limit.</p><span class="go">Open ›</span><span class="art">🪝</span></a>
-        <a class="tile" href="moments.html"><h3>Moments</h3><p>Stack weights and balance the beam.</p><span class="go">Open ›</span><span class="art">⚖️</span></a>
-        <a class="tile" href="gravity.html"><h3>Centre of Gravity</h3><p>Tilt it until it topples.</p><span class="go">Open ›</span><span class="art">📦</span></a>
-        <a class="tile" href="pressure.html"><h3>Pressure</h3><p>Dive a probe, watch pressure climb.</p><span class="go">Open ›</span><span class="art">💧</span></a>
-        <a class="tile" href="circuits.html"><h3>Circuits &amp; Ohm's Law</h3><p>Tweak voltage &amp; resistance, watch current flow.</p><span class="go">Open ›</span><span class="art">⚡</span></a>
-        <a class="tile" href="waves.html"><h3>Waves &amp; Refraction</h3><p>Bend light through glass; find the critical angle.</p><span class="go">Open ›</span><span class="art">🌊</span></a>
+        <a class="tile" href="hooke.html"><img src="shots/hooke.jpg" alt="Hooke's Law sim" loading="lazy"><div class="cap"><h3>🪝 Hooke's Law</h3><p>Stretch a spring, build the graph, find its limit.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="circuits.html"><img src="shots/circuits.jpg" alt="Circuits sim" loading="lazy"><div class="cap"><h3>⚡ Circuits &amp; Ohm's Law</h3><p>Series or parallel — add bulbs &amp; a switch, watch current flow.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="moments.html"><img src="shots/moments.jpg" alt="Moments sim" loading="lazy"><div class="cap"><h3>⚖️ Moments</h3><p>Stack weights and balance the beam.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="waves.html"><img src="shots/waves.jpg" alt="Waves sim" loading="lazy"><div class="cap"><h3>🌊 Waves &amp; Refraction</h3><p>Bend light through glass; find the critical angle.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="gravity.html"><img src="shots/gravity.jpg" alt="Centre of gravity sim" loading="lazy"><div class="cap"><h3>📦 Centre of Gravity</h3><p>Tilt it until it topples.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="pressure.html"><img src="shots/pressure.jpg" alt="Pressure sim" loading="lazy"><div class="cap"><h3>💧 Pressure</h3><p>Dive a probe, watch pressure climb.</p><span class="go">Open ›</span></div></a>
       </div>
       <div class="soon">
         <div class="lab">Coming soon</div><h3>More subjects in the works.</h3>
