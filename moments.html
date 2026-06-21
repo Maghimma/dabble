@@ -142,7 +142,7 @@
 </head>
 <body data-lock="moments">
 <div class="app" id="app">
-  <div id="loader"><div class="lm">⚙ Physics Lab</div><div class="ls">setting up the apparatus…</div></div>
+  <div id="loader"><div class="lm">⚙ Dabble</div><div class="ls">setting up the apparatus…</div></div>
   <canvas id="gl"></canvas>
   <button class="help" id="helpBtn" title="How to use" onclick="TUT.open()">?</button>
   <div class="tut" id="tutorial">
@@ -648,7 +648,7 @@ const _lock=document.body.dataset.lock||_q.get('only'), _t0=_q.get('topic');
 if(_pick.includes(_lock)){                                   // standalone single-topic page → full screen, topic-branded
   setTopic(_lock);
   const tb=document.querySelector('.tabs'); if(tb)tb.style.display='none';
-  const tt=document.querySelector('.title'); if(tt)tt.innerHTML=LOCKMAP[_lock];
+  const tt=document.querySelector('.title'); if(tt)tt.innerHTML=LOCKMAP[_lock]; var _lm=document.querySelector(".lm"); if(_lm)_lm.innerHTML=LOCKMAP[_lock];
   const cr=document.querySelector('.credit'); if(cr)cr.style.display='none'; const hb=document.getElementById('helpBtn'); if(hb)hb.style.display='none';
   const ap=document.querySelector('.app'); if(ap)ap.style.maxWidth='none';
 }else setTopic(_pick.includes(_t0)?_t0:'hooke');
