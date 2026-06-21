@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>3D Solids — Volume &amp; Surface Area — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:20px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .info{position:fixed;top:54px;right:14px;z-index:9;width:min(264px,58vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .info h4{font-family:'Fraunces',serif;font-size:17px;margin-bottom:6px}
+  .frm{margin-top:9px}.frm:first-of-type{margin-top:4px}
+  .frm .l{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim)}
+  .frm .e{font-family:'Fraunces',serif;font-size:14px;color:var(--teal)}.frm.amb .e{color:var(--amber)}
+  .frm .val{font-family:'Fraunces',serif;font-weight:600;font-size:15px}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:12px clamp(14px,5vw,60px) calc(14px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:760px;margin:0 auto}
+  .shapes{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+  .shapes button{flex:0 0 auto;font-family:'Hanken Grotesk';font-weight:600;font-size:12.5px;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;white-space:nowrap}
+  .shapes button.on{background:var(--teal);color:#04302c;border-color:var(--teal)}
+  .row{display:flex;align-items:center;gap:14px;margin-top:8px}
+  .row .name{flex:0 0 130px;font-weight:600;font-size:14px}
+  .row input[type=range]{flex:1;accent-color:var(--teal);height:26px}
+  .row .val{flex:0 0 60px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--teal)}
+  .modebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .modebar .seg button{font-family:'Hanken Grotesk';font-weight:600;font-size:12.5px;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:9px;padding:7px 13px;cursor:pointer}
+  .modebar .seg button.on{background:var(--amber);color:#3a2500;border-color:var(--amber)}
+  #solve{display:none}#solve.on{display:block}
+  #solve .q{font-size:14px;line-height:1.5;margin:4px 0 9px}.q b{color:var(--amber)}
+  #solve .ans{display:flex;gap:10px;align-items:center}
+  #solve input{flex:1;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:16px;padding:9px 12px;font-family:Fraunces}
+  #solve button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;border-radius:10px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:var(--teal);color:#04302c}
+  #solve .nx{background:rgba(255,255,255,.06);color:var(--ink)}
+  #solve .fb{font-size:12.5px;margin-top:9px;line-height:1.5;min-height:18px}.fb.ok{color:#8ce99a}.fb.no{color:#ff8f8f}.fb b{color:var(--amber)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+  <div id="loader">carving the solids…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">🧊 3D Solids — Volume &amp; Area</div>
+  <div class="info"><h4 id="o-name">Cube</h4><div id="o-frm"></div></div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="modebar">
+      <div class="shapes" id="shapes"></div>
+      <div class="seg" style="flex:0 0 auto;margin-left:8px"><button id="modeBtn" onclick="toggleSolve()">🎯 Solve</button></div>
+    </div>
+    <div id="sliders"></div>
+    <div id="solve">
+      <div class="q" id="q"></div>
+      <div class="ans"><input id="ansin" type="number" placeholder="your answer" /><button onclick="checkAns()">Check</button><button class="nx" onclick="newQ()">New ↻</button></div>
+      <div class="fb" id="fb"></div>
+    </div>
+  </div></div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,160);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const PI=Math.PI,f=n=>{n=Math.round(n*100)/100;return ''+n;},ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,80,180);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
+const key=new THREE.DirectionalLight(0xffffff,1.2);key.position.set(14,24,18);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.4));
+const MAT=new THREE.MeshStandardMaterial({color:0x2ec4b6,transparent:true,opacity:.8,roughness:.3,metalness:.1,side:THREE.DoubleSide});
+function meshOf(geo){const g=new THREE.Group();g.add(new THREE.Mesh(geo,MAT));g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xaffff5,transparent:true,opacity:.55})));return g;}
+const Box=(x,y,z)=>meshOf(new THREE.BoxGeometry(x,y,z));
+// ---- shapes ----
+const S=[
+ {n:'Cube',d:[['a','side a',1,10,4]],mesh:D=>Box(D.a,D.a,D.a),
+   calc:D=>[['Volume','V = a³',f(D.a**3)+' cm³',0],['Surface area','A = 6a²',f(6*D.a*D.a)+' cm²',0]],
+   solve:()=>{const a=ri(2,9);return{D:{a},prompt:'A cube has <b>volume '+(a**3)+' cm³</b>. Find the length of a side.',ans:a,u:'cm',w:'V = a³ → a = ∛V = ∛'+(a**3)+' = '+a+' cm'};}},
+ {n:'Cuboid',d:[['l','length l',1,12,6],['w','width w',1,12,4],['h','height h',1,12,3]],mesh:D=>Box(D.l,D.h,D.w),
+   calc:D=>[['Volume','V = l × w × h',f(D.l*D.w*D.h)+' cm³',0],['Surface area','A = 2(lw + lh + wh)',f(2*(D.l*D.w+D.l*D.h+D.w*D.h))+' cm²',0]],
+   solve:()=>{const l=ri(2,9),w=ri(2,8),h=ri(2,8);return{D:{l,w,h},prompt:'A cuboid has <b>volume '+(l*w*h)+' cm³</b>, length '+l+' cm and width '+w+' cm. Find its height.',ans:h,u:'cm',w:'V = lwh → h = V ÷ (l×w) = '+(l*w*h)+' ÷ '+(l*w)+' = '+h+' cm'};}},
+ {n:'Cylinder',d:[['r','radius r',1,8,3],['h','height h',1,12,6]],mesh:D=>meshOf(new THREE.CylinderGeometry(D.r,D.r,D.h,48)),
+   calc:D=>[['Volume','V = πr²h',f(PI*D.r*D.r*D.h)+' cm³',0],['Curved SA','A = 2πrh',f(2*PI*D.r*D.h)+' cm²',1],['Total SA','A = 2πrh + 2πr²',f(2*PI*D.r*D.h+2*PI*D.r*D.r)+' cm²',0]],
+   solve:()=>{const r=ri(2,6),h=ri(3,10);const V=Math.round(PI*r*r*h);return{D:{r,h},prompt:'A cylinder has <b>volume '+V+' cm³</b> and radius '+r+' cm. Find its height.',ans:V/(PI*r*r),u:'cm',w:'V = πr²h → h = V ÷ (πr²) = '+V+' ÷ '+f(PI*r*r)+' ≈ '+f(V/(PI*r*r))+' cm'};}},
+ {n:'Cone',d:[['r','radius r',1,8,3],['h','height h',1,12,6]],mesh:D=>meshOf(new THREE.ConeGeometry(D.r,D.h,48)),
+   calc:D=>{const l=Math.sqrt(D.r*D.r+D.h*D.h);return[['Slant height','l = √(r² + h²)',f(l)+' cm',1],['Volume','V = ⅓πr²h',f(PI*D.r*D.r*D.h/3)+' cm³',0],['Curved SA','A = πrl',f(PI*D.r*l)+' cm²',1],['Total SA','A = πrl + πr²',f(PI*D.r*l+PI*D.r*D.r)+' cm²',0]];},
+   solve:()=>{const r=ri(2,6),h=ri(3,10);const which=Math.random()<0.5;
+     if(which){const l=Math.sqrt(r*r+h*h);return{D:{r,h},prompt:'A cone has radius <b>'+r+' cm</b> and height <b>'+h+' cm</b>. Find its slant height <i>l</i>.',ans:l,u:'cm',w:'l = √(r² + h²) = √('+r+'² + '+h+'²) = √'+(r*r+h*h)+' ≈ '+f(l)+' cm'};}
+     const V=Math.round(PI*r*r*h/3);return{D:{r,h},prompt:'A cone has <b>volume '+V+' cm³</b> and radius '+r+' cm. Find its height.',ans:3*V/(PI*r*r),u:'cm',w:'V = ⅓πr²h → h = 3V ÷ (πr²) = '+(3*V)+' ÷ '+f(PI*r*r)+' ≈ '+f(3*V/(PI*r*r))+' cm'};}},
+ {n:'Sphere',d:[['r','radius r',1,8,4]],mesh:D=>meshOf(new THREE.SphereGeometry(D.r,48,32)),
+   calc:D=>[['Volume','V = 4⁄3 πr³',f(4/3*PI*D.r**3)+' cm³',0],['Surface area','A = 4πr²',f(4*PI*D.r*D.r)+' cm²',0]],
+   solve:()=>{const r=ri(2,7);const A=Math.round(4*PI*r*r);return{D:{r},prompt:'A sphere has <b>surface area '+A+' cm²</b>. Find its radius.',ans:Math.sqrt(A/(4*PI)),u:'cm',w:'A = 4πr² → r = √(A ÷ 4π) = √('+A+' ÷ '+f(4*PI)+') ≈ '+f(Math.sqrt(A/(4*PI)))+' cm'};}},
+ {n:'Hemisphere',d:[['r','radius r',1,8,4]],mesh:D=>{const g=new THREE.Group();g.add(meshOf(new THREE.SphereGeometry(D.r,48,24,0,2*PI,0,PI/2)));const base=meshOf(new THREE.CircleGeometry(D.r,48));base.rotation.x=PI/2;g.add(base);g.position.y=-D.r/2;return g;},
+   calc:D=>[['Volume','V = 2⁄3 πr³',f(2/3*PI*D.r**3)+' cm³',0],['Curved SA','A = 2πr²',f(2*PI*D.r*D.r)+' cm²',1],['Total SA','A = 2πr² + πr² = 3πr²',f(3*PI*D.r*D.r)+' cm²',0]],
+   solve:()=>{const r=ri(2,7);const V=Math.round(2/3*PI*r**3);return{D:{r},prompt:'A hemisphere has <b>volume '+V+' cm³</b>. Find its radius.',ans:Math.cbrt(3*V/(2*PI)),u:'cm',w:'V = ⅔πr³ → r = ∛(3V ÷ 2π) = ∛('+(3*V)+' ÷ '+f(2*PI)+') ≈ '+f(Math.cbrt(3*V/(2*PI)))+' cm'};}},
+ {n:'Square pyramid',d:[['b','base b',1,10,5],['h','height h',1,12,6]],mesh:D=>{const m=meshOf(new THREE.ConeGeometry(D.b/Math.SQRT2,D.h,4));m.rotation.y=PI/4;return m;},
+   calc:D=>{const l=Math.sqrt((D.b/2)**2+D.h*D.h);return[['Slant height','l = √((b⁄2)² + h²)',f(l)+' cm',1],['Volume','V = ⅓ b²h',f(D.b*D.b*D.h/3)+' cm³',0],['Curved SA','A = 2bl',f(2*D.b*l)+' cm²',1],['Total SA','A = b² + 2bl',f(D.b*D.b+2*D.b*l)+' cm²',0]];},
+   solve:()=>{const b=ri(3,9),h=ri(3,10);const l=Math.sqrt((b/2)**2+h*h);return{D:{b,h},prompt:'A square-based pyramid has base <b>'+b+' cm</b> and height <b>'+h+' cm</b>. Find its slant height <i>l</i>.',ans:l,u:'cm',w:'l = √((b⁄2)² + h²) = √('+f(b/2)+'² + '+h+'²) ≈ '+f(l)+' cm'};}},
+ {n:'Triangular prism',d:[['a','side a',1,10,5],['L','length L',1,14,8]],mesh:D=>{const m=meshOf(new THREE.CylinderGeometry(D.a/Math.sqrt(3),D.a/Math.sqrt(3),D.L,3));m.rotation.y=PI/6;m.rotation.z=PI/2;return m;},
+   calc:D=>{const base=Math.sqrt(3)/4*D.a*D.a;return[['Base area (equilat.)','= (√3⁄4) a²',f(base)+' cm²',1],['Volume','V = base × L',f(base*D.L)+' cm³',0],['Curved SA','A = 3aL',f(3*D.a*D.L)+' cm²',1],['Total SA','A = 2×base + 3aL',f(2*base+3*D.a*D.L)+' cm²',0]];},
+   solve:()=>{const a=ri(3,8),L=ri(4,12);const base=Math.sqrt(3)/4*a*a;const V=Math.round(base*L);return{D:{a,L},prompt:'An equilateral triangular prism has <b>volume '+V+' cm³</b> and triangle side '+a+' cm. Find its length L.',ans:V/base,u:'cm',w:'V = (√3⁄4)a² × L → L = V ÷ base = '+V+' ÷ '+f(base)+' ≈ '+f(V/base)+' cm'};}},
+ {n:'Cone frustum',d:[['R','base R',2,9,5],['r','top r',1,6,2],['h','height h',1,12,6]],mesh:D=>meshOf(new THREE.CylinderGeometry(D.r,D.R,D.h,48)),
+   calc:D=>{const l=Math.sqrt((D.R-D.r)**2+D.h*D.h);return[['Slant height','l = √((R−r)² + h²)',f(l)+' cm',1],['Volume','V = ⅓πh(R² + Rr + r²)',f(PI*D.h*(D.R*D.R+D.R*D.r+D.r*D.r)/3)+' cm³',0],['Curved SA','A = π(R + r)l',f(PI*(D.R+D.r)*l)+' cm²',1],['Total SA','+ πR² + πr²',f(PI*(D.R+D.r)*l+PI*D.R*D.R+PI*D.r*D.r)+' cm²',0]];},
+   solve:()=>{const R=ri(4,9),r=ri(1,3),h=ri(3,10);const l=Math.sqrt((R-r)**2+h*h);return{D:{R,r,h},prompt:'A frustum has base radius <b>'+R+'</b>, top radius <b>'+r+'</b> and height <b>'+h+' cm</b>. Find its slant height <i>l</i>.',ans:l,u:'cm',w:'l = √((R−r)² + h²) = √('+(R-r)+'² + '+h+'²) ≈ '+f(l)+' cm'};}}
+];
+let si=0,D={},solid=null,solveMode=false,cur=null;
+function buildShapeButtons(){$('shapes').innerHTML=S.map((s,i)=>`<button class="${i===si?'on':''}" onclick="pick(${i})">${s.n}</button>`).join('');}
+function buildSliders(){const s=S[si];$('sliders').innerHTML=s.d.map(d=>`<div class="row"><span class="name">${d[1]}</span><input type="range" id="d_${d[0]}" min="${d[2]}" max="${d[3]}" step="0.5" value="${D[d[0]]}" oninput="setDim('${d[0]}',this.value)"><span class="val" id="dv_${d[0]}">${D[d[0]]}</span></div>`).join('');}
+function setDim(k,v){D[k]=+v;$('dv_'+k).textContent=v;rebuild(false);}
+window.setDim=setDim;
+function rebuild(reframe){if(solid)scene.remove(solid);solid=S[si].mesh(D);scene.add(solid);
+  const b=new THREE.Box3().setFromObject(solid);const c=b.getCenter(new THREE.Vector3());solid.position.sub(c);
+  if(reframe){const sz=b.getSize(new THREE.Vector3());orbit.R=Math.max(sz.x,sz.y,sz.z)*2.3+9;}
+  info();}
+function info(){const s=S[si];$('o-name').textContent=s.n;
+  $('o-frm').innerHTML=s.calc(D).map(r=>`<div class="frm ${r[3]?'amb':''}"><span class="l">${r[0]}</span><br><span class="e">${r[1]}</span> &nbsp;<span class="val">= ${r[2]}</span></div>`).join('');}
+function pick(i){si=i;D={};S[i].d.forEach(d=>D[d[0]]=d[4]);buildShapeButtons();buildSliders();rebuild(true);if(solveMode)newQ();}
+window.pick=pick;
+function toggleSolve(){solveMode=!solveMode;$('modeBtn').classList.toggle('on',solveMode);$('solve').classList.toggle('on',solveMode);$('sliders').style.display=solveMode?'none':'block';if(solveMode)newQ();else{D={};S[si].d.forEach(d=>D[d[0]]=d[4]);buildSliders();rebuild(true);}}
+window.toggleSolve=toggleSolve;
+function newQ(){cur=S[si].solve();D=Object.assign({},cur.D);rebuild(true);$('q').innerHTML='🎯 '+cur.prompt;$('ansin').value='';$('fb').textContent='';$('fb').className='fb';
+  // hide the asked quantity from the info panel by showing only the shape name in solve
+  $('o-frm').innerHTML='<div class="frm"><span class="l">Solve for the missing value</span></div>';}
+window.newQ=newQ;
+function checkAns(){if(!cur)return;const g=parseFloat($('ansin').value);const fb=$('fb');
+  if(isNaN(g)){fb.className='fb';fb.textContent='Type a number first.';return;}
+  const ok=Math.abs(g-cur.ans)<=Math.max(0.1,cur.ans*0.03);
+  fb.className='fb '+(ok?'ok':'no');
+  fb.innerHTML=(ok?'✓ Correct! ':'✗ Not quite (answer ≈ '+f(cur.ans)+' '+cur.u+'). ')+'<br><b>Working:</b> '+cur.w;}
+window.checkAns=checkAns;
+const orbit={th:0.6,ph:1.0,R:24,tgt:new THREE.Vector3(0,0,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+function zoom(f){orbit.R=clamp(orbit.R*f,5,200);applyCam();}
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
+(function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:150px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);})();
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.3,1.5);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.25;applyCam();renderer.render(scene,camera);}
+pick(0);resize();applyCam();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
+</script>
+</body>
+</html>
