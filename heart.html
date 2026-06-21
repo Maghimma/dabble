@@ -14,7 +14,7 @@
   .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
   .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
   .hint{position:fixed;top:54px;left:0;right:0;text-align:center;z-index:8;color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none}
-  .info{position:fixed;top:80px;right:14px;z-index:9;width:min(220px,48vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .info{position:fixed;top:80px;right:14px;z-index:9;width:min(222px,48vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
   .leg{font-size:12px;line-height:1.9}.leg i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
   .note{font-size:11.5px;color:var(--dim);line-height:1.55;margin-top:9px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:#fff}
   .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
@@ -35,7 +35,7 @@
   <div class="hint">drag to rotate ↻</div>
   <div class="info">
     <div class="leg"><i style="background:#5b9bff"></i>deoxygenated blood<br><i style="background:#ff6b6b"></i>oxygenated blood</div>
-    <div class="note"><b>Double circulation:</b> blood goes through the heart twice each loop — to the lungs, then to the body. The <b>left ventricle</b> has the thickest wall (it pumps all round the body).</div>
+    <div class="note"><b>Double circulation:</b> blood passes through the heart twice per loop — to the lungs, then the body. The <b>left ventricle</b> wall is thickest (it pumps all round the body).</div>
   </div>
   <div class="ctrl"><div class="wrap2"><span class="name">Heart rate</span><input type="range" id="bpm" min="40" max="180" step="2" value="72" oninput="upd()"><span class="val" id="bpm-v">72 bpm</span></div></div>
 
@@ -47,60 +47,84 @@ import * as THREE from 'three';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
 const canvas=$('gl');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;
-const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,80,180);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x1a2740,90,200);
 const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
-(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#27384f');gr.addColorStop(.6,'#16283c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
-scene.add(new THREE.HemisphereLight(0xffe0e0,0x223044,1));
-const key=new THREE.DirectionalLight(0xffffff,1.25);key.position.set(14,22,20);scene.add(key);
-const fill=new THREE.DirectionalLight(0x88aaff,.4);fill.position.set(-16,4,-10);scene.add(fill);scene.add(new THREE.AmbientLight(0xffffff,.3));
-function lab(text,x,y,z,col){const c=document.createElement('canvas');c.width=320;c.height=64;const g=c.getContext('2d');g.fillStyle=col;g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,160,36);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(11,2.2,1);s.position.set(x,y,z);scene.add(s);return s;}
-// ---- heart muscle (stylised) ----
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#2a3a52');gr.addColorStop(.6,'#17273c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xffe6e6,0x223044,1));
+const key=new THREE.DirectionalLight(0xffffff,1.3);key.position.set(16,26,22);key.castShadow=true;scene.add(key);
+const rim=new THREE.DirectionalLight(0x88aaff,.5);rim.position.set(-18,6,-12);scene.add(rim);scene.add(new THREE.AmbientLight(0xffffff,.28));
+function lab(text,x,y,z,col){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2.5*w/46,2.5,1);s.position.set(x,y,z);scene.add(s);return s;}
 const heart=new THREE.Group();scene.add(heart);
-const musc=new THREE.MeshStandardMaterial({color:0x9c2c38,roughness:.55,metalness:.05,emissive:0x300810,emissiveIntensity:.35});
-const muscR=new THREE.MeshStandardMaterial({color:0xb23a48,roughness:.55,emissive:0x3a0c14,emissiveIntensity:.35});
-const lobeL=new THREE.Mesh(new THREE.SphereGeometry(5,40,32),muscR);lobeL.position.set(-2.7,2.4,0);lobeL.scale.set(1,1.05,.95);heart.add(lobeL);
-const lobeR=new THREE.Mesh(new THREE.SphereGeometry(5,40,32),musc);lobeR.position.set(2.7,2.4,0);lobeR.scale.set(1,1.05,.95);heart.add(lobeR);
-const apex=new THREE.Mesh(new THREE.ConeGeometry(6.6,13,40),musc);apex.position.set(0,-3.5,0);apex.rotation.x=Math.PI;heart.add(apex);
-heart.traverse(o=>{if(o.isMesh){o.castShadow=true;}});
-// ---- great vessels (tubes) ----
-function tube(pts,r,col){const cv=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));const m=new THREE.Mesh(new THREE.TubeGeometry(cv,40,r,16,false),new THREE.MeshStandardMaterial({color:col,roughness:.5,emissive:col,emissiveIntensity:.12}));heart.add(m);return m;}
-tube([[1,4,1],[1.5,11,1.5],[5.5,15,0],[8.5,11,-1]],1.5,0xc0392b);     // aorta (red, arches right)
-tube([[-1.5,4,1.5],[-2,11,1],[-5,14,-0.5]],1.4,0x3b6fb0);            // pulmonary artery (blue)
-tube([[6.2,6,-1.5],[7.2,14,-2.5]],1.5,0x3b6fb0);                     // vena cava (blue)
-tube([[6,1,-2.5],[8,-3,-3]],1.3,0x3b6fb0);                           // inferior vena cava
-tube([[-6,5,-2],[-8.5,10,-3]],1.3,0xc0392b);                         // pulmonary vein (red)
-// labels
-lab('Right atrium',5.2,5.5,3,'#9fc4ff');lab('Left atrium',-5.4,5.5,3,'#ffb3b3');
-lab('Right ventricle',5.6,-3,3.5,'#9fc4ff');lab('Left ventricle',-5.6,-3,3.5,'#ffb3b3');
-lab('Aorta',10.5,12,-1,'#ffb3b3');lab('Pulmonary artery',-6.5,15.5,0,'#9fc4ff');
-lab('Vena cava',9.5,15,-3,'#9fc4ff');lab('Pulmonary vein',-10.5,11.5,-3,'#ffb3b3');
-// ---- blood flow path ----
-const FP=[[7.2,13,-2.5],[3,4.5,1.5],[2.6,-4,2],[0.5,-8.5,1],[-1.5,11,1],[-7.5,9,-2.5],[-3,4.5,1.5],[-2.6,-4,2],[0,-9,1],[6.5,14,-0.5],[9,2,-2.5],[8.5,9,-3]];
-const flow=new THREE.CatmullRomCurve3(FP.map(p=>new THREE.Vector3(...p)),true);const FL=flow.getLength();
-const SPLIT=0.42; // up to ~lungs = deoxygenated
-const dgeo=new THREE.SphereGeometry(0.62,10,10);
-const blue=new THREE.MeshStandardMaterial({color:0x5b9bff,emissive:0x244a8a,emissiveIntensity:.8});
-const red=new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0x7a1f24,emissiveIntensity:.8});
-const dots=[];for(let i=0;i<24;i++){const m=new THREE.Mesh(dgeo,blue);heart.add(m);dots.push({m,u:i/24});}
+function noise(x,y,z){return Math.sin(x*1.2+y*.6)*.18+Math.sin(z*1.1-y*.8)*.16+Math.sin(x*.5+z*1.4)*.12;}
+// ---- ventricular muscle: deformed teardrop ----
+const vgeo=new THREE.SphereGeometry(8,80,60);{const p=vgeo.attributes.position;const v=new THREE.Vector3();
+  for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const ny=v.y/8;
+    let s=ny>=0.05?1:Math.pow(Math.max(0,(ny+1)/1.05),0.82);     // taper lower half to apex
+    let x=v.x*s, z=v.z*s*0.9, y=v.y*1.55+1.5;
+    const n=noise(x,y,z);x+=x*0.03*n;z+=z*0.03*n;y+=n*0.25;        // organic bumpiness
+    x+= -ny*0.8;                                                    // slight lean
+    // hint of two ventricles: a shallow groove on the front (z>0) near x≈0
+    if(z>2){const g=Math.exp(-(x*x)/2.5);z-=g*1.2;}
+    p.setXYZ(i,x,y,z);}
+  vgeo.computeVertexNormals();}
+const muscle=new THREE.MeshStandardMaterial({color:0x9e2b33,roughness:.62,metalness:.04,emissive:0x2a0709,emissiveIntensity:.3});
+const vmass=new THREE.Mesh(vgeo,muscle);vmass.castShadow=true;heart.add(vmass);
+// ---- atria (top, behind) ----
+function blob(r,x,y,z,col,sx,sy,sz){const m=new THREE.Mesh(new THREE.SphereGeometry(r,40,30),new THREE.MeshStandardMaterial({color:col,roughness:.6,emissive:0x250608,emissiveIntensity:.3}));m.position.set(x,y,z);m.scale.set(sx||1,sy||1,sz||1);m.castShadow=true;heart.add(m);return m;}
+blob(4.2,4.6,9.5,-2.2,0x8d2730,1.1,.9,1);   // right atrium
+blob(4.2,-4.6,9.5,-2.2,0xab3540,1.1,.9,1);  // left atrium
+blob(2.4,5.6,8,3.2,0x7c222b,1,.7,1);        // right auricle (ear flap, front)
+blob(2.4,-5.6,8,3.2,0x9c303a,1,.7,1);       // left auricle
+// ---- vessels ----
+function tube(pts,r,col,seg){const cv=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));const m=new THREE.Mesh(new THREE.TubeGeometry(cv,seg||40,r,16,false),new THREE.MeshStandardMaterial({color:col,roughness:.5,emissive:col,emissiveIntensity:.1}));m.castShadow=true;heart.add(m);return m;}
+const RED=0xc0392b, BLUE=0x36699f;
+// aorta + arch + head/arm branches
+tube([[0.5,8,0],[1,15,-1],[2.5,20,-2.5],[7,20.5,-4],[9.5,16,-5],[9.5,9,-5.5]],1.7,RED,60);
+tube([[3.6,20.2,-3.2],[3.4,24,-3.5]],0.6,RED);tube([[5.2,20.6,-3.6],[5.4,24.5,-4]],0.6,RED);tube([[6.8,20.4,-3.9],[7.3,23.8,-4.4]],0.6,RED);
+// pulmonary trunk + fork (L/R pulmonary arteries)
+tube([[-1.6,8,1.5],[-2,14,0.5],[-3,17.5,-0.5]],1.5,BLUE,40);
+tube([[-3,17.5,-0.5],[-7.5,18.5,-2.5],[-10,16,-3.5]],1,BLUE);tube([[-3,17.5,-0.5],[0.5,19,-3],[2,17,-4]],1,BLUE);
+// superior & inferior vena cava
+tube([[5.4,9,-3],[6.4,15,-3.5],[6.6,20,-4]],1.4,BLUE,30);
+tube([[5.6,-1,-3],[7,-6,-3.8],[7.6,-10,-4.2]],1.2,BLUE,30);
+// pulmonary veins into left atrium
+tube([[-6,9.5,-4],[-10,11,-6]],0.85,RED);tube([[-6.2,7,-4.5],[-10.5,5.5,-6.5]],0.85,RED);
+tube([[5.5,9.5,-4.5],[9.5,11,-6.5]],0.85,RED);tube([[5.7,7,-5],[10,5,-7]],0.85,RED);
+// coronary arteries (surface detail)
+tube([[0,7.5,4.2],[0.3,2,5],[0.6,-4,4],[0.4,-9,2.5]],0.32,0x8a1f26,40);                       // anterior interventricular (down the groove)
+tube([[6,7.5,1],[2,8.6,4],[-2,8.6,4],[-6,7.5,1]],0.32,0x8a1f26,40);                            // coronary sulcus (around top, front)
+// ---- labels ----
+lab('Right atrium',9,10,2,'#9fc4ff');lab('Left atrium',-9,10,2,'#ffb3b3');
+lab('Right ventricle',9,-3,4,'#9fc4ff');lab('Left ventricle',-9,-3,4,'#ffb3b3');
+lab('Aorta',13,18,-5,'#ffb3b3');lab('Pulmonary artery',-12,19.5,-3,'#9fc4ff');
+lab('Vena cava',10,21,-4,'#9fc4ff');lab('Pulmonary veins',-13.5,12,-6,'#ffb3b3');
+// ---- blood flow ----
+const FP=[[6.6,19,-4],[5,9.5,-2.5],[3.5,-3,2.5],[0.5,-9,1.5],[-3,17,-0.5],[-10,11,-6],[-4.6,9.5,-2.2],[-3.5,-3,2.5],[0,-9.5,1.5],[9.5,15,-5.2],[9,1,-5.5],[8,9,-4]];
+const flow=new THREE.CatmullRomCurve3(FP.map(p=>new THREE.Vector3(...p)),true);
+const SPLIT=0.42;
+const dgeo=new THREE.SphereGeometry(0.6,10,10);
+const blue=new THREE.MeshStandardMaterial({color:0x5b9bff,emissive:0x244a8a,emissiveIntensity:.85});
+const red=new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0x7a1f24,emissiveIntensity:.85});
+const dots=[];for(let i=0;i<26;i++){const m=new THREE.Mesh(dgeo,blue);heart.add(m);dots.push({m,u:i/26});}
 let bpm=72;function upd(){bpm=+$('bpm').value;$('bpm-v').textContent=bpm+' bpm';}window.upd=upd;
-const orbit={th:0.5,ph:1.05,R:42,tgt:new THREE.Vector3(0,1,0),drag:false,px:0,py:0};
+const orbit={th:0.45,ph:1.02,R:54,tgt:new THREE.Vector3(0,3,-1),drag:false,px:0,py:0};
 function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
-function zoom(f){orbit.R=clamp(orbit.R*f,16,120);applyCam();}
+function zoom(f){orbit.R=clamp(orbit.R*f,20,130);applyCam();}
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
 (function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:132px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
 canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
-addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.4,1.45);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.35,1.5);orbit.px=e.clientX;orbit.py=e.clientY;});
 addEventListener('pointerup',()=>orbit.drag=false);
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(canvas);
 const clock=new THREE.Clock(),tmp=new THREE.Vector3();let beat=0;
-function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.18;applyCam();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.16;applyCam();
   const sp=bpm/72*0.1;
-  for(const d of dots){d.u=(d.u+dt*sp)%1;flow.getPointAt(d.u,tmp);d.m.position.copy(tmp);if(d.m.material!==(d.u<SPLIT?blue:red))d.m.material=d.u<SPLIT?blue:red;}
-  beat+=dt*bpm/60*2*Math.PI;const s=1+0.05*Math.max(0,Math.sin(beat));heart.scale.setScalar(s);
+  for(const d of dots){d.u=(d.u+dt*sp)%1;flow.getPointAt(d.u,tmp);d.m.position.copy(tmp);const wantR=d.u>=SPLIT;if((d.m.material===red)!==wantR)d.m.material=wantR?red:blue;}
+  beat+=dt*bpm/60*2*Math.PI;const s=1+0.045*Math.max(0,Math.sin(beat));heart.scale.setScalar(s);
   renderer.render(scene,camera);}
-if(PREVIEW){orbit.R=46;}
+if(PREVIEW){orbit.R=58;}
 upd();resize();applyCam();tick();
 setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>

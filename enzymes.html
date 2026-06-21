@@ -36,6 +36,7 @@
     <div class="rr"><span>Temperature</span><span class="v" id="o-temp">optimum</span></div>
     <div class="rr"><span>Status</span><span class="v ok" id="o-stat">working</span></div>
     <div class="rr"><span>Reaction rate</span><span class="v" id="o-rate">0 /s</span></div>
+    <div class="rr"><span>Reactions</span><span class="v" id="o-count">0</span></div>
     <div class="leg"><i style="background:#2ec4b6"></i>enzyme &nbsp;<i style="background:#f6a623"></i>substrate &nbsp;<i style="background:#8ce99a"></i>products</div>
     <div class="note" id="o-note">A substrate fits the enzyme's <b>active site</b> like a key in a lock, reacts, then leaves as products. The enzyme is reused.</div>
   </div>
@@ -100,7 +101,7 @@ function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;ctx.clearRect
   // label the active site on first enzyme
   if(!denat&&enz[0]){const p=pocket(enz[0]);ctx.fillStyle='#cfe0ee';ctx.font='600 13px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('active site',p.x,p.y-PR-10);}
   // rate
-  events=events.filter(e=>now-e<3000);$('o-rate').textContent=(events.length/3).toFixed(1)+' /s';
+  events=events.filter(e=>now-e<3000);$('o-rate').textContent=(events.length/3).toFixed(1)+' /s';$('o-count').textContent=count;
   requestAnimationFrame(loop);}
 init();upd();requestAnimationFrame(loop);
 setTimeout(()=>$('loader').classList.add('hide'),300);
