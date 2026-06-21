@@ -85,7 +85,7 @@ function render(){
   P[0].forEach(function(a){const h=document.createElement('div');h.className='gc gh';h.textContent=a;g.appendChild(h);
     P[1].forEach(function(b){const geno=sortG(a,b);const isDom=geno.indexOf('B')>=0;if(isDom)dom++;counts[geno]=(counts[geno]||0)+1;
       const c=document.createElement('div');c.className='gc cell '+(isDom?'dom':'rec');c.textContent=geno;g.appendChild(c);});});
-  $('o-cross').textContent=P[0].slice().sort().reverse().join('')+' × '+P[1].slice().sort().reverse().join('');
+  $('o-cross').textContent=P[0].slice().sort().join('')+' × '+P[1].slice().sort().join('');
   $('o-pd').textContent='Brown '+dom+'/4';$('o-pr').textContent='Blue '+(4-dom)+'/4';
   const order=['BB','Bb','bb'];$('o-geno').textContent=order.map(function(k){return (counts[k]||0);}).join(' : ')+'  (BB:Bb:bb)';
   const ratio=dom===4?'all brown':dom===0?'all blue':dom===3?'3 brown : 1 blue':dom===2?'1:1 (half brown)':'1 brown : 3 blue';
