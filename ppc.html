@@ -47,7 +47,7 @@
 const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');let W,H,eff=true,growth=false;
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
 new ResizeObserver(resize).observe(cv);
-function plot(){const w=Math.min(W-110,500),h=Math.min(H-300,360),L=Math.max(60,(W-w)/2),T=92,B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function plot(){const w=Math.min(W-110,500),h=Math.min(H-330,300),L=Math.max(60,(W-w)/2),T=Math.max(96,Math.round(((H-150)-h)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 const MAXV=100;
 const mX=a=>{const p=plot();return p.L+a/MAXV*p.w;},mY=b=>{const p=plot();return p.B-b/MAXV*p.h;};
 // PPC: quarter-ellipse bowed outward. radius=80 (or 100 with growth)
@@ -58,6 +58,7 @@ function toggleEff(){eff=!eff;$('effBtn').classList.toggle('on',eff);$('effBtn')
 function toggleGrowth(){growth=!growth;$('grBtn').classList.toggle('on',growth);$('grBtn').textContent=growth?'ON':'OFF';draw();}
 window.toggleEff=toggleEff;window.toggleGrowth=toggleGrowth;
 function draw(){if(!W)return;const p=plot();ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(234,241,247,.06)';ctx.lineWidth=1;ctx.beginPath();for(let i=20;i<100;i+=20){ctx.moveTo(mX(i),p.T);ctx.lineTo(mX(i),p.B);ctx.moveTo(p.L,mY(i));ctx.lineTo(p.R,mY(i));}ctx.stroke();
   ctx.strokeStyle='rgba(234,241,247,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.L,p.T);ctx.lineTo(p.L,p.B);ctx.lineTo(p.R,p.B);ctx.stroke();
   ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='600 12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('🍔 Consumer goods →',(p.L+p.R)/2,p.B+26);ctx.save();ctx.translate(p.L-40,(p.T+p.B)/2);ctx.rotate(-Math.PI/2);ctx.fillText('🏭 Capital goods →',0,0);ctx.restore();
   // original curve faint if growth

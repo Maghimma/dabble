@@ -50,11 +50,12 @@ const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d')
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
 new ResizeObserver(resize).observe(cv);
 const QMAX=100,PMAX=100;
-function plot(){const w=Math.min(W-110,540),h=Math.min(H-300,360),L=Math.max(60,(W-w)/2),T=110,B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function plot(){const w=Math.min(W-110,500),h=Math.min(H-330,300),L=Math.max(60,(W-w)/2),T=Math.max(100,Math.round(((H-150)-h)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 const mX=q=>{const p=plot();return p.L+q/QMAX*p.w;},mY=v=>{const p=plot();return p.B-v/PMAX*p.h;};
 function setType(t){type=t;$('t-el').classList.toggle('on',t==='el');$('t-in').classList.toggle('on',t==='in');draw();}
 window.setType=setType;
 function draw(){if(!W)return;const p=plot();ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(234,241,247,.06)';ctx.lineWidth=1;ctx.beginPath();for(let i=20;i<100;i+=20){ctx.moveTo(mX(i),p.T);ctx.lineTo(mX(i),p.B);ctx.moveTo(p.L,mY(i));ctx.lineTo(p.R,mY(i));}ctx.stroke();
   ctx.strokeStyle='rgba(234,241,247,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.L,p.T);ctx.lineTo(p.L,p.B);ctx.lineTo(p.R,p.B);ctx.stroke();
   ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='600 12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('Quantity →',(p.L+p.R)/2,p.B+28);ctx.save();ctx.translate(p.L-40,(p.T+p.B)/2);ctx.rotate(-Math.PI/2);ctx.fillText('Price →',0,0);ctx.restore();
   // demand: P=a-b*Q
