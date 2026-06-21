@@ -4,7 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dabble — learn by doing</title>
-<meta name="description" content="Interactive simulations that make tough concepts obvious. Drag, break, explore." />
+<meta name="description" content="Dabble — interactive physics, chemistry, maths, biology & economics simulations for IGCSE. Drag, break, explore." />
+<meta property="og:title" content="Dabble — learn by doing" />
+<meta property="og:description" content="Interactive science, maths & economics simulations. Drag, break, explore." />
+<meta property="og:image" content="https://maghimma.github.io/dabble/shots/circuits.jpg" />
+<meta property="og:url" content="https://maghimma.github.io/dabble/" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Dabble — learn by doing" />
+<meta name="twitter:image" content="https://maghimma.github.io/dabble/shots/circuits.jpg" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3" />
 <link rel="apple-touch-icon" href="favicon.svg?v=3" />
 <style>
@@ -39,7 +47,7 @@
   h1{font-size:clamp(34px,4.6vw,54px);font-weight:700;letter-spacing:-.025em;line-height:1.04;color:var(--ink)}
   .sub{font-size:clamp(15px,1.7vw,19px);font-weight:500;color:var(--dim);max-width:36ch;margin:14px auto 0;line-height:1.4}
   .cta{display:flex;gap:13px;justify-content:center;align-items:center;margin-top:24px;flex-wrap:wrap}
-  .btn{font-size:16px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:999px;transition:transform .15s,opacity .2s}
+  .btn{font-family:inherit;cursor:pointer;font-size:16px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:999px;transition:transform .15s,opacity .2s}
   .btn.solid{background:var(--blue);color:#fff}.btn.solid:hover{transform:translateY(-2px);opacity:.92}
   .btn.ghost{color:var(--ink);background:rgba(255,255,255,.62);border:1px solid var(--gb);backdrop-filter:blur(12px)}
   .btn.ghost:hover{background:#fff}
@@ -78,6 +86,15 @@
   .tile h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
   .tile p{font-size:12.5px;color:var(--dim);font-weight:500;margin-top:3px;line-height:1.35}
   .tile .go{color:var(--bluelink);font-size:12.5px;font-weight:600;margin-top:8px;display:inline-block}
+  .tile{position:relative}
+  .tdot{position:absolute;top:9px;z-index:3;width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;background:rgba(10,18,30,.5);color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:.55;transition:opacity .15s,transform .15s}
+  .tile:hover .tdot{opacity:1}.tdot:hover{transform:scale(1.12)}
+  .tdot.fav{right:9px}.tdot.fav.on{background:#f6a623;color:#3a2500;opacity:1}
+  .tdot.share{right:46px}
+  .tried-badge{position:absolute;top:11px;left:11px;z-index:3;background:var(--teal);color:#04302c;font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 8px;display:none}
+  .tile.tried .tried-badge{display:block}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+  .toast.on{opacity:1}
   .soon{background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.05);border-radius:22px;padding:32px;text-align:center;margin-top:16px;backdrop-filter:blur(10px)}
   .soon .lab{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
   .soon h3{font-size:21px;font-weight:700;margin-top:6px;letter-spacing:-.01em}
@@ -101,7 +118,7 @@
     <p class="sub">Interactive simulations that make tough concepts obvious. Drag, break, explore.</p>
     <div class="cta">
       <a class="btn solid" href="#sims">Start exploring</a>
-      <a class="btn ghost" href="hooke.html">Open a sim ›</a>
+      <button class="btn ghost" id="surprise" type="button">🎲 Surprise me</button>
     </div>
     <a class="scrollcue" href="#sims"><span>The simulations</span><span class="arr">↓</span></a>
   </header>
@@ -121,6 +138,7 @@
           <button class="ftab" data-f="maths">Maths</button>
           <button class="ftab" data-f="biology">Biology</button>
           <button class="ftab" data-f="economics">Economics</button>
+          <button class="ftab" data-f="fav">⭐ Saved</button>
         </div>
         <input class="search" id="search" type="search" placeholder="Search sims…" />
       </div>
@@ -176,11 +194,27 @@
       <footer><div style="display:flex;align-items:flex-end;gap:6px"><span class="wm">dabble<span class="cur"><svg viewBox="0 0 80 80"><g fill="#1d1d1f" stroke="#1d1d1f" stroke-linecap="round" stroke-linejoin="round"><path d="M27 29 L46 75 L53 55 L73 48 Z" stroke-width="4"/><line x1="35" y1="15" x2="39" y2="4" stroke-width="5"/><line x1="19" y1="19" x2="9" y2="9" stroke-width="5"/><line x1="14" y1="34" x2="3" y2="36" stroke-width="5"/></g></svg></span></span> — learn by doing.</div><div>Made by <b>Maghimma</b> · © 2026</div></footer>
     </div>
   </section>
+<div class="toast" id="toast"></div>
 <script>
-(function(){var tabs=[].slice.call(document.querySelectorAll('.ftab')),groups=[].slice.call(document.querySelectorAll('.subject')),search=document.getElementById('search'),f='all';
-function apply(){var q=(search.value||'').trim().toLowerCase();groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var ok=(f==='all'||f===g.dataset.subj)&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok)any=true;});g.style.display=any?'':'none';});}
-tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
-search.addEventListener('input',apply);apply();})();
+(function(){
+  var tiles=[].slice.call(document.querySelectorAll('.tile')),groups=[].slice.call(document.querySelectorAll('.subject')),tabs=[].slice.call(document.querySelectorAll('.ftab')),search=document.getElementById('search'),f='all';
+  var tried=JSON.parse(localStorage.getItem('dabble_tried')||'{}'),fav=JSON.parse(localStorage.getItem('dabble_fav')||'{}');
+  function save(){localStorage.setItem('dabble_tried',JSON.stringify(tried));localStorage.setItem('dabble_fav',JSON.stringify(fav));}
+  var T=document.getElementById('toast');function toast(m){T.textContent=m;T.classList.add('on');clearTimeout(T._t);T._t=setTimeout(function(){T.classList.remove('on');},1600);}
+  tiles.forEach(function(tile){var href=tile.getAttribute('href');
+    if(tried[href])tile.classList.add('tried');
+    var b=document.createElement('div');b.className='tried-badge';b.textContent='✓ tried';tile.appendChild(b);
+    var fb=document.createElement('button');fb.className='tdot fav'+(fav[href]?' on':'');fb.type='button';fb.textContent='★';fb.title='Save';
+    fb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(fav[href])delete fav[href];else fav[href]=1;fb.classList.toggle('on',!!fav[href]);save();toast(fav[href]?'Saved ⭐':'Removed');if(f==='fav')apply();});tile.appendChild(fb);
+    var sb=document.createElement('button');sb.className='tdot share';sb.type='button';sb.textContent='↗';sb.title='Share';
+    sb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var url=new URL(href,location.href).href;if(navigator.share){navigator.share({title:'Dabble',url:url}).catch(function(){});}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){toast('Link copied!');});}else toast(url);});tile.appendChild(sb);
+    tile.addEventListener('click',function(){tried[href]=1;tile.classList.add('tried');save();});
+  });
+  function apply(){var q=(search.value||'').trim().toLowerCase();groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var href=t.getAttribute('href');var ok=(f==='all'||(f==='fav'?fav[href]:f===g.dataset.subj))&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok)any=true;});g.style.display=any?'':'none';});}
+  tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
+  search.addEventListener('input',apply);apply();
+  var sp=document.getElementById('surprise');if(sp)sp.addEventListener('click',function(){var hs=tiles.map(function(t){return t.getAttribute('href');});if(hs.length)location.href=hs[Math.floor(Math.random()*hs.length)];});
+})();
 </script>
 </body>
 </html>
