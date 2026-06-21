@@ -645,7 +645,7 @@ if(_pick.includes(_lock)){                                   // standalone singl
   setTopic(_lock);document.title=LOCKMAP[_lock]+" — Dabble";
   const tb=document.querySelector('.tabs'); if(tb)tb.style.display='none';
   const tt=document.querySelector('.title'); if(tt)tt.innerHTML=LOCKMAP[_lock];
-  const cr=document.querySelector('.credit'); if(cr)cr.style.display='none';
+  const cr=document.querySelector('.credit'); if(cr)cr.style.display='none'; const hb=document.getElementById('helpBtn'); if(hb)hb.style.display='none';
   const ap=document.querySelector('.app'); if(ap)ap.style.maxWidth='none';
 }else setTopic(_pick.includes(_t0)?_t0:'hooke');
 const clock=new THREE.Clock();

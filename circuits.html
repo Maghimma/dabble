@@ -2,108 +2,111 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Circuits & Ohm's Law — Dabble</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Circuits &amp; Ohm's Law — Dabble</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--teal-d:#1f9d92;--amber:#f6a623;--pink:#ff6b6b;--panel:rgba(16,28,46,.6)}
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);min-height:100vh;
-    background:radial-gradient(70% 60% at 50% 0%,#16384f,transparent 60%),linear-gradient(170deg,#11314a,#0a1622);
-    display:flex;flex-direction:column;align-items:center;padding:16px}
-  .top{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-  .back{color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
-  .title{font-family:'Fraunces',serif;font-weight:600;font-size:20px}
-  .wrap{width:100%;max-width:760px}
-  .stage{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:10px;backdrop-filter:blur(12px);box-shadow:0 16px 40px -18px rgba(0,0,0,.5)}
-  .stage svg{width:100%;height:auto;display:block}
-  .info{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .stat{flex:1;min-width:90px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
-  .stat small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:block}
-  .stat b{font-family:'Fraunces',serif;font-weight:600;font-size:22px}
-  .stat.i b{color:var(--teal)} .stat.p b{color:var(--amber)}
-  .ctrl{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px;backdrop-filter:blur(12px)}
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--panel:rgba(16,28,46,.55)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}
+  .back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .hint{position:fixed;top:54px;left:0;right:0;text-align:center;z-index:8;color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none}
+  .info{position:fixed;top:80px;right:14px;z-index:9;width:min(220px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
+  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:18px}
+  .rr .v.i{color:var(--teal)} .rr .v.p{color:var(--amber)}
+  .law{text-align:center;font-family:'Fraunces',serif;font-size:16px;margin-top:12px}.law b{color:var(--amber)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(16px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:680px;margin:0 auto}
   .row{display:flex;align-items:center;gap:14px;margin-top:10px}.row:first-child{margin-top:0}
-  .row .name{flex:0 0 120px;font-weight:600;font-size:15px}.row .name small{display:block;font-weight:500;font-size:11px;color:var(--dim)}
-  .row input{flex:1;accent-color:var(--teal);height:28px}
-  .row .val{flex:0 0 66px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
-  .law{text-align:center;font-family:'Fraunces',serif;font-size:18px;margin-top:14px;color:var(--ink)}
-  .law b{color:var(--amber)}
-  .note{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
-  .note b{color:var(--amber)}
+  .row .name{flex:0 0 130px;font-weight:600;font-size:15px}.row .name small{display:block;font-weight:500;font-size:11px;color:var(--dim)}
+  .row input{flex:1;accent-color:var(--teal);height:30px}
+  .row .val{flex:0 0 64px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
-  <div class="top">
-    <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
-    <div class="title">⚡ Circuits &amp; Ohm's Law</div>
-    <span style="width:60px"></span>
+  <div id="loader">building the circuit…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">⚡ Circuits &amp; Ohm's Law</div>
+  <div class="hint">drag to look around ↻</div>
+  <div class="info">
+    <div class="rr"><span>Voltage</span><span class="v" id="o-v">6 V</span></div>
+    <div class="rr"><span>Resistance</span><span class="v" id="o-r">3 Ω</span></div>
+    <div class="rr"><span>Current (V÷R)</span><span class="v i" id="o-i">2.0 A</span></div>
+    <div class="rr"><span>Power (V×I)</span><span class="v p" id="o-p">12 W</span></div>
+    <div class="law">V = I × <b>R</b></div>
+    <div class="note">Raise voltage → more current (faster dots). Raise resistance → less current, dimmer bulb.</div>
   </div>
-  <div class="wrap">
-    <div class="stage">
-      <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
-        <defs><radialGradient id="glow"><stop offset="0" stop-color="#fff7cc"/><stop offset="50%" stop-color="#ffd23f"/><stop offset="100%" stop-color="#ffd23f" stop-opacity="0"/></radialGradient></defs>
-        <!-- conductor -->
-        <path d="M70 60 H330 V200 H70 Z" fill="none" stroke="#5d7488" stroke-width="5" stroke-linejoin="round"/>
-        <path id="flow" d="M70 60 H330 V200 H70 Z" fill="none" stroke="#7fe6dd" stroke-width="5" stroke-linejoin="round" stroke-dasharray="2 18" stroke-linecap="round"/>
-        <!-- bulb (top centre) -->
-        <circle id="bulbglow" cx="200" cy="60" r="46" fill="url(#glow)" opacity="0"/>
-        <circle cx="200" cy="60" r="20" fill="#0e2233" stroke="#9fb6cf" stroke-width="3"/>
-        <path d="M188 50 L212 70 M212 50 L188 70" stroke="#ffd23f" stroke-width="2.5" id="filament"/>
-        <!-- battery (bottom centre) -->
-        <g transform="translate(200,200)">
-          <line x1="-10" y1="-15" x2="-10" y2="15" stroke="#eaf1f7" stroke-width="3"/>
-          <line x1="6" y1="-8" x2="6" y2="8" stroke="#eaf1f7" stroke-width="6"/>
-          <text x="-2" y="34" text-anchor="middle" font-size="11" fill="#9fb6cf" font-family="Hanken Grotesk">battery</text>
-        </g>
-        <!-- ammeter (left wire) -->
-        <circle cx="70" cy="130" r="18" fill="#0e2233" stroke="#5d7488" stroke-width="3"/>
-        <text x="70" y="135" text-anchor="middle" font-size="15" fill="var(--teal)" font-family="Fraunces" font-weight="600">A</text>
-      </svg>
-    </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="row"><span class="name">Voltage<small>battery push</small></span><input type="range" id="v" min="0" max="12" step="0.5" value="6" oninput="upd()"><span class="val" id="v-v">6 V</span></div>
+    <div class="row"><span class="name">Resistance<small>how hard to push</small></span><input type="range" id="r" min="1" max="20" step="1" value="3" oninput="upd()"><span class="val" id="r-v">3 Ω</span></div>
+  </div></div>
 
-    <div class="info">
-      <div class="stat"><small>Voltage</small><b id="o-v">6 V</b></div>
-      <div class="stat"><small>Resistance</small><b id="o-r">3 Ω</b></div>
-      <div class="stat i"><small>Current (V÷R)</small><b id="o-i">2.0 A</b></div>
-      <div class="stat p"><small>Power (V×I)</small><b id="o-p">12 W</b></div>
-    </div>
-
-    <div class="ctrl">
-      <div class="row"><span class="name">Voltage<small>the push from the battery</small></span><input type="range" id="v" min="0" max="12" step="0.5" value="6" oninput="upd()"><span class="val" id="v-v">6 V</span></div>
-      <div class="row"><span class="name">Resistance<small>how hard to push through</small></span><input type="range" id="r" min="1" max="20" step="1" value="3" oninput="upd()"><span class="val" id="r-v">3 Ω</span></div>
-      <div class="law" id="status">More voltage → more current. More resistance → less.</div>
-      <div class="note"><b>V = I × R.</b> Current = voltage ÷ resistance. Watch the dots flow faster (more current) and the bulb glow brighter as power (V×I) rises.</div>
-    </div>
-  </div>
-
-<script>
-  const $=id=>document.getElementById(id);
-  const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
-  function upd(){
-    const V=+$('v').value, R=+$('r').value;
-    const I=V/R, P=V*I;
-    $('v-v').textContent=V+' V'; $('r-v').textContent=R+' Ω';
-    $('o-v').textContent=V+' V'; $('o-r').textContent=R+' Ω';
-    $('o-i').textContent=I.toFixed(2)+' A'; $('o-p').textContent=P.toFixed(1)+' W';
-    // bulb glow ∝ power
-    const b=clamp(P/40,0,1);
-    $('bulbglow').setAttribute('opacity',(b*0.95).toFixed(2));
-    $('filament').setAttribute('stroke',`rgba(255,210,63,${(0.4+b*0.6).toFixed(2)})`);
-    // current flow speed ∝ I
-    const f=$('flow');
-    if(I<0.05){f.style.animation='none';f.style.opacity=.15;}
-    else{f.style.opacity=1;f.style.animation=`flow ${(1.6/I).toFixed(2)}s linear infinite`;}
-    const st=$('status');
-    if(V===0)st.textContent='No voltage → no current. The bulb is off.';
-    else if(P>26)st.innerHTML='Bright! High power — careful, real bulbs would blow 💥';
-    else st.textContent='V = I × R — try changing each slider.';
-  }
-  // inject keyframe
-  const s=document.createElement('style');s.textContent='@keyframes flow{to{stroke-dashoffset:-20}}';document.head.appendChild(s);
-  upd();
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,120);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,70,150);
+const camera=new THREE.PerspectiveCamera(52,1,0.1,400);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,0.95));
+const key=new THREE.DirectionalLight(0xffffff,1.3);key.position.set(20,34,18);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=120;key.shadow.camera.left=-44;key.shadow.camera.right=44;key.shadow.camera.top=44;key.shadow.camera.bottom=-44;scene.add(key);
+scene.add(new THREE.AmbientLight(0xffffff,.3));
+function mat(c,o={}){return new THREE.MeshStandardMaterial({color:c,roughness:o.r??.6,metalness:o.m??.2,...(o.e?{emissive:o.e,emissiveIntensity:o.ei??.4}:{})});}
+function addLabel(text,x,y,z){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.fillStyle='#cfe0ee';g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));s.scale.set(12,3,1);s.position.set(x,y,z);scene.add(s);}
+const board=new THREE.Mesh(new THREE.BoxGeometry(58,2,42),mat(0x21405a,{r:.95,m:0}));board.position.y=-1;board.receiveShadow=true;scene.add(board);
+const grid=new THREE.GridHelper(58,14,0x3a5a82,0x2a4364);grid.position.y=0.06;scene.add(grid);
+const C=[new THREE.Vector3(-20,1.5,-12),new THREE.Vector3(20,1.5,-12),new THREE.Vector3(20,1.5,12),new THREE.Vector3(-20,1.5,12)];
+const curve=new THREE.CatmullRomCurve3(C,true,'catmullrom',0);
+const wire=new THREE.Mesh(new THREE.TubeGeometry(curve,180,0.6,10,true),mat(0x9fb6cf,{m:.5,r:.4}));wire.castShadow=true;scene.add(wire);
+// battery
+const batt=new THREE.Group();const bb=new THREE.Mesh(new THREE.BoxGeometry(9,4,4),mat(0x2e4a66));batt.add(bb);const cap=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,1,12),mat(0xffd23f,{e:0x5a4400,ei:.3}));cap.rotation.z=Math.PI/2;cap.position.x=5;batt.add(cap);batt.position.set(0,1.8,12);batt.traverse(o=>o.castShadow=true);scene.add(batt);addLabel('battery',0,5.6,12);
+// resistor
+const res=new THREE.Mesh(new THREE.BoxGeometry(3.4,3,3),mat(0xb98a4a,{r:.7}));res.position.set(20,1.8,0);res.castShadow=true;scene.add(res);
+[-1,0,1].forEach(i=>{const b=new THREE.Mesh(new THREE.BoxGeometry(0.5,3.1,3.1),mat([0xff6b6b,0xf6a623,0x5b9bff][i+1]));b.position.set(20+i*0.9,1.8,0);scene.add(b);});
+addLabel('resistor',20,5,0);
+// bulb
+const bulbGlow=new THREE.PointLight(0xffd98a,0,70,2);bulbGlow.position.set(0,4.4,-12);scene.add(bulbGlow);
+const bulb=new THREE.Mesh(new THREE.SphereGeometry(2.6,20,16),new THREE.MeshStandardMaterial({color:0xffe9a8,emissive:0xffd23f,emissiveIntensity:0,roughness:.2,transparent:true,opacity:.92}));bulb.position.set(0,4.4,-12);bulb.castShadow=true;scene.add(bulb);
+const baseM=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,2,12),mat(0xbbbbbb,{m:.6}));baseM.position.set(0,1.8,-12);scene.add(baseM);
+const glowSprite=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');const rg=g.createRadialGradient(64,64,0,64,64,64);rg.addColorStop(0,'rgba(255,225,150,.95)');rg.addColorStop(.4,'rgba(255,210,90,.4)');rg.addColorStop(1,'rgba(255,210,90,0)');g.fillStyle=rg;g.fillRect(0,0,128,128);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));s.scale.set(22,22,1);s.position.set(0,4.4,-12);scene.add(s);return s;})();
+addLabel('bulb',0,8.4,-12);
+// current particles
+const N=26, parts=[], pgeo=new THREE.SphereGeometry(0.55,8,8), pmat=new THREE.MeshStandardMaterial({color:0x7fe6dd,emissive:0x2ec4b6,emissiveIntensity:.8});
+for(let i=0;i<N;i++){const p=new THREE.Mesh(pgeo,pmat);p.userData.u=i/N;scene.add(p);parts.push(p);}
+const orbit={th:0.7,ph:1.04,R:64,tgt:new THREE.Vector3(0,2,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.5,1.4);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+let I=2;
+function upd(){const V=+$('v').value,R=+$('r').value;I=V/R;const P=V*I;
+  $('v-v').textContent=V+' V';$('r-v').textContent=R+' Ω';$('o-v').textContent=V+' V';$('o-r').textContent=R+' Ω';$('o-i').textContent=I.toFixed(2)+' A';$('o-p').textContent=P.toFixed(1)+' W';
+  const b=clamp(P/40,0,1);bulb.material.emissiveIntensity=b*2.4;bulbGlow.intensity=b*2.6;glowSprite.material.opacity=b;pmat.emissiveIntensity=.3+I*0.18;}
+window.upd=upd;
+const clock=new THREE.Clock(),tmp=new THREE.Vector3();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);
+  if(!orbit.drag)orbit.th+=dt*.05;applyCam();
+  for(const p of parts){p.userData.u=(p.userData.u+dt*I*0.03)%1;curve.getPointAt(p.userData.u,tmp);p.position.copy(tmp);}
+  renderer.render(scene,camera);}
+resize();applyCam();upd();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>
 </body>
 </html>

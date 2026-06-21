@@ -2,124 +2,125 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Waves & Refraction — Dabble</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Waves &amp; Refraction — Dabble</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--pink:#ff6b6b;--panel:rgba(16,28,46,.6)}
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);min-height:100vh;
-    background:radial-gradient(70% 60% at 50% 0%,#16384f,transparent 60%),linear-gradient(170deg,#11314a,#0a1622);
-    display:flex;flex-direction:column;align-items:center;padding:16px}
-  .top{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-  .back{color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
-  .title{font-family:'Fraunces',serif;font-weight:600;font-size:20px}
-  .wrap{width:100%;max-width:760px}
-  .stage{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:10px;backdrop-filter:blur(12px);box-shadow:0 16px 40px -18px rgba(0,0,0,.5)}
-  .stage svg{width:100%;height:auto;display:block}
-  .info{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .stat{flex:1;min-width:90px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
-  .stat small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:block}
-  .stat b{font-family:'Fraunces',serif;font-weight:600;font-size:22px}
-  .stat.in b{color:var(--amber)} .stat.out b{color:var(--teal)}
-  .ctrl{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px;backdrop-filter:blur(12px)}
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--pink:#ff6b6b;--panel:rgba(16,28,46,.55)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .hint{position:fixed;top:54px;left:0;right:0;text-align:center;z-index:8;color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;pointer-events:none}
+  .info{position:fixed;top:80px;right:14px;z-index:9;width:min(220px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
+  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:18px}.rr .v.in{color:var(--amber)}.rr .v.out{color:var(--teal)}
+  .status{text-align:center;font-weight:600;font-size:13px;margin-top:12px;padding:7px;border-radius:9px}
+  .status.ok{background:rgba(46,196,182,.15);color:var(--teal)}.status.tir{background:rgba(255,107,107,.16);color:var(--pink)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(16px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:680px;margin:0 auto}
   .row{display:flex;align-items:center;gap:14px;margin-top:10px}.row:first-child{margin-top:0}
-  .row .name{flex:0 0 120px;font-weight:600;font-size:15px}
-  .row input{flex:1;accent-color:var(--teal);height:28px}
-  .row .val{flex:0 0 60px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
+  .row .name{flex:0 0 130px;font-weight:600;font-size:15px}
+  .row input{flex:1;accent-color:var(--teal);height:30px}
+  .row .val{flex:0 0 58px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
   .seg{display:flex;gap:8px;margin-top:12px}
   .seg button{flex:1;font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:9px;cursor:pointer}
   .seg button.on{background:var(--teal);color:#04302c;border-color:var(--teal)}
-  .status{text-align:center;font-weight:600;font-size:14px;margin-top:14px;padding:8px;border-radius:10px}
-  .status.ok{background:rgba(46,196,182,.15);color:var(--teal)} .status.tir{background:rgba(255,107,107,.16);color:var(--pink)}
-  .note{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
-  .note b{color:var(--amber)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
-  <div class="top">
-    <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
-    <div class="title">🌊 Waves &amp; Refraction</div>
-    <span style="width:60px"></span>
+  <div id="loader">setting up the light…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">🌊 Waves &amp; Refraction</div>
+  <div class="hint">drag to look around ↻</div>
+  <div class="info">
+    <div class="rr"><span>Angle in (θ₁)</span><span class="v in" id="w-a1">40°</span></div>
+    <div class="rr"><span>Angle out (θ₂)</span><span class="v out" id="w-a2">25°</span></div>
+    <div class="rr"><span>Index n</span><span class="v" id="w-n">1.50</span></div>
+    <div class="rr"><span>Critical angle</span><span class="v" id="w-c">42°</span></div>
+    <div class="status ok" id="status">Bends toward the normal</div>
+    <div class="note"><b>n₁ sinθ₁ = n₂ sinθ₂.</b> Light slows in glass and bends toward the normal. Glass→air past the critical angle = total internal reflection.</div>
   </div>
-  <div class="wrap">
-    <div class="stage">
-      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-        <rect id="top" x="0" y="0" width="400" height="150" fill="#0d2233"/>
-        <rect id="bot" x="0" y="150" width="400" height="150" fill="#1c5b66"/>
-        <line x1="0" y1="150" x2="400" y2="150" stroke="#9fb6cf" stroke-width="2"/>
-        <line x1="200" y1="30" x2="200" y2="270" stroke="#9fb6cf" stroke-width="1.5" stroke-dasharray="5 5" opacity=".7"/>
-        <text id="lblTop" x="14" y="24" font-size="13" fill="#cfe0ee" font-family="Hanken Grotesk">air</text>
-        <text id="lblBot" x="14" y="170" font-size="13" fill="#cfe0ee" font-family="Hanken Grotesk">glass</text>
-        <text x="206" y="42" font-size="11" fill="#9fb6cf" font-family="Hanken Grotesk">normal</text>
-        <line id="incident" x1="0" y1="0" x2="200" y2="150" stroke="var(--amber)" stroke-width="3.5"/>
-        <line id="reflected" x1="200" y1="150" x2="0" y2="0" stroke="#ffd23f" stroke-width="2.5" opacity=".4"/>
-        <line id="refracted" x1="200" y1="150" x2="0" y2="0" stroke="var(--teal)" stroke-width="3.5"/>
-        <circle cx="200" cy="150" r="4" fill="#fff"/>
-      </svg>
+  <div class="ctrl"><div class="wrap2">
+    <div class="row"><span class="name">Angle of incidence</span><input type="range" id="a" min="0" max="88" value="40" oninput="upd()"><span class="val" id="a-v">40°</span></div>
+    <div class="row"><span class="name">Refractive index</span><input type="range" id="n" min="1" max="2" step="0.05" value="1.5" oninput="upd()"><span class="val" id="n-v">1.50</span></div>
+    <div class="seg" id="mode">
+      <button class="on" data-m="ag" onclick="setMode('ag',this)">Air → glass</button>
+      <button data-m="ga" onclick="setMode('ga',this)">Glass → air (TIR)</button>
     </div>
+  </div></div>
 
-    <div class="info">
-      <div class="stat in"><small>Angle in (θ₁)</small><b id="w-a1">40°</b></div>
-      <div class="stat out"><small>Angle out (θ₂)</small><b id="w-a2">25°</b></div>
-      <div class="stat"><small>Refractive index n</small><b id="w-n">1.50</b></div>
-      <div class="stat"><small>Critical angle</small><b id="w-c">42°</b></div>
-    </div>
-
-    <div class="ctrl">
-      <div class="row"><span class="name">Angle of incidence</span><input type="range" id="a" min="0" max="88" value="40" oninput="upd()"><span class="val" id="a-v">40°</span></div>
-      <div class="row"><span class="name">Refractive index</span><input type="range" id="n" min="1" max="2" step="0.05" value="1.5" oninput="upd()"><span class="val" id="n-v">1.50</span></div>
-      <div class="seg" id="mode">
-        <button class="on" data-m="ag" onclick="setMode('ag',this)">Air → glass</button>
-        <button data-m="ga" onclick="setMode('ga',this)">Glass → air (try TIR)</button>
-      </div>
-      <div class="status ok" id="status">Bends toward the normal</div>
-      <div class="note"><b>n₁ sinθ₁ = n₂ sinθ₂.</b> Light slows in glass and bends toward the normal. Going glass→air, past the <b>critical angle</b> it can't escape — total internal reflection.</div>
-    </div>
-  </div>
-
-<script>
-  const $=id=>document.getElementById(id);
-  const D=Math.PI/180, L=135, P={x:200,y:150};
-  let mode='ag';
-  function setMode(m,el){mode=m;document.querySelectorAll('#mode button').forEach(b=>b.classList.remove('on'));el.classList.add('on');upd();}
-  function upd(){
-    const th1=+$('a').value, n=+$('n').value;
-    $('a-v').textContent=th1+'°'; $('n-v').textContent=n.toFixed(2);
-    $('w-a1').textContent=th1+'°'; $('w-n').textContent=n.toFixed(2);
-    const crit=Math.asin(1/n)/D; $('w-c').textContent=crit.toFixed(0)+'°';
-    // shading + labels: glass region shaded teal
-    const glassTop = (mode==='ga');
-    $('top').setAttribute('fill', glassTop?'#1c5b66':'#0d2233');
-    $('bot').setAttribute('fill', glassTop?'#0d2233':'#1c5b66');
-    $('lblTop').textContent = glassTop?'glass':'air';
-    $('lblBot').textContent = glassTop?'air':'glass';
-    // incident ray (upper-left → P), travelling down-right
-    const ix=P.x - L*Math.sin(th1*D), iy=P.y - L*Math.cos(th1*D);
-    set('incident', ix,iy, P.x,P.y);
-    // reflected ray (upper-right)
-    set('reflected', P.x,P.y, P.x + L*Math.sin(th1*D), P.y - L*Math.cos(th1*D));
-    // refraction: n1 sinθ1 = n2 sinθ2
-    const n1 = (mode==='ga')? n:1, n2=(mode==='ga')?1:n;
-    const s2 = n1*Math.sin(th1*D)/n2;
-    const st=$('status'), refr=$('refracted'), refl=$('reflected');
-    if(s2>1){ // total internal reflection
-      refr.style.opacity=0; refl.style.opacity=1; refl.setAttribute('stroke-width','3.5');
-      $('w-a2').textContent='TIR';
-      st.className='status tir'; st.textContent='Total internal reflection — light can’t escape!';
-    } else {
-      const th2=Math.asin(s2)/D;
-      refr.style.opacity=1; refl.setAttribute('stroke-width','2.5'); refl.style.opacity=.4;
-      set('refracted', P.x,P.y, P.x + L*Math.sin(th2*D), P.y + L*Math.cos(th2*D));
-      $('w-a2').textContent=th2.toFixed(0)+'°';
-      st.className='status ok';
-      st.textContent = th2<th1 ? 'Bends toward the normal (entering denser glass)' : 'Bends away from the normal (entering lighter air)';
-    }
-  }
-  function set(id,x1,y1,x2,y2){const e=$(id);e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);}
-  upd();
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,120);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const D=Math.PI/180,L=26;
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x0e1f33,90,180);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,500);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1b3656');gr.addColorStop(.55,'#11243a');gr.addColorStop(1,'#0a1626');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
+const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(20,30,24);scene.add(key);
+scene.add(new THREE.AmbientLight(0xffffff,.35));
+// glass slab (top face at y=0)
+const slab=new THREE.Mesh(new THREE.BoxGeometry(46,26,20),new THREE.MeshStandardMaterial({color:0x6fd3e6,transparent:true,opacity:.22,roughness:.05,metalness:0,transmission:0}));
+slab.position.set(0,-13,0);scene.add(slab);
+new THREE.EdgesGeometry(slab.geometry); // (kept simple)
+const edges=new THREE.LineSegments(new THREE.EdgesGeometry(slab.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.5}));edges.position.copy(slab.position);scene.add(edges);
+// normal line
+const normal=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,34,8),new THREE.MeshBasicMaterial({color:0x9fb6cf,transparent:true,opacity:.5}));scene.add(normal);
+addLabel('normal',2.6,15,0,9);
+addLabel('air',-20,8,0,7); addLabel('glass',-20,-8,0,7);
+// beams (cylinders, base height 1)
+function beam(color,em,r){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,1,10),new THREE.MeshStandardMaterial({color,emissive:em,emissiveIntensity:1.1,roughness:.3}));scene.add(m);return m;}
+const incident=beam(0xffe28a,0xf6a623,.45), refracted=beam(0x9fe6dd,0x2ec4b6,.5), reflected=beam(0xffd23f,0xf6a623,.35);
+const P=new THREE.Vector3(0,0,0),Y=new THREE.Vector3(0,1,0);
+function setBeam(mesh,a,b){const dir=b.clone().sub(a),len=dir.length();dir.normalize();mesh.position.copy(a).addScaledVector(dir,len/2);mesh.quaternion.setFromUnitVectors(Y,dir);mesh.scale.set(1,len,1);}
+function addLabel(text,x,y,z,sz){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.fillStyle='#cfe0ee';g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(sz||9,(sz||9)/4,1);s.position.set(x,y,z);scene.add(s);return s;}
+let mode='ag';
+function setMode(m,el){mode=m;document.querySelectorAll('#mode button').forEach(b=>b.classList.remove('on'));el.classList.add('on');upd();}
+window.setMode=setMode;
+function upd(){const th1=+$('a').value,n=+$('n').value;
+  $('a-v').textContent=th1+'°';$('n-v').textContent=n.toFixed(2);$('w-a1').textContent=th1+'°';$('w-n').textContent=n.toFixed(2);
+  const crit=Math.asin(1/n)/D;$('w-c').textContent=crit.toFixed(0)+'°';
+  const glassTop=(mode==='ga');
+  // incident from upper-left (air side is whichever is medium1)
+  const inUp = !glassTop; // air→glass: incident in air (top, y>0). glass→air: incident in glass (bottom)
+  const sgn = inUp?1:-1;  // y direction of incident-source region
+  const inc=new THREE.Vector3(-L*Math.sin(th1*D), sgn*L*Math.cos(th1*D), 0);
+  setBeam(incident, P.clone().add(inc), P);
+  const n1=glassTop?n:1, n2=glassTop?1:n, s2=n1*Math.sin(th1*D)/n2;
+  const st=$('status');
+  if(s2>1){refracted.visible=false;reflected.visible=true;reflected.material.emissiveIntensity=1.3;
+    const refl=new THREE.Vector3(L*Math.sin(th1*D), sgn*L*Math.cos(th1*D),0);setBeam(reflected,P,P.clone().add(refl));
+    $('w-a2').textContent='TIR';st.className='status tir';st.textContent='Total internal reflection — light can’t escape!';
+  }else{const th2=Math.asin(s2)/D;refracted.visible=true;
+    const refr=new THREE.Vector3(L*Math.sin(th2*D), -sgn*L*Math.cos(th2*D),0);setBeam(refracted,P,P.clone().add(refr));
+    const refl=new THREE.Vector3(L*Math.sin(th1*D), sgn*L*Math.cos(th1*D),0);setBeam(reflected,P,P.clone().add(refl));reflected.material.emissiveIntensity=.35;reflected.visible=true;
+    $('w-a2').textContent=th2.toFixed(0)+'°';st.className='status ok';st.textContent=th2<th1?'Bends toward the normal':'Bends away from the normal';}
+}
+window.upd=upd;
+const orbit={th:0.5,ph:1.12,R:78,tgt:new THREE.Vector3(0,-3,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.6,1.4);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.04;applyCam();renderer.render(scene,camera);}
+resize();applyCam();upd();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>
 </body>
 </html>
