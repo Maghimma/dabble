@@ -317,6 +317,10 @@ function cyl(rt,rb,h,color,seg=16,o={}){const m=new THREE.Mesh(new THREE.Cylinde
 /* ===== camera orbit ===== */
 const orbit={theta:0.6,phi:1.05,R:34,tgt:new THREE.Vector3(0,8,0),drag:false,px:0,py:0};
 function applyCam(){const{theta,phi,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(phi)*Math.sin(theta),tgt.y+R*Math.cos(phi),tgt.z+R*Math.sin(phi)*Math.cos(theta));camera.lookAt(tgt);}
+/* zoom controls — wheel/trackpad + on-screen buttons */
+function zoom(f){orbit.R=clamp(orbit.R*f,8,340);applyCam();}
+canvas.addEventListener('wheel',function(e){e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
+(function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:132px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
 canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;$('hint').style.opacity=0;});
 addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.theta-=(e.clientX-orbit.px)*0.006;orbit.phi=clamp(orbit.phi-(e.clientY-orbit.py)*0.005,0.45,1.45);orbit.px=e.clientX;orbit.py=e.clientY;});
 addEventListener('pointerup',()=>orbit.drag=false);
