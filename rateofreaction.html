@@ -45,10 +45,11 @@
     <div class="rr"><span>Catalyst</span><span class="v" id="o-cat">off</span></div>
     <div class="rr"><span>Reacted</span><span class="v g" id="o-pct">0%</span></div>
     <div class="bar"><i id="bar"></i></div>
-    <div class="note"><b style="color:#ff6b6b">A</b> + <b style="color:#74c0fc">B</b> → <b style="color:#8ce99a">product</b>. Faster, more crowded, or hotter particles collide more often & harder → <b>faster rate</b>.</div>
+    <div class="note" id="o-note"><b style="color:#ff6b6b">A</b> + <b style="color:#74c0fc">B</b> → <b style="color:#8ce99a">product</b>. Hotter, more crowded, or catalysed → collisions are more frequent & harder → <b>faster rate</b>.</div>
   </div>
   <div class="ctrl"><div class="wrap2">
     <div class="topline">
+      <div class="seg"><button id="rev" onclick="toggleRev()">Reaction: →</button></div>
       <div class="seg"><button id="cat" onclick="toggleCat()">Catalyst: OFF</button></div>
       <button class="ghost" onclick="reset()">↻ Reset</button>
     </div>
@@ -75,7 +76,7 @@ const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshS
 scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4})));
 const geo=new THREE.SphereGeometry(1.5,12,10);
 const COL={A:0xff6b6b,B:0x74c0fc,P:0x8ce99a};
-let parts=[],reacted=0,total=0,cat=false;
+let parts=[],reacted=0,total=0,cat=false,reversible=false;
 function makeMat(t){return new THREE.MeshStandardMaterial({color:COL[t],roughness:.4,emissive:COL[t],emissiveIntensity:.25});}
 function reset(){
   parts.forEach(p=>scene.remove(p.mesh));parts=[];reacted=0;
@@ -88,6 +89,10 @@ function reset(){
 window.reset=reset;
 function toggleCat(){cat=!cat;$('cat').classList.toggle('on',cat);$('cat').textContent='Catalyst: '+(cat?'ON':'OFF');upd();}
 window.toggleCat=toggleCat;
+function EaRev(){return cat?9:16;}
+function setNote(){$('o-note').innerHTML=reversible?'<b>A + B ⇌ product.</b> Product can break back into A + B — forward &amp; reverse run at once until they balance at <b>dynamic equilibrium</b> (the % plateaus, never hits 100%).':'<b style="color:#ff6b6b">A</b> + <b style="color:#74c0fc">B</b> → <b style="color:#8ce99a">product</b>. Hotter, more crowded, or catalysed → collisions are more frequent &amp; harder → <b>faster rate</b>.';}
+function toggleRev(){reversible=!reversible;$('rev').classList.toggle('on',reversible);$('rev').textContent='Reaction: '+(reversible?'⇌':'→');setNote();}
+window.toggleRev=toggleRev;
 function upd(){const T=+$('temp').value;$('temp-v').textContent=T;
   $('o-temp').textContent=T<=3?'cool':T<=6?'warm':'hot';
   $('o-conc').textContent=(+$('conc').value)<=10?'low':(+$('conc').value)<=18?'medium':'high';
@@ -118,6 +123,9 @@ function step(dt){const tgt=speedTarget();
       if(((a.t==='A'&&b.t==='B')||(a.t==='B'&&b.t==='A')) && Math.abs(rel)>Ea()){
         a.t=b.t='P';a.mesh.material=makeMat('P');b.mesh.material=makeMat('P');
         a.mesh.material.emissiveIntensity=1.4;b.mesh.material.emissiveIntensity=1.4;reacted+=2;
+      } else if(reversible && a.t==='P'&&b.t==='P' && Math.abs(rel)>EaRev()){
+        a.t='A';b.t='B';a.mesh.material=makeMat('A');b.mesh.material=makeMat('B');
+        a.mesh.material.emissiveIntensity=1.0;b.mesh.material.emissiveIntensity=1.0;reacted=Math.max(0,reacted-2);
       }
     }
   }
@@ -135,7 +143,7 @@ new ResizeObserver(resize).observe(canvas);
 const clock=new THREE.Clock();
 function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);if(!orbit.drag)orbit.th+=dt*.05;applyCam();step(dt);renderer.render(scene,camera);}
 if(PREVIEW){$('temp').value=8;orbit.R=74;}
-reset();resize();applyCam();tick();
+reset();setNote();resize();applyCam();tick();
 setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>
 </body>
