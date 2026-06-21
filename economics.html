@@ -61,7 +61,7 @@ let W,H,pc=false,curD=0,curS=0;
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);}
 new ResizeObserver(resize).observe(cv);
 const QMAX=100,PMAX=100;
-function plot(){const w=Math.min(W-120,470),h=Math.min(H-380,250),L=Math.max(64,(W-w)/2),T=96,B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function plot(){const w=Math.min(W-120,480),h=Math.min(H-360,260),L=Math.max(64,(W-w)/2),blockH=h+170,T=Math.max(92,Math.round(((H-150)-blockH)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 const mX=q=>{const p=plot();return p.L+q/QMAX*p.w;},mY=v=>{const p=plot();return p.B-v/PMAX*p.h;};
 function togglePC(){pc=!pc;$('pcBtn').classList.toggle('on',pc);$('pcBtn').textContent=pc?'ON':'OFF';$('pc').style.opacity=pc?'1':'.4';$('pc').style.pointerEvents=pc?'auto':'none';}
 window.togglePC=togglePC;
@@ -76,19 +76,20 @@ function upd(){$('d-v').textContent=(+$('d').value)>0?'higher':(+$('d').value)<0
 window.upd=upd;
 function f(n){return Math.round(n);}
 function line(q1,p1,q2,p2,col){ctx.strokeStyle=col;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(mX(q1),mY(p1));ctx.lineTo(mX(q2),mY(p2));ctx.stroke();}
-function market(Qs,Qd,P,Peq){const p=plot();const top=p.B+60;const cxc=W/2;
-  ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='600 12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('the marketplace',cxc,top-12);
-  const unit=QMAX/12;const ng=Math.round(Qs/unit),nb=Math.round(Qd/unit),matched=Math.min(ng,nb);
-  const gap=18,x0=cxc-(11*gap)/2;
-  // goods row (boxes)
-  for(let i=0;i<12;i++){const on=i<ng;ctx.fillStyle=on?(i<matched?'#8ce99a':'#aab4bf'):'rgba(255,255,255,.06)';ctx.beginPath();ctx.roundRect(x0+i*gap-6,top,12,12,3);ctx.fill();}
-  // buyers row (heads)
-  for(let i=0;i<12;i++){const on=i<nb;ctx.fillStyle=on?(i<matched?'#8ce99a':'#ff8f8f'):'rgba(255,255,255,.06)';ctx.beginPath();ctx.arc(x0+i*gap,top+26,6,0,7);ctx.fill();}
-  ctx.fillStyle='rgba(234,241,247,.55)';ctx.font='11px Hanken Grotesk';ctx.textAlign='left';ctx.fillText('goods supplied',x0-2,top-2+0);ctx.fillText('buyers (demand)',x0-2,top+44);
+function market(Qs,Qd){const p=plot();const cxc=W/2;const top=p.B+66;
+  ctx.textAlign='center';ctx.fillStyle='rgba(234,241,247,.78)';ctx.font='700 13px Hanken Grotesk';ctx.fillText('The marketplace',cxc,top);
+  const unit=QMAX/12,ng=Math.round(Qs/unit),nb=Math.round(Qd/unit),matched=Math.min(ng,nb);
+  const gap=20,x0=cxc-(11*gap)/2,gy=top+26,by=top+52;
+  ctx.textAlign='right';ctx.font='600 11px Hanken Grotesk';ctx.fillStyle='rgba(234,241,247,.55)';
+  ctx.fillText('goods',x0-18,gy+4);ctx.fillText('buyers',x0-18,by+4);
+  for(let i=0;i<12;i++){const on=i<ng;ctx.fillStyle=on?(i<matched?'#8ce99a':'#aab4bf'):'rgba(255,255,255,.05)';ctx.beginPath();ctx.roundRect(x0+i*gap-6,gy-6,12,12,3);ctx.fill();}
+  for(let i=0;i<12;i++){const on=i<nb;ctx.fillStyle=on?(i<matched?'#8ce99a':'#ff8f8f'):'rgba(255,255,255,.05)';ctx.beginPath();ctx.arc(x0+i*gap,by,6,0,7);ctx.fill();}
+  ctx.textAlign='center';ctx.font='11px Hanken Grotesk';ctx.fillStyle='rgba(234,241,247,.5)';ctx.fillText('🟢 sold    ⬜ unsold    🔴 can’t buy',cxc,by+26);
 }
 function draw(){if(!W){requestAnimationFrame(draw);return;}
   curD=lerp(curD,+$('d').value,0.12);curS=lerp(curS,+$('s').value,0.12);
   const p=plot();ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(234,241,247,.06)';ctx.lineWidth=1;ctx.beginPath();for(let i=20;i<100;i+=20){ctx.moveTo(mX(i),p.T);ctx.lineTo(mX(i),p.B);ctx.moveTo(p.L,mY(i));ctx.lineTo(p.R,mY(i));}ctx.stroke();
   ctx.strokeStyle='rgba(234,241,247,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.L,p.T);ctx.lineTo(p.L,p.B);ctx.lineTo(p.R,p.B);ctx.stroke();
   ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='600 12px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('Quantity →',(p.L+p.R)/2,p.B+26);ctx.save();ctx.translate(p.L-42,(p.T+p.B)/2);ctx.rotate(-Math.PI/2);ctx.fillText('Price →',0,0);ctx.restore();
   const Dint=88+curD,Dslope=0.78,Sint=12-curS,Sslope=0.78;
