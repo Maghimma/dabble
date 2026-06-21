@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Diffusion &amp; Osmosis — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--blue:#74c0fc;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 16px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(228px,50vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .lbl{font-size:11px;color:var(--dim);display:flex;justify-content:space-between;margin-top:8px}
+  .bar{height:9px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:3px;display:flex}
+  .bar i{display:block;height:100%}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.55;margin-top:11px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:700px;margin:0 auto}
+  .topline{display:flex;justify-content:flex-end;margin-bottom:6px}
+  .ghost{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:8px 16px;cursor:pointer}
+  .row{display:flex;align-items:center;gap:14px;margin-top:9px}
+  .row .name{flex:0 0 130px;font-weight:600;font-size:14px}
+  .row input{flex:1;accent-color:var(--teal);height:28px}
+  .row .val{flex:0 0 62px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--teal)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
+  body.preview .back,body.preview .title,body.preview .typetoggle,body.preview .info,body.preview .ctrl{display:none!important}
+</style>
+</head>
+<body>
+  <div id="loader">filling the cell…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">🫧 Diffusion &amp; Osmosis</div>
+  <div class="typetoggle">
+    <button id="t-diff" class="on" onclick="setMode('diff')">Diffusion</button>
+    <button id="t-osm" onclick="setMode('osm')">Osmosis</button>
+  </div>
+  <div class="info">
+    <div class="lbl"><span>Left</span><span id="o-cap">solute spread</span><span>Right</span></div>
+    <div class="bar"><i id="bL" style="background:#f6a623;width:50%"></i><i id="bR" style="background:#5a4326;flex:1"></i></div>
+    <div class="note" id="o-note"></div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="topline"><button class="ghost" onclick="reset()">↻ Reset</button></div>
+    <div class="row"><span class="name">Starting imbalance</span><input type="range" id="imb" min="0" max="100" step="10" value="80" oninput="reset()"><span class="val" id="imb-v">80%</span></div>
+    <div class="row"><span class="name">Temperature</span><input type="range" id="temp" min="1" max="10" step="1" value="5" oninput="upd()"><span class="val" id="temp-v">5</span></div>
+  </div></div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,150);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;
+const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,100,200);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
+const key=new THREE.DirectionalLight(0xffffff,1.05);key.position.set(16,28,22);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.42));
+const BX=24,BY=12,BZ=11;
+const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0x86c8e6,transparent:true,opacity:.07,roughness:.05,side:THREE.DoubleSide}));scene.add(glass);
+scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4})));
+// membrane at x=0
+const memb=new THREE.Mesh(new THREE.BoxGeometry(0.6,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0xb8c6d4,transparent:true,opacity:.18,roughness:.4}));scene.add(memb);
+function lab(text,x,y,z,col){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.fillStyle=col;g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(12,3,1);s.position.set(x,y,z);scene.add(s);return s;}
+lab('partially permeable membrane',0,BY+3,0,'#cfe0ee');
+const sGeo=new THREE.SphereGeometry(1.25,12,10),wGeo=new THREE.SphereGeometry(0.85,10,8);
+const sMat=new THREE.MeshStandardMaterial({color:0xf6a623,roughness:.4,emissive:0xf6a623,emissiveIntensity:.25});
+const wMat=new THREE.MeshStandardMaterial({color:0x74c0fc,roughness:.4,emissive:0x18324a,emissiveIntensity:.3});
+let parts=[],mode='diff';
+function randPos(side){const x=side<0?-BX+2+Math.random()*(BX-3):2+Math.random()*(BX-3);return new THREE.Vector3(x,rnd()*2*(BY-2),rnd()*2*(BZ-2));}
+function reset(){parts.forEach(p=>scene.remove(p.m));parts=[];
+  const imb=+$('imb').value;$('imb-v').textContent=imb+'%';
+  const NS=34, leftFrac=0.5+imb/200; const leftN=Math.round(NS*leftFrac);
+  for(let i=0;i<NS;i++){const side=i<leftN?-1:1;const m=new THREE.Mesh(sGeo,sMat);m.position.copy(randPos(side));scene.add(m);parts.push({m,t:'s',side,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(10)});}
+  for(let i=0;i<30;i++){const side=i%2?1:-1;const m=new THREE.Mesh(wGeo,wMat);m.position.copy(randPos(side));scene.add(m);parts.push({m,t:'w',side,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(10)});}
+  upd();
+}
+window.reset=reset;
+function setMode(mm){mode=mm;$('t-diff').classList.toggle('on',mm==='diff');$('t-osm').classList.toggle('on',mm==='osm');
+  $('o-cap').textContent=mm==='diff'?'solute spread':'water spread';
+  $('o-note').innerHTML=mm==='diff'
+    ?'<b>Diffusion:</b> solute particles can pass through, so they spread from <b>high → low</b> concentration until evenly mixed (net movement stops at equilibrium).'
+    :'<b>Osmosis:</b> the membrane blocks solute but lets <b>water</b> through. Water moves toward the <b>more concentrated</b> side (lower water potential), diluting it.';
+  reset();}
+window.setMode=setMode;
+function upd(){$('temp-v').textContent=$('temp').value;}
+window.upd=upd;
+const R=1.2;
+function step(dt){const tgt=6+(+$('temp').value)*3;
+  // which side has more solute (for osmosis water drift)
+  let sl=0,sr=0;for(const p of parts)if(p.t==='s'){if(p.m.position.x<0)sl++;else sr++;}
+  const drift=sr>sl?1:sl>sr?-1:0;
+  for(const p of parts){const v=p.v,m=p.m.position;
+    if(mode==='osm'&&p.t==='w')v.x+=drift*8*dt; // water drifts to concentrated side
+    m.addScaledVector(v,dt);
+    if(m.x<-BX+R){m.x=-BX+R;v.x=Math.abs(v.x);}if(m.x>BX-R){m.x=BX-R;v.x=-Math.abs(v.x);}
+    if(m.y<-BY+R){m.y=-BY+R;v.y=Math.abs(v.y);}if(m.y>BY-R){m.y=BY-R;v.y=-Math.abs(v.y);}
+    if(m.z<-BZ+R){m.z=-BZ+R;v.z=Math.abs(v.z);}if(m.z>BZ-R){m.z=BZ-R;v.z=-Math.abs(v.z);}
+    // membrane: in osmosis, solute can't cross
+    if(mode==='osm'&&p.t==='s'){if(p.side<0&&m.x>-1.2){m.x=-1.2;v.x=-Math.abs(v.x);}if(p.side>0&&m.x<1.2){m.x=1.2;v.x=Math.abs(v.x);}}
+    const s=v.length();if(s>0.01)v.multiplyScalar(clamp(tgt/s,0.8,1.25));
+  }
+  // bars: in diffusion show solute split; in osmosis show water split
+  let aL=0,aR=0;const T=mode==='diff'?'s':'w';for(const p of parts)if(p.t===T){if(p.m.position.x<0)aL++;else aR++;}
+  const tot=aL+aR||1;$('bL').style.width=(aL/tot*100)+'%';$('bR').style.flex='1';
+}
+const orbit={th:0.0,ph:1.05,R:74,tgt:new THREE.Vector3(0,0,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+function zoom(f){orbit.R=clamp(orbit.R*f,10,200);applyCam();}
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
+(function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:140px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.5,1.4);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);if(!orbit.drag)orbit.th+=dt*.05;applyCam();step(dt);renderer.render(scene,camera);}
+if(PREVIEW){orbit.R=80;}
+setMode('diff');resize();applyCam();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Heart &amp; Circulation — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--red:#ff6b6b;--blue:#5b9bff;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);min-height:100vh;overflow-x:hidden;
+    background:radial-gradient(80% 60% at 50% 0%,#16384f,transparent 60%),linear-gradient(170deg,#11243a,#0a1626);
+    display:flex;flex-direction:column;align-items:center;padding:14px 12px 130px}
+  .top{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between}
+  .back{color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{font-family:'Fraunces',serif;font-weight:600;font-size:20px}
+  .stage{width:100%;max-width:560px;margin-top:6px}
+  svg{width:100%;height:auto;display:block}
+  .info{width:100%;max-width:560px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;backdrop-filter:blur(12px);font-size:12.5px;color:var(--dim);line-height:1.5}
+  .info b.r{color:var(--red)}.info b.b{color:var(--blue)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .wrap2 .name{flex:0 0 100px;font-weight:600;font-size:14px}
+  .wrap2 input{flex:1;accent-color:var(--red);height:30px}
+  .wrap2 .val{flex:0 0 80px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--red)}
+  text{font-family:'Hanken Grotesk',sans-serif}
+</style>
+</head>
+<body>
+  <div class="top"><a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a><div class="title">❤️ The Heart</div><span style="width:54px"></span></div>
+  <div class="stage">
+    <svg viewBox="0 0 600 500" id="svg">
+      <!-- lungs & body -->
+      <rect x="220" y="14" width="160" height="40" rx="12" fill="#274a63"/><text x="300" y="39" fill="#cfe0ee" font-size="16" text-anchor="middle" font-weight="600">LUNGS</text>
+      <rect x="220" y="452" width="160" height="40" rx="12" fill="#3a2f55"/><text x="300" y="477" fill="#cfe0ee" font-size="16" text-anchor="middle" font-weight="600">BODY</text>
+      <!-- flow path (hidden, used for dots) -->
+      <path id="loop" fill="none" stroke="#46607c" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/>
+      <path id="loopB" fill="none" stroke="#5b9bff" stroke-width="4" stroke-dasharray="2 1000" opacity="0"/>
+      <!-- chambers -->
+      <g id="chambers"></g>
+      <!-- valves + vessel labels added by JS -->
+      <g id="ann"></g>
+    </svg>
+  </div>
+  <div class="info">
+    <b class="b">Blue = deoxygenated</b> blood (low O₂) · <b class="r">Red = oxygenated</b> blood. This is <b style="color:#fff">double circulation</b>: blood passes through the heart <i>twice</i> per full loop — once to the lungs, once to the body. The thicker-walled <b style="color:#fff">left ventricle</b> pumps hardest (all the way round the body).
+  </div>
+  <div class="ctrl"><div class="wrap2"><span class="name">Heart rate</span><input type="range" id="bpm" min="40" max="180" step="2" value="72" oninput="upd()"><span class="val" id="bpm-v">72 bpm</span></div></div>
+
+<script>
+const $=id=>document.getElementById(id);const NS='http://www.w3.org/2000/svg';
+// loop points: body -> RA -> RV -> lungs -> LA -> LV -> (back to body)
+const P=[[300,452],[165,150],[205,330],[300,54],[435,150],[395,330]];
+const dStr='M'+P[0].join(',')+' L'+P.slice(1).map(p=>p.join(',')).join(' L')+' Z';
+$('loop').setAttribute('d',dStr);
+const loop=$('loop');const L=loop.getTotalLength();
+// colour split at "lungs" (index 3): cumulative length 0->1->2->3 over total
+function dist(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1]);}
+let cum=dist(P[0],P[1])+dist(P[1],P[2])+dist(P[2],P[3]);const split=cum/L;
+// chambers
+const CH=[['Right atrium',165,150,'#2b4a6b','#9fc4ff'],['Right ventricle',205,330,'#2b4a6b','#9fc4ff'],['Left atrium',435,150,'#5a2b34','#ffb3b3'],['Left ventricle',395,330,'#5a2b34','#ffb3b3']];
+const cg=$('chambers');
+CH.forEach((c,i)=>{const e=document.createElementNS(NS,'ellipse');e.setAttribute('cx',c[1]);e.setAttribute('cy',c[2]);e.setAttribute('rx',i%2?54:46);e.setAttribute('ry',i%2?60:46);e.setAttribute('fill',c[3]);e.setAttribute('stroke',c[4]);e.setAttribute('stroke-width','2.5');e.setAttribute('opacity','.92');e.dataset.i=i;cg.appendChild(e);
+  const t=document.createElementNS(NS,'text');t.setAttribute('x',c[1]);t.setAttribute('y',c[2]-(i%2?2:0));t.setAttribute('fill','#0d1a26');t.setAttribute('font-size','11');t.setAttribute('font-weight','700');t.setAttribute('text-anchor','middle');
+  c[0].split(' ').forEach((w,j)=>{const ts=document.createElementNS(NS,'tspan');ts.setAttribute('x',c[1]);ts.setAttribute('dy',j?12:0);ts.textContent=w;t.appendChild(ts);});cg.appendChild(t);});
+// annotations: vessels + valves
+const ann=$('ann');
+function txt(x,y,s,col,sz){const t=document.createElementNS(NS,'text');t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('fill',col||'#cfe0ee');t.setAttribute('font-size',sz||11);t.setAttribute('text-anchor','middle');t.setAttribute('font-weight','600');t.textContent=s;ann.appendChild(t);}
+function valve(x,y){const c=document.createElementNS(NS,'circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r','6');c.setAttribute('fill','#fff');c.setAttribute('stroke','#9fb6cf');ann.appendChild(c);}
+txt(110,110,'vena cava','#9fc4ff');txt(150,250,'(from body)','#7fa6cf',9);
+txt(150,420,'','#9fc4ff');
+txt(250,205,'pulmonary','#9fc4ff');txt(250,218,'artery →','#9fc4ff');
+txt(360,205,'pulmonary','#ffb3b3');txt(360,218,'vein','#ffb3b3');
+txt(495,110,'aorta','#ffb3b3');txt(470,250,'(to body)','#cf9a9a',9);
+valve(188,242);txt(150,250,'',''); // placeholder
+valve(188,242);valve(415,242);valve(232,250);valve(372,250);
+txt(150,235,'tricuspid','#cfe0ee',9);txt(455,235,'bicuspid','#cfe0ee',9);
+// blood dots
+const dots=[];const NB=22;const layer=document.createElementNS(NS,'g');$('svg').appendChild(layer);
+for(let i=0;i<NB;i++){const c=document.createElementNS(NS,'circle');c.setAttribute('r','4.5');layer.appendChild(c);dots.push({c,u:i/NB});}
+let bpm=72;
+function upd(){bpm=+$('bpm').value;$('bpm-v').textContent=bpm+' bpm';}
+let beat=0,last=performance.now();
+function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;
+  const speed=bpm/72*0.13;
+  for(const d of dots){d.u=(d.u+dt*speed)%1;const pt=loop.getPointAtLength(d.u*L);d.c.setAttribute('cx',pt.x);d.c.setAttribute('cy',pt.y);d.c.setAttribute('fill',d.u<split?'#5b9bff':'#ff6b6b');}
+  // beat pulse
+  beat+=dt*bpm/60*2*Math.PI;const s=1+0.045*Math.max(0,Math.sin(beat));
+  cg.querySelectorAll('ellipse').forEach(e=>{const i=+e.dataset.i;const cx=CH[i][1],cy=CH[i][2];e.setAttribute('transform',`translate(${cx} ${cy}) scale(${s}) translate(${-cx} ${-cy})`);});
+  requestAnimationFrame(frame);}
+upd();requestAnimationFrame(frame);
+</script>
+</body>
+</html>

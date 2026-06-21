@@ -34,8 +34,8 @@
   <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
   <div class="title">📈 Graph Transformations</div>
   <div class="typetoggle">
-    <button id="t-quad" class="on" onclick="setType('quad')">Quadratic</button>
-    <button id="t-lin" onclick="setType('lin')">Linear</button>
+    <button id="t-lin" class="on" onclick="setType('lin')">Linear</button>
+    <button id="t-quad" onclick="setType('quad')">Quadratic</button>
   </div>
   <div class="info">
     <div class="eq" id="o-eq">y = x²</div>
@@ -43,12 +43,12 @@
     <div class="note" id="o-note">The faint grey curve is the <b>parent</b> graph. Move the sliders to stretch and shift it.</div>
   </div>
   <div class="ctrl"><div class="wrap2">
-    <div class="pair on" id="p-quad">
+    <div class="pair" id="p-quad">
       <div class="row"><span class="name">stretch <b>a</b></span><input type="range" id="a" min="-3" max="3" step="0.1" value="1" oninput="draw()"><span class="val" id="a-v">1</span></div>
       <div class="row"><span class="name">shift across <b>h</b></span><input type="range" id="h" min="-6" max="6" step="0.5" value="0" oninput="draw()"><span class="val" id="h-v">0</span></div>
       <div class="row"><span class="name">shift up <b>k</b></span><input type="range" id="k" min="-6" max="6" step="0.5" value="0" oninput="draw()"><span class="val" id="k-v">0</span></div>
     </div>
-    <div class="pair" id="p-lin">
+    <div class="pair on" id="p-lin">
       <div class="row"><span class="name">gradient <b>m</b></span><input type="range" id="m" min="-4" max="4" step="0.25" value="1" oninput="draw()"><span class="val" id="m-v">1</span></div>
       <div class="row"><span class="name">intercept <b>c</b></span><input type="range" id="c" min="-6" max="6" step="0.5" value="0" oninput="draw()"><span class="val" id="c-v">0</span></div>
     </div>
@@ -56,7 +56,7 @@
 
 <script>
 const $=id=>document.getElementById(id);
-const cv=$('gl'),ctx=cv.getContext('2d');let W,H,unit,cx,cy,RANGE=10,type='quad';
+const cv=$('gl'),ctx=cv.getContext('2d');let W,H,unit,cx,cy,RANGE=10,type='lin';
 function resize(){const d=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);unit=Math.min(W,H)/(2*RANGE);cx=W/2;cy=H/2;draw();}
 const mx=x=>cx+x*unit, my=y=>cy-y*unit;
 function setType(t){type=t;$('t-quad').classList.toggle('on',t==='quad');$('t-lin').classList.toggle('on',t==='lin');$('p-quad').classList.toggle('on',t==='quad');$('p-lin').classList.toggle('on',t==='lin');draw();}
