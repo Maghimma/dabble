@@ -71,7 +71,7 @@ const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x202a38,.9));
 const key=new THREE.DirectionalLight(0xffffff,1.3);key.position.set(20,34,18);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=140;key.shadow.camera.left=-40;key.shadow.camera.right=40;key.shadow.camera.top=40;key.shadow.camera.bottom=-40;key.shadow.bias=-0.0004;scene.add(key);
 scene.add(new THREE.AmbientLight(0xffffff,.28));
-function lab(text,x,y,z,col){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2.4*w/46,2.4,1);s.position.set(x,y,z);scene.add(s);return s;}
+function lab(text,x,y,z,col,p){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2.4*w/46,2.4,1);s.position.set(x,y,z);(p||scene).add(s);return s;}
 const FLOOR=-12;
 const bench=new THREE.Mesh(new THREE.BoxGeometry(80,4,48),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.9}));bench.position.y=FLOOR-2;bench.receiveShadow=true;scene.add(bench);
 // shared beaker (diffusion + osmosis)
@@ -84,7 +84,7 @@ const rimB=new THREE.Mesh(new THREE.TorusGeometry(BR,0.4,10,52),new THREE.MeshSt
 // ===== DIFFUSION: potassium permanganate crystal =====
 const gDiff=new THREE.Group();scene.add(gDiff);
 const crystal=new THREE.Group();for(let i=0;i<7;i++){const c=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2),new THREE.MeshStandardMaterial({color:0x4a1060,roughness:.5,emissive:0x2a0838,emissiveIntensity:.5}));c.position.set(rnd()*2.4,FLOOR+1.4+Math.random()*1.5,rnd()*2.4);c.rotation.set(rnd()*3,rnd()*3,rnd()*3);c.castShadow=true;crystal.add(c);}gDiff.add(crystal);
-lab('potassium permanganate',0,FLOOR-3.5,0,'#c98ad0');
+lab('potassium permanganate',0,FLOOR-3.5,0,'#c98ad0',gDiff);
 const NDIFF=64,dparts=[];const dGeo=new THREE.SphereGeometry(.7,10,8);const dMat=new THREE.MeshStandardMaterial({color:0x9b3bd0,emissive:0x3a1050,emissiveIntensity:.5,roughness:.4});
 for(let i=0;i<NDIFF;i++){const m=new THREE.Mesh(dGeo,dMat);gDiff.add(m);dparts.push({m,v:new THREE.Vector3()});}
 function resetDiff(){for(const p of dparts){p.m.position.set(rnd()*3,FLOOR+2+Math.random()*2,rnd()*3);p.v.set(rnd(),Math.random(),rnd()).multiplyScalar(6);}}
@@ -92,10 +92,10 @@ window.resetDiff=resetDiff;
 // ===== OSMOSIS: visking tubing + rising tube =====
 const gOsm=new THREE.Group();scene.add(gOsm);
 const visk=new THREE.Mesh(new THREE.CapsuleGeometry(3,7,8,16),new THREE.MeshStandardMaterial({color:0xe7c84a,transparent:true,opacity:.55,roughness:.3}));visk.position.set(0,FLOOR+6,0);gOsm.add(visk);
-lab('visking tubing (sugar solution)',0,FLOOR-3.5,0,'#ecd97a');
+lab('visking tubing (sugar solution)',0,FLOOR-3.5,0,'#ecd97a',gOsm);
 const stube=new THREE.Mesh(new THREE.CylinderGeometry(1,1,18,24,1,true),new THREE.MeshStandardMaterial({color:0xdaf0fb,transparent:true,opacity:.2,roughness:.05,side:THREE.DoubleSide}));stube.position.set(0,FLOOR+19,0);gOsm.add(stube);
 const col=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,1,16),new THREE.MeshStandardMaterial({color:0xe7c84a,roughness:.3,emissive:0x3a3010,emissiveIntensity:.3}));gOsm.add(col);
-lab('water level rises →',7,FLOOR+22,0,'#ecd97a');
+lab('water level rises →',7,FLOOR+22,0,'#ecd97a',gOsm);
 let level=2;const oW=[];for(let i=0;i<14;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.7,8,8),new THREE.MeshStandardMaterial({color:0x5fb2ff,emissive:0x16344f,emissiveIntensity:.4}));gOsm.add(m);oW.push({m,a:i/14*6.28,r:5+Math.random()*4});}
 function resetOsm(){level=2;}
 window.resetOsm=resetOsm;
@@ -104,7 +104,7 @@ const gAT=new THREE.Group();scene.add(gAT);
 const MEMY=0;
 for(let s=-1;s<=1;s+=2){for(let x=-16;x<=16;x+=2.1){const head=new THREE.Mesh(new THREE.SphereGeometry(.9,12,10),new THREE.MeshStandardMaterial({color:0xf6c85a,roughness:.4}));head.position.set(x,MEMY+s*2.4,0);gAT.add(head);const tail=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,2.6,6),new THREE.MeshStandardMaterial({color:0xcaa84a}));tail.position.set(x,MEMY+s*1.0,0);gAT.add(tail);}}
 const carriers=[];[-7,0,7].forEach(x=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(2,2,6.5,16),new THREE.MeshStandardMaterial({color:0x6ad0a0,emissive:0x143a2a,emissiveIntensity:.4,roughness:.5}));c.position.set(x,MEMY,0);gAT.add(c);carriers.push({mesh:c,x});});
-lab('cell membrane',-19,MEMY,0,'#f6c85a');lab('LOW concentration (outside)',0,MEMY-9,0,'#9fb6cf');lab('HIGH concentration (inside)',0,MEMY+9,0,'#9fe6dd');lab('carrier protein + ATP',0,MEMY+6.5,0,'#8ce99a');
+lab('cell membrane',-19,MEMY,0,'#f6c85a',gAT);lab('LOW concentration (outside)',0,MEMY-9,0,'#9fb6cf',gAT);lab('HIGH concentration (inside)',0,MEMY+9,0,'#9fe6dd',gAT);lab('carrier protein + ATP',0,MEMY+6.5,0,'#8ce99a',gAT);
 const NAT=22,atI=[];const aGeo=new THREE.SphereGeometry(.85,10,8);const aMat=new THREE.MeshStandardMaterial({color:0x2ec4b6,emissive:0x0e3a34,emissiveIntensity:.5,roughness:.4});
 for(let i=0;i<NAT;i++){const m=new THREE.Mesh(aGeo,aMat);gAT.add(m);atI.push({m,x:rnd()*32,z:rnd()*8,y:MEMY-4-Math.random()*5,state:'low'});}
 const sparks=[];for(let i=0;i<8;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.5,8,8),new THREE.MeshBasicMaterial({color:0xffe066,transparent:true}));m.visible=false;gAT.add(m);sparks.push({m,life:0});}

@@ -37,6 +37,8 @@
   <div class="eqn"><span class="p">N₂O₄</span> (pale) ⇌ <b>2NO₂</b> (brown)<small>forward is endothermic (takes in heat) · 1 gas molecule → 2</small></div>
   <div class="info">
     <div class="state" id="o-state">—</div>
+    <div style="height:14px;border-radius:7px;margin:9px 0 3px;background:linear-gradient(90deg,#dfeef4,#b05a22);position:relative"><span id="o-ndl" style="position:absolute;top:-3px;width:4px;height:20px;background:#fff;border-radius:2px;box-shadow:0 0 3px rgba(0,0,0,.5);left:50%"></span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim)"><span>pale N₂O₄</span><span id="o-pct" style="color:var(--ink);font-weight:700">—</span><span>brown NO₂</span></div>
     <div class="note" id="o-note">Heat the water bath or squeeze the syringe — watch the gas change colour as the equilibrium shifts.</div>
   </div>
   <div class="ctrl"><div class="wrap2">
@@ -78,8 +80,8 @@ const gas=new THREE.Mesh(new THREE.CylinderGeometry(GR,GR,1,32),new THREE.MeshSt
 const plunger=new THREE.Group();const disc=new THREE.Mesh(new THREE.CylinderGeometry(GR+.3,GR+.3,1.2,32),new THREE.MeshStandardMaterial({color:0x3a4654,roughness:.5}));plunger.add(disc);const rod=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,6,12),new THREE.MeshStandardMaterial({color:0x9fb0c0,metalness:.4,roughness:.4}));rod.position.y=3.6;plunger.add(rod);plunger.traverse(o=>o.castShadow=true);scene.add(plunger);
 lab('gas syringe',0,tubeTop+2.5,0,'#ffcf8a');
 // molecules
-const N=26,parts=[];const mNO2=new THREE.MeshStandardMaterial({color:0xb05a22,emissive:0x3a1808,emissiveIntensity:.4,roughness:.4});const mN2O4=new THREE.MeshStandardMaterial({color:0xcfe6ee,emissive:0x223038,emissiveIntensity:.25,roughness:.3});
-const pg=new THREE.SphereGeometry(.78,12,10);
+const N=26,parts=[];const mNO2=new THREE.MeshStandardMaterial({color:0xc06020,emissive:0x4a1c08,emissiveIntensity:.55,roughness:.4});const mN2O4=new THREE.MeshStandardMaterial({color:0xe9f4fa,emissive:0x2a3a44,emissiveIntensity:.3,roughness:.3});
+const pg=new THREE.SphereGeometry(.95,14,12);
 for(let i=0;i<N;i++){const m=new THREE.Mesh(pg,mN2O4);m.castShadow=true;m.position.set(rnd()*2*(GR-1),gasFloor+1+Math.random()*8,rnd()*2*(GR-1));scene.add(m);parts.push({m,no2:false,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(7)});}
 let lastF=0.5;
 function frac(){const T=+$('temp').value,P=+$('pres').value;return clamp(0.5+(T-50)/95-(P-50)/120,0.05,0.95);}
@@ -109,7 +111,7 @@ function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.
   const P=+$('pres').value;const plungerY=lerp(tubeTop-1.5,gasFloor+7,P/100);
   // gas column from gasFloor to plungerY
   const gh=plungerY-gasFloor;gas.scale.y=gh;gas.position.y=gasFloor+gh/2;
-  gas.material.color.copy(pale).lerp(brown,lastF);gas.material.opacity=0.12+0.5*lastF;
+  gas.material.color.copy(pale).lerp(brown,lastF);gas.material.opacity=0.18+0.6*lastF;$('o-pct').textContent=Math.round(lastF*100)+'% NO₂';$('o-ndl').style.left=(lastF*100)+'%';
   plunger.position.y=plungerY+0.6;
   // water bath colour by temp
   const T=+$('temp').value;water.material.color.set(0x4a90d9).lerp(new THREE.Color(0xd9694a),clamp((T-20)/80,0,1));
