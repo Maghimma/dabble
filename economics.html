@@ -61,7 +61,7 @@ let W,H,pc=false,curD=0,curS=0;
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);}
 new ResizeObserver(resize).observe(cv);
 const QMAX=100,PMAX=100;
-function plot(){const w=Math.min(W-120,480),h=Math.min(H-360,260),L=Math.max(64,(W-w)/2),blockH=h+170,T=Math.max(92,Math.round(((H-150)-blockH)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function plot(){const aw=W-320,w=Math.min(aw,560),h=Math.min(H-380,300),L=56+Math.max(0,(aw-w)/2),blockH=h+170,T=Math.max(90,Math.round(((H-150)-blockH)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 const mX=q=>{const p=plot();return p.L+q/QMAX*p.w;},mY=v=>{const p=plot();return p.B-v/PMAX*p.h;};
 function togglePC(){pc=!pc;$('pcBtn').classList.toggle('on',pc);$('pcBtn').textContent=pc?'ON':'OFF';$('pc').style.opacity=pc?'1':'.4';$('pc').style.pointerEvents=pc?'auto':'none';}
 window.togglePC=togglePC;
@@ -76,7 +76,7 @@ function upd(){$('d-v').textContent=(+$('d').value)>0?'higher':(+$('d').value)<0
 window.upd=upd;
 function f(n){return Math.round(n);}
 function line(q1,p1,q2,p2,col){ctx.strokeStyle=col;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(mX(q1),mY(p1));ctx.lineTo(mX(q2),mY(p2));ctx.stroke();}
-function market(Qs,Qd){const p=plot();const cxc=W/2;const top=p.B+66;
+function market(Qs,Qd){const p=plot();const cxc=(p.L+p.R)/2;const top=p.B+66;
   ctx.textAlign='center';ctx.fillStyle='rgba(234,241,247,.78)';ctx.font='700 13px Hanken Grotesk';ctx.fillText('The marketplace',cxc,top);
   const unit=QMAX/12,ng=Math.round(Qs/unit),nb=Math.round(Qd/unit),matched=Math.min(ng,nb);
   const gap=20,x0=cxc-(11*gap)/2,gy=top+26,by=top+52;

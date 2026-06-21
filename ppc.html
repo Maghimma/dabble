@@ -47,7 +47,7 @@
 const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');let W,H,eff=true,growth=false;
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
 new ResizeObserver(resize).observe(cv);
-function plot(){const w=Math.min(W-110,500),h=Math.min(H-330,300),L=Math.max(60,(W-w)/2),T=Math.max(96,Math.round(((H-150)-h)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function plot(){const aw=W-320,w=Math.min(aw,640),h=Math.min(H-250,440),L=56+Math.max(0,(aw-w)/2),T=Math.max(90,Math.round(((H-150)-h)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 const MAXV=100;
 const mX=a=>{const p=plot();return p.L+a/MAXV*p.w;},mY=b=>{const p=plot();return p.B-b/MAXV*p.h;};
 // PPC: quarter-ellipse bowed outward. radius=80 (or 100 with growth)

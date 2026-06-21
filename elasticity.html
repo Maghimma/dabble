@@ -50,7 +50,7 @@ const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d')
 function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
 new ResizeObserver(resize).observe(cv);
 const QMAX=100,PMAX=100;
-function plot(){const w=Math.min(W-110,500),h=Math.min(H-330,300),L=Math.max(60,(W-w)/2),T=Math.max(100,Math.round(((H-150)-h)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function plot(){const aw=W-320,w=Math.min(aw,640),h=Math.min(H-250,440),L=56+Math.max(0,(aw-w)/2),T=Math.max(90,Math.round(((H-150)-h)/2)),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 const mX=q=>{const p=plot();return p.L+q/QMAX*p.w;},mY=v=>{const p=plot();return p.B-v/PMAX*p.h;};
 function setType(t){type=t;$('t-el').classList.toggle('on',t==='el');$('t-in').classList.toggle('on',t==='in');draw();}
 window.setType=setType;
