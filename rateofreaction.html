@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Rate of Reaction — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--green:#8ce99a;--panel:rgba(16,28,46,.55)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .info{position:fixed;top:62px;right:14px;z-index:9;width:min(214px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
+  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:17px}.rr .v.g{color:var(--green)}
+  .bar{height:8px;border-radius:5px;background:rgba(255,255,255,.1);margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2ec4b6,#8ce99a);transition:width .2s}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:700px;margin:0 auto}
+  .topline{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px}
+  .seg button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
+  .seg button.on{background:var(--teal);color:#04302c;border-color:var(--teal)}
+  .ghost{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:9px 16px;cursor:pointer}
+  .row{display:flex;align-items:center;gap:14px;margin-top:9px}
+  .row .name{flex:0 0 116px;font-weight:600;font-size:14px}
+  .row input{flex:1;accent-color:var(--teal);height:28px}
+  .row .val{flex:0 0 56px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--teal)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
+  body.preview .back,body.preview .title,body.preview .info,body.preview .ctrl{display:none!important}
+</style>
+</head>
+<body>
+  <div id="loader">mixing reactants…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">💥 Rate of Reaction</div>
+  <div class="info">
+    <div class="rr"><span>Temperature</span><span class="v" id="o-temp">warm</span></div>
+    <div class="rr"><span>Concentration</span><span class="v" id="o-conc">medium</span></div>
+    <div class="rr"><span>Catalyst</span><span class="v" id="o-cat">off</span></div>
+    <div class="rr"><span>Reacted</span><span class="v g" id="o-pct">0%</span></div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="note"><b style="color:#ff6b6b">A</b> + <b style="color:#74c0fc">B</b> → <b style="color:#8ce99a">product</b>. Faster, more crowded, or hotter particles collide more often & harder → <b>faster rate</b>.</div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="topline">
+      <div class="seg"><button id="cat" onclick="toggleCat()">Catalyst: OFF</button></div>
+      <button class="ghost" onclick="reset()">↻ Reset</button>
+    </div>
+    <div class="row"><span class="name">Temperature</span><input type="range" id="temp" min="1" max="10" step="1" value="5" oninput="upd()"><span class="val" id="temp-v">5</span></div>
+    <div class="row"><span class="name">Concentration</span><input type="range" id="conc" min="6" max="26" step="2" value="14" oninput="reset()"><span class="val" id="conc-v">14</span></div>
+  </div></div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;
+const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,90,190);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
+const key=new THREE.DirectionalLight(0xffffff,1.05);key.position.set(18,30,22);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.4));
+const BX=20,BY=14,BZ=14;
+const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0x86c8e6,transparent:true,opacity:.08,roughness:.05,side:THREE.DoubleSide}));scene.add(glass);
+scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4})));
+const geo=new THREE.SphereGeometry(1.5,12,10);
+const COL={A:0xff6b6b,B:0x74c0fc,P:0x8ce99a};
+let parts=[],reacted=0,total=0,cat=false;
+function makeMat(t){return new THREE.MeshStandardMaterial({color:COL[t],roughness:.4,emissive:COL[t],emissiveIntensity:.25});}
+function reset(){
+  parts.forEach(p=>scene.remove(p.mesh));parts=[];reacted=0;
+  const pairs=+$('conc').value;total=pairs*2;
+  $('conc-v').textContent=pairs;
+  for(let i=0;i<total;i++){const t=i<pairs?'A':'B';const mesh=new THREE.Mesh(geo,makeMat(t));mesh.position.set(rnd()*2*(BX-2),rnd()*2*(BY-2),rnd()*2*(BZ-2));scene.add(mesh);
+    parts.push({mesh,t,v:new THREE.Vector3(rnd(),rnd(),rnd()).multiplyScalar(10)});}
+  upd();
+}
+window.reset=reset;
+function toggleCat(){cat=!cat;$('cat').classList.toggle('on',cat);$('cat').textContent='Catalyst: '+(cat?'ON':'OFF');upd();}
+window.toggleCat=toggleCat;
+function upd(){const T=+$('temp').value;$('temp-v').textContent=T;
+  $('o-temp').textContent=T<=3?'cool':T<=6?'warm':'hot';
+  $('o-conc').textContent=(+$('conc').value)<=10?'low':(+$('conc').value)<=18?'medium':'high';
+  $('o-cat').textContent=cat?'on':'off';
+}
+window.upd=upd;
+const R=1.5;
+function speedTarget(){return 6+(+$('temp').value)*4;}
+function Ea(){return cat?6:12;}
+function step(dt){const tgt=speedTarget();
+  for(const p of parts){const v=p.v,m=p.mesh.position;
+    m.addScaledVector(v,dt);
+    if(m.x<-BX+R){m.x=-BX+R;v.x=Math.abs(v.x);}if(m.x>BX-R){m.x=BX-R;v.x=-Math.abs(v.x);}
+    if(m.y<-BY+R){m.y=-BY+R;v.y=Math.abs(v.y);}if(m.y>BY-R){m.y=BY-R;v.y=-Math.abs(v.y);}
+    if(m.z<-BZ+R){m.z=-BZ+R;v.z=Math.abs(v.z);}if(m.z>BZ-R){m.z=BZ-R;v.z=-Math.abs(v.z);}
+    const sp=v.length();if(sp>0.01){v.multiplyScalar(clamp(THREE.MathUtils.lerp(sp,tgt,0.05)/sp,0.7,1.4));}
+  }
+  // collisions
+  for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
+    const a=parts[i],b=parts[j];const d=a.mesh.position.distanceTo(b.mesh.position);
+    if(d<2*R){
+      // separate + swap velocity along normal (simple elastic)
+      const n=a.mesh.position.clone().sub(b.mesh.position).normalize();
+      const rel=a.v.clone().sub(b.v).dot(n);
+      if(rel<0){a.v.addScaledVector(n,-rel);b.v.addScaledVector(n,rel);}
+      a.mesh.position.addScaledVector(n,(2*R-d)/2);b.mesh.position.addScaledVector(n,-(2*R-d)/2);
+      // reaction: A + B with enough energy
+      if(((a.t==='A'&&b.t==='B')||(a.t==='B'&&b.t==='A')) && Math.abs(rel)>Ea()){
+        a.t=b.t='P';a.mesh.material=makeMat('P');b.mesh.material=makeMat('P');
+        a.mesh.material.emissiveIntensity=1.4;b.mesh.material.emissiveIntensity=1.4;reacted+=2;
+      }
+    }
+  }
+  // fade reaction flash
+  for(const p of parts)if(p.t==='P'&&p.mesh.material.emissiveIntensity>0.25)p.mesh.material.emissiveIntensity=Math.max(0.25,p.mesh.material.emissiveIntensity-dt*2);
+  const pct=total?Math.round(reacted/total*100):0;$('o-pct').textContent=pct+'%';$('bar').style.width=pct+'%';
+}
+const orbit={th:0.4,ph:1.12,R:70,tgt:new THREE.Vector3(0,0,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.4,1.45);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);if(!orbit.drag)orbit.th+=dt*.05;applyCam();step(dt);renderer.render(scene,camera);}
+if(PREVIEW){$('temp').value=8;orbit.R=74;}
+reset();resize();applyCam();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
+</script>
+</body>
+</html>

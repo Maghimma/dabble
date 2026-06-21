@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Electrolysis — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--red:#ff6b6b;--blue:#74c0fc;--panel:rgba(16,28,46,.55)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(222px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
+  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:15px}.rr .v.c{color:var(--red)}.rr .v.a{color:var(--blue)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .wrap2 .name2{flex:0 0 110px;font-weight:600;font-size:14px}
+  .wrap2 input{flex:1;accent-color:var(--teal);height:30px}
+  .wrap2 .val{flex:0 0 56px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
+  body.preview .back,body.preview .title,body.preview .typetoggle,body.preview .info,body.preview .ctrl{display:none!important}
+</style>
+</head>
+<body>
+  <div id="loader">filling the cell…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">🔋 Electrolysis</div>
+  <div class="typetoggle">
+    <button id="m-water" class="on" onclick="setMode('water')">Acidified water</button>
+    <button id="m-cucl" onclick="setMode('cucl')">Copper chloride</button>
+  </div>
+  <div class="info">
+    <div class="rr"><span>Cathode (−)</span><span class="v c" id="o-cat">Hydrogen</span></div>
+    <div class="rr"><span>Anode (+)</span><span class="v a" id="o-an">Oxygen</span></div>
+    <div class="note" id="o-tip"><b>Cathode (−):</b> positive ions gain electrons (reduction). <b>Anode (+):</b> negative ions lose electrons (oxidation).</div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <span class="name2">Voltage</span><input type="range" id="v" min="1" max="10" step="1" value="5" oninput="upd()"><span class="val" id="v-v">5 V</span>
+  </div></div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;
+const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,100,200);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
+const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(16,30,26);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.4));
+function mat(c,o={}){return new THREE.MeshStandardMaterial({color:c,roughness:o.r??.5,metalness:o.m??.2,...(o.e?{emissive:o.e,emissiveIntensity:o.ei??.3}:{})});}
+function label(text,x,y,z,col){const c=document.createElement('canvas');c.width=320;c.height=64;const g=c.getContext('2d');g.fillStyle=col||'#dfeaf5';g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,160,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(15,3,1);s.position.set(x,y,z);scene.add(s);return s;}
+// beaker + liquid
+const SURF=4, FLOOR=-14, LX=15, LZ=9;
+const beaker=new THREE.Mesh(new THREE.BoxGeometry(LX*2+2,24,LZ*2+2),new THREE.MeshStandardMaterial({color:0xbfe0f0,transparent:true,opacity:.08,roughness:.05,side:THREE.DoubleSide}));beaker.position.y=FLOOR+12;scene.add(beaker);
+const beakerEdges=new THREE.LineSegments(new THREE.EdgesGeometry(beaker.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4}));beakerEdges.position.y=FLOOR+12;scene.add(beakerEdges);
+const liquid=new THREE.Mesh(new THREE.BoxGeometry(LX*2,SURF-FLOOR,LZ*2),new THREE.MeshStandardMaterial({color:0x3fa0d6,transparent:true,opacity:.22,roughness:.1}));liquid.position.y=(SURF+FLOOR)/2;scene.add(liquid);
+// electrodes
+const eGeo=new THREE.BoxGeometry(2,26,4);
+const cathode=new THREE.Mesh(eGeo,mat(0xc8d2dc,{m:.6,r:.4}));cathode.position.set(-9,2,0);scene.add(cathode);
+const anode=new THREE.Mesh(eGeo,mat(0xc8d2dc,{m:.6,r:.4}));anode.position.set(9,2,0);scene.add(anode);
+label('cathode (−)',-9,18,0,'#ff9a9a');label('anode (+)',9,18,0,'#9fd0ff');
+const o_prodC=label('',-9,FLOOR-3,0,'#ff9a9a');const o_prodA=label('',9,FLOOR-3,0,'#9fd0ff');
+// battery + wires
+const batt=new THREE.Group();batt.add(new THREE.Mesh(new THREE.BoxGeometry(10,4,4),mat(0x2e4a66)));batt.position.set(0,24,0);scene.add(batt);
+function wire(x){const pts=[new THREE.Vector3(x<0?-3:3,24,0),new THREE.Vector3(x,24,0),new THREE.Vector3(x,16,0)];const cv=new THREE.CatmullRomCurve3(pts);return new THREE.Mesh(new THREE.TubeGeometry(cv,20,0.4,6),mat(0x9fb6cf,{m:.5}));}
+scene.add(wire(-9));scene.add(wire(9));
+// ions
+const ionGeo=new THREE.SphereGeometry(0.85,10,8);
+const cationMat=mat(0xff6b6b,{e:0x4a1010,ei:.4}),anionMat=mat(0x74c0fc,{e:0x10324a,ei:.4});
+const ions=[];
+function randPos(){return new THREE.Vector3(rnd()*2*(LX-3),FLOOR+1+Math.random()*(SURF-FLOOR-2),rnd()*2*(LZ-2));}
+for(let i=0;i<26;i++){const cation=i%2===0;const m=new THREE.Mesh(ionGeo,cation?cationMat:anionMat);m.position.copy(randPos());scene.add(m);ions.push({m,cation});}
+// bubbles
+const bubGeo=new THREE.SphereGeometry(0.7,8,8);
+let bubMatC=new THREE.MeshStandardMaterial({color:0xcfe6ff,transparent:true,opacity:.7,roughness:.2});
+let bubMatA=new THREE.MeshStandardMaterial({color:0xcfe6ff,transparent:true,opacity:.7,roughness:.2});
+const bubbles=[];
+function spawnBubble(x,which){const m=new THREE.Mesh(bubGeo,which==='c'?bubMatC:bubMatA);m.position.set(x+rnd()*2,FLOOR+1,rnd()*4);scene.add(m);bubbles.push({m,x});}
+let mode='water';
+function setMode(mm){mode=mm;$('m-water').classList.toggle('on',mm==='water');$('m-cucl').classList.toggle('on',mm==='cucl');
+  if(mm==='water'){$('o-cat').textContent='Hydrogen';$('o-an').textContent='Oxygen';o_prodC.material.map.image; setProd('H₂','O₂');
+    cathode.material.color.set(0xc8d2dc);bubMatC.color.set(0xcfe6ff);bubMatA.color.set(0xcfe6ff);
+    $('o-tip').innerHTML='<b>Acidified water:</b> H⁺ ions → <b style="color:#ff9a9a">hydrogen</b> at the cathode; OH⁻ ions → <b style="color:#9fd0ff">oxygen</b> at the anode (2 : 1).';}
+  else{$('o-cat').textContent='Copper';$('o-an').textContent='Chlorine';setProd('Cu','Cl₂');
+    cathode.material.color.set(0xc77b3a);bubMatA.color.set(0xc7e87a);
+    $('o-tip').innerHTML='<b>Copper chloride:</b> Cu²⁺ ions → <b style="color:#c77b3a">copper</b> coats the cathode; Cl⁻ ions → <b style="color:#b5e48c">chlorine</b> gas at the anode.';}
+}
+function setProd(c,a){labelText(o_prodC,c,'#ff9a9a');labelText(o_prodA,a,'#9fd0ff');}
+function labelText(spr,text,col){const c=document.createElement('canvas');c.width=320;c.height=64;const g=c.getContext('2d');g.fillStyle=col;g.font='600 32px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,160,34);spr.material.map=new THREE.CanvasTexture(c);spr.material.needsUpdate=true;}
+window.setMode=setMode;
+function upd(){$('v-v').textContent=$('v').value+' V';}
+window.upd=upd;
+let bubTimer=0;
+const orbit={th:0.0,ph:1.05,R:74,tgt:new THREE.Vector3(0,-2,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.5,1.4);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.05;applyCam();
+  const V=+$('v').value, sp=4+V*2.2;
+  for(const io of ions){const tx=io.cation?-9:9;const p=io.m.position;p.x+=Math.sign(tx-p.x)*sp*dt;p.y+=rnd()*sp*dt;p.z+=rnd()*sp*dt;
+    p.y=clamp(p.y,FLOOR+1,SURF-1);p.z=clamp(p.z,-LZ+1,LZ-1);
+    if(Math.abs(p.x-tx)<2.2){ // reached electrode
+      const isCathode=io.cation; const bubble = mode==='water'? true : !isCathode; // CuCl2: no bubbles at cathode (deposit)
+      if(bubble)spawnBubble(tx,isCathode?'c':'a');
+      io.m.position.copy(randPos());
+    }
+  }
+  for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.m.position.y+=(8+V)*dt;b.m.position.x+=rnd()*2*dt;if(b.m.position.y>SURF){scene.remove(b.m);bubbles.splice(i,1);}}
+  renderer.render(scene,camera);}
+if(PREVIEW){$('v').value=8;orbit.R=78;}
+setMode('water');upd();resize();applyCam();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
+</script>
+</body>
+</html>

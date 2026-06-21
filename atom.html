@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Atomic Structure — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--red:#ff6b6b;--panel:rgba(16,28,46,.55)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .name{position:fixed;top:50px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-size:15px;color:var(--teal)}
+  .info{position:fixed;top:96px;right:14px;z-index:9;width:min(210px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
+  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:17px}.rr .v.p{color:var(--red)}.rr .v.e{color:var(--teal)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .wrap2 .name2{flex:0 0 110px;font-weight:600;font-size:14px}
+  .wrap2 input{flex:1;accent-color:var(--teal);height:30px}
+  .wrap2 .val{flex:0 0 56px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--teal)}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
+  body.preview .back,body.preview .title,body.preview .name,body.preview .info,body.preview .ctrl{display:none!important}
+</style>
+</head>
+<body>
+  <div id="loader">building the atom…</div>
+  <canvas id="gl"></canvas>
+  <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+  <div class="title">⚛️ Atomic Structure</div>
+  <div class="name" id="o-name">Carbon</div>
+  <div class="info">
+    <div class="rr"><span>Element</span><span class="v" id="o-sym">C</span></div>
+    <div class="rr"><span>Protons</span><span class="v p" id="o-p">6</span></div>
+    <div class="rr"><span>Neutrons</span><span class="v" id="o-n">6</span></div>
+    <div class="rr"><span>Electrons</span><span class="v e" id="o-e">6</span></div>
+    <div class="rr"><span>Config</span><span class="v" id="o-cfg">2, 4</span></div>
+    <div class="note"><b style="color:#ff6b6b">Red</b> = protons, grey = neutrons (nucleus). <b style="color:#2ec4b6">Teal</b> = electrons in shells (2, 8, 8…).</div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <span class="name2">Atomic number</span><input type="range" id="z" min="1" max="20" step="1" value="6" oninput="upd()"><span class="val" id="z-v">6</span>
+  </div></div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
+// Z -> [symbol, name, mass number]
+const EL=[['H','Hydrogen',1],['He','Helium',4],['Li','Lithium',7],['Be','Beryllium',9],['B','Boron',11],['C','Carbon',12],['N','Nitrogen',14],['O','Oxygen',16],['F','Fluorine',19],['Ne','Neon',20],['Na','Sodium',23],['Mg','Magnesium',24],['Al','Aluminium',27],['Si','Silicon',28],['P','Phosphorus',31],['S','Sulfur',32],['Cl','Chlorine',35],['Ar','Argon',40],['K','Potassium',39],['Ca','Calcium',40]];
+function config(Z){const caps=[2,8,8,2];const r=[];let left=Z;for(const c of caps){if(left<=0)break;const e=Math.min(left,c);r.push(e);left-=e;}return r;}
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x0e1f33,90,200);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,500);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1b3656');gr.addColorStop(.55,'#11243a');gr.addColorStop(1,'#0a1626');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1.05));
+const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(16,24,28);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.4));
+const pgeo=new THREE.SphereGeometry(1.5,14,12);
+const pmatP=new THREE.MeshStandardMaterial({color:0xff6b6b,roughness:.4,emissive:0x4a1010,emissiveIntensity:.4});
+const pmatN=new THREE.MeshStandardMaterial({color:0xcfd8e3,roughness:.5,emissive:0x222a33,emissiveIntensity:.3});
+const egeo=new THREE.SphereGeometry(0.8,12,10);
+const emat=new THREE.MeshStandardMaterial({color:0x7fe6dd,emissive:0x2ec4b6,emissiveIntensity:1.1,roughness:.3});
+const atom=new THREE.Group();scene.add(atom);
+const shellSpins=[];
+function ringInSphere(R){const u=Math.random(),v=Math.random(),w=Math.random();const r=R*Math.cbrt(Math.random());const th=u*2*Math.PI,ph=Math.acos(2*v-1);return new THREE.Vector3(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));}
+function build(Z){
+  while(atom.children.length)atom.remove(atom.children[0]);shellSpins.length=0;
+  const[sym,name,A]=EL[Z-1];const neutrons=Math.max(0,A-Z);
+  // nucleus
+  const nuc=new THREE.Group();const nucR=2.2+Math.cbrt(Z+neutrons)*0.7;
+  for(let i=0;i<Z;i++){const m=new THREE.Mesh(pgeo,pmatP);m.position.copy(ringInSphere(nucR));nuc.add(m);}
+  for(let i=0;i<neutrons;i++){const m=new THREE.Mesh(pgeo,pmatN);m.position.copy(ringInSphere(nucR));nuc.add(m);}
+  atom.add(nuc);
+  // shells
+  const cfg=config(Z);const base=nucR+7;
+  cfg.forEach((cnt,si)=>{
+    const R=base+si*6;
+    const outer=new THREE.Group();outer.rotation.set(si*0.5,si*0.7,si*0.3);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(R,0.07,8,80),new THREE.MeshBasicMaterial({color:0x4a6b86,transparent:true,opacity:.5}));outer.add(ring);
+    const spin=new THREE.Group();outer.add(spin);
+    for(let e=0;e<cnt;e++){const a=e/cnt*2*Math.PI;const el=new THREE.Mesh(egeo,emat);el.position.set(R*Math.cos(a),R*Math.sin(a),0);spin.add(el);}
+    shellSpins.push({spin,sp:0.9/(si+1)});
+    atom.add(outer);
+  });
+  // UI
+  $('o-name').textContent=name;$('o-sym').textContent=sym;$('o-p').textContent=Z;$('o-n').textContent=neutrons;$('o-e').textContent=Z;$('o-cfg').textContent=cfg.join(', ');$('z-v').textContent=Z;
+}
+function upd(){build(+$('z').value);}
+window.upd=upd;
+const orbit={th:0.5,ph:1.15,R:64,tgt:new THREE.Vector3(0,0,0),drag:false,px:0,py:0};
+function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
+canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.4,1.5);orbit.px=e.clientX;orbit.py=e.clientY;});
+addEventListener('pointerup',()=>orbit.drag=false);
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.06;applyCam();
+  for(const s of shellSpins)s.spin.rotation.z+=dt*s.sp;
+  renderer.render(scene,camera);}
+const z0=+(new URLSearchParams(location.search).get('z'));if(z0>=1&&z0<=20)$('z').value=z0;
+if(PREVIEW){$('z').value=11;orbit.R=68;}
+upd();resize();applyCam();tick();
+setTimeout(()=>$('loader').classList.add('hide'),700);
+</script>
+</body>
+</html>
