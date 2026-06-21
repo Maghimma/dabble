@@ -73,7 +73,13 @@
   .ftab{font-family:inherit;font-weight:600;font-size:13px;line-height:1;color:var(--dim);background:transparent;border:0;border-radius:999px;padding:9px 14px;cursor:pointer;transition:background .15s,color .15s}
   .ftab.on{background:var(--blue);color:#fff}.ftab:not(.on):hover{background:rgba(0,0,0,.05)}
   .search{font-family:inherit;font-size:13px;line-height:1;border:1px solid var(--gb);border-radius:999px;padding:9px 16px;background:#fff;color:var(--ink);outline:none;width:150px;-webkit-appearance:none;appearance:none}
-  @media(max-width:560px){.search{width:120px}.ftab{padding:8px 11px;font-size:12.5px}}
+  @media(max-width:560px){
+    .filterbar{flex-direction:column;gap:9px;width:auto;max-width:calc(100% - 20px);border-radius:20px;padding:11px}
+    .ftabs{flex-wrap:nowrap;overflow-x:auto;max-width:100%;justify-content:flex-start;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .ftabs::-webkit-scrollbar{display:none}
+    .ftab{flex:0 0 auto;padding:8px 13px;font-size:12.5px}
+    .search{width:100%}
+  }
   .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:16px}
   @media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.tiles{grid-template-columns:1fr}}
@@ -93,6 +99,11 @@
   .tdot.share{right:46px}.tdot.share svg{display:block}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
   .toast.on{opacity:1}
+  .emptystate{display:none;text-align:center;padding:48px 22px;color:var(--dim)}
+  .emptystate h3{font-size:20px;font-weight:700;color:var(--ink);margin-top:6px}
+  .emptystate p{font-size:14px;margin-top:6px}
+  .feedback{display:inline-block;font-size:13.5px;font-weight:600;color:var(--bluelink);text-decoration:none;background:rgba(0,113,227,.08);border:1px solid rgba(0,113,227,.18);padding:9px 16px;border-radius:999px}
+  .feedback:hover{background:rgba(0,113,227,.14)}
   .soon{background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.05);border-radius:22px;padding:32px;text-align:center;margin-top:16px;backdrop-filter:blur(10px)}
   .soon .lab{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
   .soon h3{font-size:21px;font-weight:700;margin-top:6px;letter-spacing:-.01em}
@@ -186,10 +197,11 @@
         <a class="tile" href="ppc.html"><img class="media" src="shots/ppc.jpg" alt="Production possibility curve" loading="lazy"><div class="cap"><h3>⚙️ Production Possibility Curve</h3><p>Opportunity cost, efficiency, spare capacity &amp; economic growth.</p><span class="go">Open ›</span></div></a>
       </div>
       </div>
+      <div class="emptystate" id="savedEmpty"><div style="font-size:36px">⭐</div><h3>No saved sims yet</h3><p>Tap the ★ on any sim to save it here for quick access.</p></div>
       <div class="soon">
         <div class="lab">More on the way</div><h3>New sims are coming to every subject.</h3>
       </div>
-      <footer><div style="display:flex;align-items:flex-end;gap:6px"><span class="wm">dabble<span class="cur"><svg viewBox="0 0 80 80"><g fill="#1d1d1f" stroke="#1d1d1f" stroke-linecap="round" stroke-linejoin="round"><path d="M27 29 L46 75 L53 55 L73 48 Z" stroke-width="4"/><line x1="35" y1="15" x2="39" y2="4" stroke-width="5"/><line x1="19" y1="19" x2="9" y2="9" stroke-width="5"/><line x1="14" y1="34" x2="3" y2="36" stroke-width="5"/></g></svg></span></span> — learn by doing.</div><div>Made by <b>Maghimma</b> · © 2026</div></footer>
+      <footer><div style="display:flex;align-items:flex-end;gap:6px"><span class="wm">dabble<span class="cur"><svg viewBox="0 0 80 80"><g fill="#1d1d1f" stroke="#1d1d1f" stroke-linecap="round" stroke-linejoin="round"><path d="M27 29 L46 75 L53 55 L73 48 Z" stroke-width="4"/><line x1="35" y1="15" x2="39" y2="4" stroke-width="5"/><line x1="19" y1="19" x2="9" y2="9" stroke-width="5"/><line x1="14" y1="34" x2="3" y2="36" stroke-width="5"/></g></svg></span></span> — learn by doing.</div><div>Made by <b>Maghimma</b> · © 2026</div><div style="margin-top:14px"><a class="feedback" href="mailto:director@jkkn.ac.in?subject=Dabble%20feedback%20%2F%20sim%20request">💬 Request a sim · report a bug</a></div></footer>
     </div>
   </section>
 <div class="toast" id="toast"></div>
@@ -205,11 +217,12 @@
     var sb=document.createElement('button');sb.className='tdot share';sb.type='button';sb.title='Share';sb.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13"/><path d="M8 7l4-4 4 4"/></svg>';
     sb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var url=new URL(href,location.href).href;if(navigator.share){navigator.share({title:'Dabble',url:url}).catch(function(){});}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){toast('Link copied!');});}else toast(url);});tile.appendChild(sb);
   });
-  function apply(){var q=(search.value||'').trim().toLowerCase();groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var href=t.getAttribute('href');var ok=(f==='all'||(f==='fav'?fav[href]:f===g.dataset.subj))&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok)any=true;});g.style.display=any?'':'none';});}
+  function apply(){var q=(search.value||'').trim().toLowerCase();var total=0;groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var href=t.getAttribute('href');var ok=(f==='all'||(f==='fav'?fav[href]:f===g.dataset.subj))&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok){any=true;total++;}});g.style.display=any?'':'none';});var se=document.getElementById('savedEmpty');if(se)se.style.display=(f==='fav'&&total===0)?'block':'none';}
   tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
   search.addEventListener('input',apply);apply();
   var sp=document.getElementById('surprise');if(sp)sp.addEventListener('click',function(){var hs=tiles.map(function(t){return t.getAttribute('href');});if(hs.length)location.href=hs[Math.floor(Math.random()*hs.length)];});
 })();
 </script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
