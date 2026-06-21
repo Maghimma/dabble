@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Periodic Table — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--panel:rgba(16,28,46,.85)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);min-height:100vh;
+    background:radial-gradient(80% 60% at 50% 0%,#16384f,transparent 60%),linear-gradient(170deg,#11243a,#0a1626);padding:14px 14px 40px}
+  .top{display:flex;align-items:center;justify-content:space-between;max-width:1180px;margin:0 auto 6px}
+  .back{color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{font-family:'Fraunces',serif;font-weight:600;font-size:21px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;max-width:1180px;margin:0 auto 12px;font-size:11px;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+  .grid{display:grid;grid-template-columns:repeat(18,minmax(40px,1fr));gap:4px;min-width:760px;max-width:1180px;margin:0 auto}
+  .cell{aspect-ratio:1/1;border-radius:7px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;
+    color:#10202e;position:relative;transition:transform .12s,box-shadow .12s;user-select:none;padding:1px}
+  .cell:hover{transform:scale(1.12);box-shadow:0 6px 18px rgba(0,0,0,.45);z-index:5}
+  .cell .num{position:absolute;top:3px;left:4px;font-size:8px;font-weight:600;opacity:.75}
+  .cell .sym{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(13px,1.5vw,18px);line-height:1}
+  .cell .nm{font-size:7px;font-weight:600;opacity:.8;text-align:center;line-height:1;margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fnote{grid-column:3/4;font-size:9px;color:var(--dim);display:flex;align-items:center;justify-content:center}
+  #detail{position:fixed;right:16px;bottom:16px;z-index:20;width:min(240px,80vw);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  #detail .big{display:flex;align-items:baseline;gap:10px}
+  #detail .dsym{font-family:'Fraunces',serif;font-weight:600;font-size:42px;line-height:1}
+  #detail .dnum{font-size:13px;color:var(--dim)}
+  #detail .dname{font-size:19px;font-weight:700;margin-top:2px}
+  #detail .dcat{display:inline-block;font-size:11px;font-weight:600;color:#10202e;border-radius:999px;padding:3px 10px;margin-top:8px}
+  #detail .drr{display:flex;justify-content:space-between;font-size:13px;margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}
+  #detail .drr:nth-child(2){border-top:0;padding-top:0}
+  #detail .drr b{font-family:'Fraunces',serif;font-weight:600}
+  .hintbar{text-align:center;color:var(--dim);font-size:12px;margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
+    <div class="title">🧪 Periodic Table</div>
+    <span style="width:54px"></span>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="scroll"><div class="grid" id="grid"></div></div>
+  <div class="hintbar">Tap any element to see its details</div>
+  <div id="detail"></div>
+
+<script>
+const CAT={1:['Alkali metal','#ff8787'],2:['Alkaline earth','#ffc078'],3:['Transition metal','#ffe066'],4:['Post-transition','#8ce99a'],5:['Metalloid','#3bc9c9'],6:['Nonmetal','#74c0fc'],7:['Halogen','#b197fc'],8:['Noble gas','#f783ac'],9:['Lanthanide','#63e6be'],10:['Actinide','#f4a6c0'],0:['Unknown','#adb5bd']};
+// [number, symbol, name, mass, category, group(col), displayRow]
+const E=[
+[1,'H','Hydrogen',1.008,6,1,1],[2,'He','Helium',4.003,8,18,1],
+[3,'Li','Lithium',6.94,1,1,2],[4,'Be','Beryllium',9.012,2,2,2],[5,'B','Boron',10.81,5,13,2],[6,'C','Carbon',12.011,6,14,2],[7,'N','Nitrogen',14.007,6,15,2],[8,'O','Oxygen',15.999,6,16,2],[9,'F','Fluorine',18.998,7,17,2],[10,'Ne','Neon',20.18,8,18,2],
+[11,'Na','Sodium',22.99,1,1,3],[12,'Mg','Magnesium',24.305,2,2,3],[13,'Al','Aluminium',26.982,4,13,3],[14,'Si','Silicon',28.085,5,14,3],[15,'P','Phosphorus',30.974,6,15,3],[16,'S','Sulfur',32.06,6,16,3],[17,'Cl','Chlorine',35.45,7,17,3],[18,'Ar','Argon',39.948,8,18,3],
+[19,'K','Potassium',39.098,1,1,4],[20,'Ca','Calcium',40.078,2,2,4],[21,'Sc','Scandium',44.956,3,3,4],[22,'Ti','Titanium',47.867,3,4,4],[23,'V','Vanadium',50.942,3,5,4],[24,'Cr','Chromium',51.996,3,6,4],[25,'Mn','Manganese',54.938,3,7,4],[26,'Fe','Iron',55.845,3,8,4],[27,'Co','Cobalt',58.933,3,9,4],[28,'Ni','Nickel',58.693,3,10,4],[29,'Cu','Copper',63.546,3,11,4],[30,'Zn','Zinc',65.38,3,12,4],[31,'Ga','Gallium',69.723,4,13,4],[32,'Ge','Germanium',72.63,5,14,4],[33,'As','Arsenic',74.922,5,15,4],[34,'Se','Selenium',78.971,6,16,4],[35,'Br','Bromine',79.904,7,17,4],[36,'Kr','Krypton',83.798,8,18,4],
+[37,'Rb','Rubidium',85.468,1,1,5],[38,'Sr','Strontium',87.62,2,2,5],[39,'Y','Yttrium',88.906,3,3,5],[40,'Zr','Zirconium',91.224,3,4,5],[41,'Nb','Niobium',92.906,3,5,5],[42,'Mo','Molybdenum',95.95,3,6,5],[43,'Tc','Technetium',98,3,7,5],[44,'Ru','Ruthenium',101.07,3,8,5],[45,'Rh','Rhodium',102.91,3,9,5],[46,'Pd','Palladium',106.42,3,10,5],[47,'Ag','Silver',107.87,3,11,5],[48,'Cd','Cadmium',112.41,3,12,5],[49,'In','Indium',114.82,4,13,5],[50,'Sn','Tin',118.71,4,14,5],[51,'Sb','Antimony',121.76,5,15,5],[52,'Te','Tellurium',127.6,5,16,5],[53,'I','Iodine',126.9,7,17,5],[54,'Xe','Xenon',131.29,8,18,5],
+[55,'Cs','Caesium',132.91,1,1,6],[56,'Ba','Barium',137.33,2,2,6],[72,'Hf','Hafnium',178.49,3,4,6],[73,'Ta','Tantalum',180.95,3,5,6],[74,'W','Tungsten',183.84,3,6,6],[75,'Re','Rhenium',186.21,3,7,6],[76,'Os','Osmium',190.23,3,8,6],[77,'Ir','Iridium',192.22,3,9,6],[78,'Pt','Platinum',195.08,3,10,6],[79,'Au','Gold',196.97,3,11,6],[80,'Hg','Mercury',200.59,3,12,6],[81,'Tl','Thallium',204.38,4,13,6],[82,'Pb','Lead',207.2,4,14,6],[83,'Bi','Bismuth',208.98,4,15,6],[84,'Po','Polonium',209,4,16,6],[85,'At','Astatine',210,7,17,6],[86,'Rn','Radon',222,8,18,6],
+[87,'Fr','Francium',223,1,1,7],[88,'Ra','Radium',226,2,2,7],[104,'Rf','Rutherfordium',267,3,4,7],[105,'Db','Dubnium',268,3,5,7],[106,'Sg','Seaborgium',269,3,6,7],[107,'Bh','Bohrium',270,3,7,7],[108,'Hs','Hassium',269,3,8,7],[109,'Mt','Meitnerium',278,0,9,7],[110,'Ds','Darmstadtium',281,0,10,7],[111,'Rg','Roentgenium',282,0,11,7],[112,'Cn','Copernicium',285,0,12,7],[113,'Nh','Nihonium',286,0,13,7],[114,'Fl','Flerovium',289,0,14,7],[115,'Mc','Moscovium',290,0,15,7],[116,'Lv','Livermorium',293,0,16,7],[117,'Ts','Tennessine',294,0,17,7],[118,'Og','Oganesson',294,0,18,7],
+[57,'La','Lanthanum',138.91,9,3,9],[58,'Ce','Cerium',140.12,9,4,9],[59,'Pr','Praseodymium',140.91,9,5,9],[60,'Nd','Neodymium',144.24,9,6,9],[61,'Pm','Promethium',145,9,7,9],[62,'Sm','Samarium',150.36,9,8,9],[63,'Eu','Europium',151.96,9,9,9],[64,'Gd','Gadolinium',157.25,9,10,9],[65,'Tb','Terbium',158.93,9,11,9],[66,'Dy','Dysprosium',162.5,9,12,9],[67,'Ho','Holmium',164.93,9,13,9],[68,'Er','Erbium',167.26,9,14,9],[69,'Tm','Thulium',168.93,9,15,9],[70,'Yb','Ytterbium',173.05,9,16,9],[71,'Lu','Lutetium',174.97,9,17,9],
+[89,'Ac','Actinium',227,10,3,10],[90,'Th','Thorium',232.04,10,4,10],[91,'Pa','Protactinium',231.04,10,5,10],[92,'U','Uranium',238.03,10,6,10],[93,'Np','Neptunium',237,10,7,10],[94,'Pu','Plutonium',244,10,8,10],[95,'Am','Americium',243,10,9,10],[96,'Cm','Curium',247,10,10,10],[97,'Bk','Berkelium',247,10,11,10],[98,'Cf','Californium',251,10,12,10],[99,'Es','Einsteinium',252,10,13,10],[100,'Fm','Fermium',257,10,14,10],[101,'Md','Mendelevium',258,10,15,10],[102,'No','Nobelium',259,10,16,10],[103,'Lr','Lawrencium',266,10,17,10]
+];
+const $=id=>document.getElementById(id);
+// legend
+$('legend').innerHTML=Object.keys(CAT).filter(k=>k!=0).map(k=>`<span><i style="background:${CAT[k][1]}"></i>${CAT[k][0]}</span>`).join('');
+// f-block pointers in main grid
+function spacer(g,r,txt){const d=document.createElement('div');d.style.gridColumn=g;d.style.gridRow=r;d.style.fontSize='9px';d.style.color='var(--dim)';d.style.display='flex';d.style.alignItems='center';d.style.justifyContent='center';d.textContent=txt;return d;}
+const grid=$('grid');
+grid.appendChild(spacer(3,6,'57–71'));grid.appendChild(spacer(3,7,'89–103'));
+function shells(Z){if(Z>20)return null;const caps=[2,8,8,2];const r=[];let left=Z;for(const c of caps){if(left<=0)break;const e=Math.min(left,c);r.push(e);left-=e;}return r.join(', ');}
+function show(el){const[n,s,name,mass,cat,g,p]=el;const c=CAT[cat];const realP=cat===9?6:cat===10?7:p;const sh=shells(n);
+  $('detail').innerHTML=`<div class="big"><span class="dsym">${s}</span><span class="dnum">#${n}</span></div>
+  <div class="dname">${name}</div><span class="dcat" style="background:${c[1]}">${c[0]}</span>
+  <div class="drr"><span>Atomic mass</span><b>${mass}</b></div>
+  <div class="drr"><span>Group</span><b>${g>18?'—':(cat===9||cat===10?'—':g)}</b></div>
+  <div class="drr"><span>Period</span><b>${realP}</b></div>
+  ${sh?`<div class="drr"><span>Electrons</span><b>${sh}</b></div>`:''}`;}
+E.forEach(el=>{const[n,s,name,mass,cat,g,p]=el;const c=CAT[cat];
+  const d=document.createElement('div');d.className='cell';d.style.gridColumn=g;d.style.gridRow=p;d.style.background=c[1];
+  d.innerHTML=`<span class="num">${n}</span><span class="sym">${s}</span><span class="nm">${name}</span>`;
+  d.onclick=()=>show(el);grid.appendChild(d);});
+show(E[0]);
+</script>
+</body>
+</html>

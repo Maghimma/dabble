@@ -57,15 +57,17 @@
   .sh .tag{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
   .sh h2{font-size:clamp(27px,3.4vw,40px);font-weight:700;letter-spacing:-.02em;margin-top:8px}
   .sh p{font-size:clamp(15px,1.7vw,18px);color:var(--dim);margin-top:8px;font-weight:500}
-  .tiles{column-count:3;column-gap:14px;margin-top:34px}
-  @media(max-width:980px){.tiles{column-count:2}}
-  @media(max-width:520px){.tiles{column-count:1}}
-  .tile{display:inline-block;width:100%;break-inside:avoid;margin:0 0 14px;background:#fff;
-    border:1px solid rgba(0,0,0,.06);box-shadow:0 6px 22px rgba(30,40,80,.10);border-radius:16px;overflow:hidden;
-    text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
+  .subj{display:flex;align-items:center;gap:12px;margin:34px 0 0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .subj::after{content:"";flex:1;height:1px;background:rgba(0,0,0,.09)}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:16px}
+  @media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.tiles{grid-template-columns:1fr}}
+  .tile{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(0,0,0,.06);box-shadow:0 6px 22px rgba(30,40,80,.10);
+    border-radius:16px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s}
   .tile:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(30,40,80,.18)}
-  .tile img{width:100%;display:block;background:#0e2233}
-  .tile .cap{padding:11px 14px 13px}
+  .tile .media{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:#0e2233}
+  .tile .ph{display:flex;align-items:center;justify-content:center;font-size:46px;background:linear-gradient(135deg,#16344f,#0c1b2c)}
+  .tile .cap{padding:12px 15px 15px}
   .tile h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
   .tile p{font-size:12.5px;color:var(--dim);font-weight:500;margin-top:3px;line-height:1.35}
   .tile .go{color:var(--bluelink);font-size:12.5px;font-weight:600;margin-top:8px;display:inline-block}
@@ -101,18 +103,23 @@
     <div class="sh" id="sims">
       <div class="tag">The simulations</div>
       <h2>Pick one and start poking.</h2>
-      <p>Eight sims — now with chemistry. More subjects on the way.</p>
+      <p>Physics and chemistry — with more on the way.</p>
     </div>
     <div class="wrap">
+      <div class="subj">⚛️ Physics</div>
       <div class="tiles">
-        <a class="tile" href="hooke.html"><img src="shots/hooke.jpg" alt="Hooke's Law sim" loading="lazy"><div class="cap"><h3>🪝 Hooke's Law</h3><p>Stretch a spring, build the graph, find its limit.</p><span class="go">Open ›</span></div></a>
-        <a class="tile" href="circuits.html"><img src="shots/circuits.jpg" alt="Circuits sim" loading="lazy"><div class="cap"><h3>⚡ Circuits &amp; Ohm's Law</h3><p>Series or parallel — add bulbs &amp; a switch, watch current flow.</p><span class="go">Open ›</span></div></a>
-        <a class="tile" href="moments.html"><img src="shots/moments.jpg" alt="Moments sim" loading="lazy"><div class="cap"><h3>⚖️ Moments</h3><p>Stack weights and balance the beam.</p><span class="go">Open ›</span></div></a>
-        <a class="tile" href="waves.html"><img src="shots/waves.jpg" alt="Waves sim" loading="lazy"><div class="cap"><h3>🌊 Waves &amp; Refraction</h3><p>Bend light through glass; find the critical angle.</p><span class="go">Open ›</span></div></a>
-        <a class="tile" href="wavemotion.html"><img src="shots/wavemotion.jpg" alt="Wave motion sim" loading="lazy"><div class="cap"><h3>〰️ Wave Motion</h3><p>Transverse vs longitudinal — change frequency, wavelength &amp; amplitude.</p><span class="go">Open ›</span></div></a>
-        <a class="tile" href="states.html"><img src="shots/states.jpg" alt="States of matter sim" loading="lazy"><div class="cap"><h3>🌡️ States of Matter</h3><p>Chemistry · heat it up and watch particles melt &amp; boil between solid, liquid &amp; gas.</p><span class="go">Open ›</span></div></a>
-        <a class="tile" href="gravity.html"><img src="shots/gravity.jpg" alt="Centre of gravity sim" loading="lazy"><div class="cap"><h3>📦 Centre of Gravity</h3><p>Tilt it until it topples.</p><span class="go">Open ›</span></div></a>
-        <a class="tile" href="pressure.html"><img src="shots/pressure.jpg" alt="Pressure sim" loading="lazy"><div class="cap"><h3>💧 Pressure</h3><p>Dive a probe, watch pressure climb.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="hooke.html"><img class="media" src="shots/hooke.jpg" alt="Hooke's Law sim" loading="lazy"><div class="cap"><h3>🪝 Hooke's Law</h3><p>Stretch a spring, build the graph, find its limit.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="circuits.html"><img class="media" src="shots/circuits.jpg" alt="Circuits sim" loading="lazy"><div class="cap"><h3>⚡ Circuits &amp; Ohm's Law</h3><p>Series or parallel — add bulbs &amp; a switch, watch current flow.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="moments.html"><img class="media" src="shots/moments.jpg" alt="Moments sim" loading="lazy"><div class="cap"><h3>⚖️ Moments</h3><p>Stack weights and balance the beam.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="waves.html"><img class="media" src="shots/waves.jpg" alt="Waves sim" loading="lazy"><div class="cap"><h3>🌊 Waves &amp; Refraction</h3><p>Bend light through glass; find the critical angle.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="wavemotion.html"><img class="media" src="shots/wavemotion.jpg" alt="Wave motion sim" loading="lazy"><div class="cap"><h3>〰️ Wave Motion</h3><p>Transverse vs longitudinal — change frequency, wavelength &amp; amplitude.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="gravity.html"><img class="media" src="shots/gravity.jpg" alt="Centre of gravity sim" loading="lazy"><div class="cap"><h3>📦 Centre of Gravity</h3><p>Tilt it until it topples.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="pressure.html"><img class="media" src="shots/pressure.jpg" alt="Pressure sim" loading="lazy"><div class="cap"><h3>💧 Pressure</h3><p>Dive a probe, watch pressure climb.</p><span class="go">Open ›</span></div></a>
+      </div>
+      <div class="subj">🧪 Chemistry</div>
+      <div class="tiles">
+        <a class="tile" href="states.html"><div class="media ph">🌡️</div><div class="cap"><h3>🌡️ States of Matter</h3><p>Heat it up — watch particles melt &amp; boil between solid, liquid &amp; gas.</p><span class="go">Open ›</span></div></a>
+        <a class="tile" href="periodictable.html"><div class="media ph">🧪</div><div class="cap"><h3>🧪 Periodic Table</h3><p>Tap any of the 118 elements — colour-coded, with details.</p><span class="go">Open ›</span></div></a>
       </div>
       <div class="soon">
         <div class="lab">Coming soon</div><h3>More subjects in the works.</h3>
