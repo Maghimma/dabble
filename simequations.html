@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Simultaneous Equations — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--blue:#5b9bff;--orange:#ff8f6b;--green:#8ce99a;--red:#ff8f8f;--panel:rgba(16,28,46,.62)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .eqs{position:fixed;top:48px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-size:16px;display:flex;gap:20px;justify-content:center}
+  .eqs .e1{color:var(--blue)}.eqs .e2{color:var(--orange)}
+  .info{position:fixed;top:92px;right:14px;z-index:9;width:min(238px,54vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .pt{font-family:'Fraunces',serif;font-size:15px;text-align:center;margin-bottom:8px}
+  .chk{font-size:12.5px;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.05);line-height:1.5}
+  .chk .q{font-family:'Fraunces',serif}.chk .ok{color:var(--green);font-weight:700}.chk .no{color:var(--red);font-weight:700}
+  .status{text-align:center;font-weight:700;font-size:13px;margin-top:10px;padding:8px;border-radius:9px}
+  .status.win{background:rgba(140,233,154,.16);color:var(--green)}.status.mid{background:rgba(255,255,255,.06);color:var(--dim)}
+  .work{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px;display:none}
+  .work.on{display:block}
+  .work .st{font-size:12px;line-height:1.7;color:var(--dim)}.work .st b{color:var(--amber);font-family:'Fraunces',serif}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:640px;margin:0 auto;text-align:center}
+  .hint{font-size:12px;color:var(--dim);margin-bottom:10px}
+  .btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .btns button{font-family:inherit;font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
+  .btns button.act{background:var(--teal);color:#04302c;border-color:var(--teal)}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="index.html">← Dabble</a>
+  <div class="title">➗ Simultaneous Equations</div>
+  <div class="eqs"><span class="e1" id="eq1">—</span><span class="e2" id="eq2">—</span></div>
+  <div class="info">
+    <div class="pt" id="o-pt">Your point: (0, 0)</div>
+    <div class="chk" id="c1"></div>
+    <div class="chk" id="c2"></div>
+    <div class="status mid" id="o-status">Drag the dot onto a line…</div>
+    <div class="work" id="work"><div class="st" id="o-steps"></div></div>
+  </div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="hint">Drag the white dot. It must fit <b style="color:#5b9bff">both</b> lines at once — that crossing point is the answer.</div>
+    <div class="btns" id="presets"></div>
+    <div class="btns" style="margin-top:8px">
+      <button onclick="reveal()">📍 Show the answer</button>
+      <button id="wbtn" onclick="toggleWork()">🧮 Show the working</button>
+    </div>
+  </div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
+let W,H;function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);draw();}
+new ResizeObserver(resize).observe(cv);
+const PR=[
+ {a1:2,b1:1,c1:8, a2:1,b2:-1,c2:1, x:3,y:2, steps:["Add the equations so <b>y</b> cancels:","(2x + y) + (x − y) = 8 + 1","3x = 9  →  <b>x = 3</b>","Put x = 3 into x − y = 1:","3 − y = 1  →  <b>y = 2</b>"]},
+ {a1:1,b1:1,c1:7, a2:1,b2:-1,c2:1, x:4,y:3, steps:["Add the equations so <b>y</b> cancels:","(x + y) + (x − y) = 7 + 1","2x = 8  →  <b>x = 4</b>","Put x = 4 into x + y = 7:","4 + y = 7  →  <b>y = 3</b>"]},
+ {a1:3,b1:2,c1:12, a2:1,b2:2,c2:8, x:2,y:3, steps:["Subtract to cancel <b>2y</b>:","(3x + 2y) − (x + 2y) = 12 − 8","2x = 4  →  <b>x = 2</b>","Put x = 2 into x + 2y = 8:","2 + 2y = 8  →  <b>y = 3</b>"]},
+ {a1:1,b1:2,c1:11, a2:2,b2:-1,c2:7, x:5,y:3, steps:["Multiply eq 2 by 2 so <b>y</b> matches:","4x − 2y = 14","Add to x + 2y = 11:","5x = 25  →  <b>x = 5</b>","Put x = 5 into 2x − y = 7:","10 − y = 7  →  <b>y = 3</b>"]}
+];
+let cur=0,dot={x:0,y:0};
+const XMIN=-2,XMAX=9,YMIN=-2,YMAX=9;
+function plot(){const w=Math.min(W-300,500),h=Math.min(W-300,500,H-300),L=Math.max(56,((W-280)-w)/2+10),T=Math.max(96,(H-150-h)/2),B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function gx(x){const p=plot();return p.L+(x-XMIN)/(XMAX-XMIN)*p.w;}
+function gy(y){const p=plot();return p.B-(y-YMIN)/(YMAX-YMIN)*p.h;}
+function ix(px){const p=plot();return XMIN+(px-p.L)/p.w*(XMAX-XMIN);}
+function iy(py){const p=plot();return YMIN+(p.B-py)/p.h*(YMAX-YMIN);}
+function t1(co,v){if(co===0)return'';const n=Math.abs(co)===1?'':Math.abs(co);return (co<0?'−':'')+n+v;}
+function t2(co,v){if(co===0)return'';const n=Math.abs(co)===1?'':Math.abs(co);return (co<0?' − ':' + ')+n+v;}
+function eqStr(a,b,c){return t1(a,'x')+t2(b,'y')+' = '+c;}
+function setPreset(i){cur=i;dot={x:0,y:0};buildPresets();render();}
+window.setPreset=setPreset;
+function buildPresets(){const w=$('presets');w.innerHTML='';PR.forEach(function(p,i){const b=document.createElement('button');b.textContent='Problem '+(i+1);b.className=i===cur?'act':'';b.onclick=function(){setPreset(i);};w.appendChild(b);});}
+function reveal(){const p=PR[cur];dot={x:p.x,y:p.y};render();}
+window.reveal=reveal;
+function toggleWork(){$('work').classList.toggle('on');$('wbtn').classList.toggle('act',$('work').classList.contains('on'));}
+window.toggleWork=toggleWork;
+function lineEnds(a,b,c){if(b===0){return[[c/a,YMIN],[c/a,YMAX]];}return[[XMIN,(c-a*XMIN)/b],[XMAX,(c-a*XMAX)/b]];}
+function draw(){if(!W)return;const p=plot();ctx.clearRect(0,0,W,H);const P=PR[cur];
+  // grid
+  ctx.strokeStyle='rgba(234,241,247,.06)';ctx.lineWidth=1;ctx.beginPath();for(let x=XMIN;x<=XMAX;x++){ctx.moveTo(gx(x),p.T);ctx.lineTo(gx(x),p.B);}for(let y=YMIN;y<=YMAX;y++){ctx.moveTo(p.L,gy(y));ctx.lineTo(p.R,gy(y));}ctx.stroke();
+  // axes
+  ctx.strokeStyle='rgba(234,241,247,.45)';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(gx(0),p.T);ctx.lineTo(gx(0),p.B);ctx.moveTo(p.L,gy(0));ctx.lineTo(p.R,gy(0));ctx.stroke();
+  ctx.fillStyle='rgba(234,241,247,.6)';ctx.font='11px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('x',p.R-6,gy(0)-7);ctx.fillText('y',gx(0)+9,p.T+10);
+  // lines
+  function drawLine(a,b,c,col){const e=lineEnds(a,b,c);ctx.strokeStyle=col;ctx.lineWidth=3.4;ctx.beginPath();ctx.moveTo(gx(e[0][0]),gy(e[0][1]));ctx.lineTo(gx(e[1][0]),gy(e[1][1]));ctx.stroke();}
+  drawLine(P.a1,P.b1,P.c1,'#5b9bff');drawLine(P.a2,P.b2,P.c2,'#ff8f6b');
+  // user dot + guides
+  const sx=gx(dot.x),sy=gy(dot.y);
+  ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(234,241,247,.3)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(sx,gy(0));ctx.lineTo(sx,sy);ctx.lineTo(gx(0),sy);ctx.stroke();ctx.setLineDash([]);
+  const both=(P.a1*dot.x+P.b1*dot.y===P.c1)&&(P.a2*dot.x+P.b2*dot.y===P.c2);
+  ctx.fillStyle=both?'#8ce99a':'#fff';ctx.shadowColor=both?'#8ce99a':'transparent';ctx.shadowBlur=both?16:0;ctx.beginPath();ctx.arc(sx,sy,9,0,7);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='#0a1622';ctx.font='600 11px Hanken Grotesk';ctx.fillText('('+dot.x+','+dot.y+')',sx,sy-16);
+}
+function render(){const P=PR[cur];$('eq1').textContent=eqStr(P.a1,P.b1,P.c1);$('eq2').textContent=eqStr(P.a2,P.b2,P.c2);
+  $('o-pt').textContent='Your point: ('+dot.x+', '+dot.y+')';
+  const v1=P.a1*dot.x+P.b1*dot.y,v2=P.a2*dot.x+P.b2*dot.y,ok1=v1===P.c1,ok2=v2===P.c2;
+  $('c1').innerHTML='<span class="q" style="color:#5b9bff">'+eqStr(P.a1,P.b1,P.c1)+'</span><br>your point gives '+v1+' — '+(ok1?'<span class="ok">fits ✓</span>':'<span class="no">need '+P.c1+' ✗</span>');
+  $('c2').innerHTML='<span class="q" style="color:#ff8f6b">'+eqStr(P.a2,P.b2,P.c2)+'</span><br>your point gives '+v2+' — '+(ok2?'<span class="ok">fits ✓</span>':'<span class="no">need '+P.c2+' ✗</span>');
+  const s=$('o-status');if(ok1&&ok2){s.className='status win';s.innerHTML='🎉 Fits BOTH → the solution is x = '+P.x+', y = '+P.y;}
+  else if(ok1||ok2){s.className='status mid';s.innerHTML='On <b>one</b> line only. The answer must fit both — find the crossing point.';}
+  else{s.className='status mid';s.textContent='Not on either line yet. Drag onto where they cross.';}
+  $('o-steps').innerHTML=P.steps.map(function(t){return '• '+t;}).join('<br>')+'<br>• <b>✓ x = '+P.x+', y = '+P.y+'</b>';
+  draw();}
+// dragging
+let drag=false;
+function setFromPointer(e){const r=cv.getBoundingClientRect();let x=Math.round(ix(e.clientX-r.left)),y=Math.round(iy(e.clientY-r.top));x=Math.max(XMIN,Math.min(XMAX,x));y=Math.max(YMIN,Math.min(YMAX,y));dot={x:x,y:y};render();}
+cv.addEventListener('pointerdown',function(e){drag=true;setFromPointer(e);});
+addEventListener('pointermove',function(e){if(drag)setFromPointer(e);});
+addEventListener('pointerup',function(){drag=false;});
+buildPresets();resize();render();
+</script>
+</body>
+</html>
