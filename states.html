@@ -4,13 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>States of Matter — Dabble</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--blue:#5fb2ff;--panel:rgba(16,28,46,.55)}
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--panel:rgba(16,28,46,.55)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
   body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
   .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
@@ -35,7 +33,7 @@
 </style>
 </head>
 <body>
-  <div id="loader">warming up the particles…</div>
+  <div id="loader">warming up the beaker…</div>
   <canvas id="gl"></canvas>
   <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
   <div class="title">🌡️ States of Matter</div>
@@ -47,8 +45,8 @@
   <div class="info">
     <div class="rr"><span>State</span><span class="v st" id="o-state">Liquid</span></div>
     <div class="rr"><span>Temperature</span><span class="v t" id="o-temp">50 °C</span></div>
-    <div class="note" id="o-tip"><b>Liquid:</b> particles slide past each other but stay touching — takes the container's shape, keeps its volume.</div>
-    <div class="note" style="border:0;padding-top:6px">❄️ Melts at 0 °C&nbsp;&nbsp;·&nbsp;&nbsp;💨 Boils at 100 °C</div>
+    <div class="note" id="o-tip"></div>
+    <div class="note" style="border:0;padding-top:6px">❄️ Melts at 0 °C&nbsp;·&nbsp;💨 Boils at 100 °C</div>
   </div>
   <div class="ctrl"><div class="wrap2">
     <div class="row"><span class="name">Temperature</span><input type="range" id="temp" min="-20" max="140" step="1" value="50" oninput="onTemp()"><span class="val" id="t-v">50 °C</span></div>
@@ -56,96 +54,78 @@
 
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
 <script type="module">
-const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,150);l.style.color='#ff9a8a';}};
 window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
 import * as THREE from 'three';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
 const canvas=$('gl');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,90,190);
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,90,200);
 const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
-(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
-scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
-const key=new THREE.DirectionalLight(0xffffff,1.15);key.position.set(20,34,22);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.far=120;key.shadow.camera.left=-40;key.shadow.camera.right=40;key.shadow.camera.top=40;key.shadow.camera.bottom=-40;scene.add(key);
-scene.add(new THREE.AmbientLight(0xffffff,.32));
-// container
-const BX=14,BY=17,BZ=14;
-const floor=new THREE.Mesh(new THREE.BoxGeometry(BX*2+2,1.2,BZ*2+2),new THREE.MeshStandardMaterial({color:0x24435f,roughness:.9}));floor.position.y=-BY-0.6;floor.receiveShadow=true;scene.add(floor);
-const glass=new THREE.Mesh(new THREE.BoxGeometry(BX*2,BY*2,BZ*2),new THREE.MeshStandardMaterial({color:0x86c8e6,transparent:true,opacity:.10,roughness:.05,side:THREE.DoubleSide}));scene.add(glass);
-const edges=new THREE.LineSegments(new THREE.EdgesGeometry(glass.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.45}));scene.add(edges);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#24405c');gr.addColorStop(.6,'#15293f');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x202a38,.85));
+const key=new THREE.DirectionalLight(0xffffff,1.35);key.position.set(16,30,16);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=120;key.shadow.camera.left=-30;key.shadow.camera.right=30;key.shadow.camera.top=30;key.shadow.camera.bottom=-30;key.shadow.bias=-0.0004;scene.add(key);
+scene.add(new THREE.DirectionalLight(0x88aaff,.35).translateX(-18));scene.add(new THREE.AmbientLight(0xffffff,.25));
+// lab bench
+const FLOOR=-10, BR=11, BH=24, TOP=FLOOR+BH;
+const bench=new THREE.Mesh(new THREE.BoxGeometry(70,4,46),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.9}));bench.position.y=FLOOR-2;bench.receiveShadow=true;scene.add(bench);
+// glass beaker
+const glassMat=new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.16,roughness:.06,metalness:0,side:THREE.DoubleSide});
+const wall=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR,BH,56,1,true),glassMat);wall.position.y=FLOOR+BH/2;scene.add(wall);
+const base=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR*0.96,1.4,56),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.28,roughness:.05}));base.position.y=FLOOR+0.7;base.receiveShadow=true;scene.add(base);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(BR,0.4,12,56),new THREE.MeshStandardMaterial({color:0xdaf0fb,transparent:true,opacity:.5,roughness:.1}));rim.rotation.x=Math.PI/2;rim.position.y=TOP;scene.add(rim);
+const spout=new THREE.Mesh(new THREE.TorusGeometry(2.2,0.4,8,16,Math.PI),new THREE.MeshStandardMaterial({color:0xdaf0fb,transparent:true,opacity:.5}));spout.rotation.set(Math.PI/2,0,0);spout.position.set(BR-1,TOP,0);scene.add(spout);
+// bunsen flame (under beaker)
+const flame=new THREE.Group();const fOut=new THREE.Mesh(new THREE.ConeGeometry(2.4,7,16),new THREE.MeshBasicMaterial({color:0xffa53b,transparent:true,opacity:.8}));fOut.position.y=3.5;flame.add(fOut);const fIn=new THREE.Mesh(new THREE.ConeGeometry(1.2,4.5,16),new THREE.MeshBasicMaterial({color:0x6ab0ff,transparent:true,opacity:.9}));fIn.position.y=2.6;flame.add(fIn);const burner=new THREE.Mesh(new THREE.CylinderGeometry(.7,1,3,12),new THREE.MeshStandardMaterial({color:0x4a5663,roughness:.6}));burner.position.y=-1;flame.add(burner);const fLight=new THREE.PointLight(0xffa040,0,30,2);fLight.position.y=4;flame.add(fLight);flame.position.set(0,FLOOR-3.2,0);scene.add(flame);
 // particles
 const COLS=4,ROWS=3,DEPS=4,N=COLS*ROWS*DEPS;
-const geo=new THREE.SphereGeometry(1.7,16,14);
+const geo=new THREE.SphereGeometry(1.55,18,14);
 const mesh=[],pos=[],vel=[],lat=[];
 for(let x=0;x<COLS;x++)for(let y=0;y<ROWS;y++)for(let z=0;z<DEPS;z++){
-  const lx=(x-(COLS-1)/2)*6.2, ly=(y-(ROWS-1)/2)*6.2-BY+9, lz=(z-(DEPS-1)/2)*6.2;
+  const lx=(x-(COLS-1)/2)*4.4, ly=(y-(ROWS-1)/2)*4.4+FLOOR+7, lz=(z-(DEPS-1)/2)*4.4;
   lat.push(new THREE.Vector3(lx,ly,lz));
-  const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x5fb2ff,roughness:.35,metalness:.1,emissive:0x16344f,emissiveIntensity:.4}));
-  m.castShadow=true;scene.add(m);mesh.push(m);
-  pos.push(new THREE.Vector3(lx,ly,lz));
-  vel.push(new THREE.Vector3(rnd()*4,rnd()*4,rnd()*4));
-}
-let state='liquid', temp=50;
-const MELT=0,BOIL=100;
+  const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x5fb2ff,roughness:.3,metalness:.05,emissive:0x12304a,emissiveIntensity:.35}));m.castShadow=true;scene.add(m);mesh.push(m);
+  pos.push(new THREE.Vector3(lx,ly,lz));vel.push(new THREE.Vector3(rnd()*4,rnd()*4,rnd()*4));}
+let state='liquid',temp=50;const MELT=0,BOIL=100;
 function stateFor(t){return t<MELT?'solid':(t<BOIL?'liquid':'gas');}
-function setState(s){const t=s==='solid'?-12:s==='liquid'?50:120;$('temp').value=t;onTemp();}
+function setState(s){$('temp').value=s==='solid'?-12:s==='liquid'?50:120;onTemp();}
 window.setState=setState;
 function onTemp(){temp=+$('temp').value;state=stateFor(temp);refreshUI();}
 window.onTemp=onTemp;
-function refreshUI(){
-  $('t-v').textContent=temp+' °C';$('o-temp').textContent=temp+' °C';
-  const name=state==='solid'?'Solid':state==='liquid'?'Liquid':'Gas';
-  $('o-state').textContent=name;
+function refreshUI(){$('t-v').textContent=temp+' °C';$('o-temp').textContent=temp+' °C';
+  $('o-state').textContent=state==='solid'?'Solid':state==='liquid'?'Liquid':'Gas';
   ['solid','liquid','gas'].forEach(s=>$('s-'+s).classList.toggle('on',s===state));
-  const tips={solid:'<b>Solid:</b> particles locked in a fixed lattice, only vibrating — definite shape and volume.',
-    liquid:'<b>Liquid:</b> particles slide past each other but stay touching — takes the container\'s shape, keeps its volume.',
-    gas:'<b>Gas:</b> particles fly in all directions and fill the whole space — no fixed shape or volume.'};
+  const tips={solid:'<b>Solid:</b> particles locked in a fixed lattice, only vibrating — definite shape and volume.',liquid:'<b>Liquid:</b> particles slide past each other but stay touching — takes the beaker\'s shape, keeps its volume.',gas:'<b>Gas:</b> particles fly in all directions and fill the whole space.'};
   $('o-tip').innerHTML=tips[state];
-  // colour shifts warmer as it heats
-  const warm=clamp((temp+20)/160,0,1);
-  const col=new THREE.Color().setHSL(0.58-0.12*warm,0.7,0.55+0.05*warm);
-  mesh.forEach(m=>m.material.color.copy(col));
+  const warm=clamp((temp+20)/160,0,1);const col=new THREE.Color().setHSL(0.58-0.12*warm,0.7,0.55+0.05*warm);mesh.forEach(m=>m.material.color.copy(col));
+  const heat=clamp((temp+20)/120,0,1);flame.scale.setScalar(0.5+heat*0.9);flame.visible=temp>5;fLight.intensity=temp>5?heat*2.2:0;
 }
-const orbit={th:0.6,ph:1.05,R:66,tgt:new THREE.Vector3(0,0,0),drag:false,px:0,py:0};
+const orbit={th:0.5,ph:1.02,R:50,tgt:new THREE.Vector3(0,2,0),drag:false,px:0,py:0};
 function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
-/* zoom controls — wheel/trackpad + on-screen buttons */
-function zoom(f){orbit.R=clamp(orbit.R*f,8,340);applyCam();}
-canvas.addEventListener('wheel',function(e){e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
-(function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:132px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
+function zoom(f){orbit.R=clamp(orbit.R*f,18,120);applyCam();}
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
+(function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:150px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
 canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.px=e.clientX;orbit.py=e.clientY;});
 addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-orbit.px)*.006;orbit.ph=clamp(orbit.ph-(e.clientY-orbit.py)*.005,.5,1.4);orbit.px=e.clientX;orbit.py=e.clientY;});
 addEventListener('pointerup',()=>orbit.drag=false);
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(canvas);
-const clock=new THREE.Clock();let tt=0;
-const R=1.7;
-function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);tt+=dt;
-  if(!orbit.drag)orbit.th+=dt*.05;applyCam();
-  if(state==='solid'){
-    const amp=0.15+0.5*clamp((temp+20)/20,0,1);
+const clock=new THREE.Clock();let tt=0;const PR=1.55;
+function confine(p,vy){const r=Math.hypot(p.x,p.z),lim=BR-PR;if(r>lim){const k=lim/r;p.x*=k;p.z*=k;}if(p.y<FLOOR+PR){p.y=FLOOR+PR;}if(p.y>TOP-PR){p.y=TOP-PR;}}
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.04);tt+=dt;if(!orbit.drag)orbit.th+=dt*.05;applyCam();
+  if(state==='solid'){const amp=0.12+0.5*clamp((temp+20)/20,0,1);
     for(let i=0;i<N;i++){pos[i].set(lat[i].x+amp*Math.sin(tt*9+i),lat[i].y+amp*Math.sin(tt*8+i*1.7),lat[i].z+amp*Math.sin(tt*10+i*2.3));mesh[i].position.copy(pos[i]);}
-  }else{
-    const gas=state==='gas';
-    const target=gas?(20+0.18*(temp-BOIL)):(5+0.09*(temp-MELT)); // target speed
-    const surfaceY=gas?BY:(-BY+ (2*BY)*0.55);                    // liquid sits in lower ~55%
-    for(let i=0;i<N;i++){
-      const p=pos[i],v=vel[i];
-      if(!gas)v.y-=24*dt;                      // gravity for liquid
-      v.x+=rnd()*target*dt*2.2;v.y+=rnd()*target*dt*2.2;v.z+=rnd()*target*dt*2.2; // thermal jitter
-      p.addScaledVector(v,dt);
-      // walls
-      if(p.x<-BX+R){p.x=-BX+R;v.x=Math.abs(v.x);} if(p.x>BX-R){p.x=BX-R;v.x=-Math.abs(v.x);}
-      if(p.z<-BZ+R){p.z=-BZ+R;v.z=Math.abs(v.z);} if(p.z>BZ-R){p.z=BZ-R;v.z=-Math.abs(v.z);}
-      if(p.y<-BY+R){p.y=-BY+R;v.y=Math.abs(v.y)*(gas?1:0.6);}
-      if(p.y>surfaceY-R){p.y=surfaceY-R;v.y=-Math.abs(v.y)*(gas?1:0.5);}
-      // keep speed near target
-      const sp=v.length();if(sp>0.001){const f=THREE.MathUtils.lerp(sp,target,0.06)/sp;v.multiplyScalar(clamp(f,0.5,1.6));}
-      mesh[i].position.copy(p);
-    }
-  }
+  }else{const gas=state==='gas';const target=gas?(16+0.16*(temp-BOIL)):(5+0.08*(temp-MELT));const surfaceY=gas?TOP:FLOOR+(TOP-FLOOR)*0.5;
+    for(let i=0;i<N;i++){const p=pos[i],v=vel[i];if(!gas)v.y-=22*dt;
+      v.x+=rnd()*target*dt*2.2;v.y+=rnd()*target*dt*2.2;v.z+=rnd()*target*dt*2.2;p.addScaledVector(v,dt);
+      const r=Math.hypot(p.x,p.z),lim=BR-PR;if(r>lim){const nx=p.x/r,nz=p.z/r;p.x=nx*lim;p.z=nz*lim;const dot=v.x*nx+v.z*nz;v.x-=2*dot*nx;v.z-=2*dot*nz;}
+      if(p.y<FLOOR+PR){p.y=FLOOR+PR;v.y=Math.abs(v.y)*(gas?1:.6);}
+      if(p.y>surfaceY-PR){p.y=surfaceY-PR;v.y=-Math.abs(v.y)*(gas?1:.5);}
+      const s=v.length();if(s>0.01)v.multiplyScalar(clamp(target/s,0.6,1.5));mesh[i].position.copy(p);}}
+  fOut.scale.y=1+Math.sin(tt*12)*0.12;fIn.scale.y=1+Math.sin(tt*15+1)*0.15;
   renderer.render(scene,camera);}
-if(PREVIEW){$('temp').value=-8;orbit.R=64;}
+if(PREVIEW){$('temp').value=-8;orbit.R=52;}
 onTemp();resize();applyCam();tick();
 setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>
