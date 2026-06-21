@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--red:#ff6b6b;--blue:#74c0fc;--panel:rgba(16,28,46,.55)}
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--red:#ff6b6b;--blue:#74c0fc;--panel:rgba(16,28,46,.6)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
   body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -16,10 +16,13 @@
   .typetoggle{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
   .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 14px;cursor:pointer}
   .typetoggle button.on{background:var(--teal);color:#04302c}
-  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(222px,46vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
-  .rr{display:flex;justify-content:space-between;font-size:13px;margin-top:8px}.rr:first-child{margin-top:0}
-  .rr .v{font-family:'Fraunces',serif;font-weight:600;font-size:15px}.rr .v.c{color:var(--red)}.rr .v.a{color:var(--blue)}
-  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .info{position:fixed;top:104px;right:14px;z-index:9;width:min(252px,54vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .info h4{font-size:13px;font-weight:700;margin-bottom:2px}.info .sub{font-size:11px;color:var(--dim);margin-bottom:8px}
+  .leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;margin:6px 0 2px}
+  .leg span{display:inline-flex;align-items:center;gap:5px}.leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .eq{font-size:11.5px;line-height:1.6;margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}
+  .eq b{color:var(--amber)}.eq .c{color:#ff9a9a}.eq .a{color:#9fd0ff}
+  .note{font-size:11px;color:var(--dim);line-height:1.5;margin-top:8px}
   .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
   .wrap2{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
   .wrap2 .name2{flex:0 0 110px;font-weight:600;font-size:14px}
@@ -31,18 +34,20 @@
 </style>
 </head>
 <body>
-  <div id="loader">filling the cell…</div>
+  <div id="loader">wiring up the cell…</div>
   <canvas id="gl"></canvas>
   <a class="back" href="https://maghimma.github.io/dabble/">← Dabble</a>
   <div class="title">🔋 Electrolysis</div>
   <div class="typetoggle">
-    <button id="m-water" class="on" onclick="setMode('water')">Acidified water</button>
-    <button id="m-cucl" onclick="setMode('cucl')">Copper chloride</button>
+    <button id="m-molten" class="on" onclick="setMode('molten')">Molten PbBr₂</button>
+    <button id="m-aq" onclick="setMode('aq')">Aqueous NaCl</button>
   </div>
   <div class="info">
-    <div class="rr"><span>Cathode (−)</span><span class="v c" id="o-cat">Hydrogen</span></div>
-    <div class="rr"><span>Anode (+)</span><span class="v a" id="o-an">Oxygen</span></div>
-    <div class="note" id="o-tip"><b>Cathode (−):</b> positive ions gain electrons (reduction). <b>Anode (+):</b> negative ions lose electrons (oxidation).</div>
+    <h4 id="o-name">Molten lead bromide</h4>
+    <div class="sub" id="o-state">liquid — PbBr₂(l), heated until molten</div>
+    <div class="leg" id="o-leg"></div>
+    <div class="eq" id="o-eq"></div>
+    <div class="note" id="o-note"></div>
   </div>
   <div class="ctrl"><div class="wrap2">
     <span class="name2">Voltage</span><input type="range" id="v" min="1" max="10" step="1" value="5" oninput="upd()"><span class="val" id="v-v">5 V</span>
@@ -50,65 +55,84 @@
 
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
 <script type="module">
-const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,160);l.style.color='#ff9a8a';}};
 window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
 import * as THREE from 'three';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=()=>Math.random()-0.5;
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
 const canvas=$('gl');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;
-const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,100,200);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,110,210);
 const camera=new THREE.PerspectiveCamera(50,1,0.1,400);
 (()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#1d3a5c');gr.addColorStop(.6,'#13263c');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x223044,1));
-const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(16,30,26);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.4));
+const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(16,30,26);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.42));
 function mat(c,o={}){return new THREE.MeshStandardMaterial({color:c,roughness:o.r??.5,metalness:o.m??.2,...(o.e?{emissive:o.e,emissiveIntensity:o.ei??.3}:{})});}
-function label(text,x,y,z,col){const c=document.createElement('canvas');c.width=320;c.height=64;const g=c.getContext('2d');g.fillStyle=col||'#dfeaf5';g.font='600 30px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,160,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(15,3,1);s.position.set(x,y,z);scene.add(s);return s;}
-// beaker + liquid
-const SURF=4, FLOOR=-14, LX=15, LZ=9;
-const beaker=new THREE.Mesh(new THREE.BoxGeometry(LX*2+2,24,LZ*2+2),new THREE.MeshStandardMaterial({color:0xbfe0f0,transparent:true,opacity:.08,roughness:.05,side:THREE.DoubleSide}));beaker.position.y=FLOOR+12;scene.add(beaker);
-const beakerEdges=new THREE.LineSegments(new THREE.EdgesGeometry(beaker.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4}));beakerEdges.position.y=FLOOR+12;scene.add(beakerEdges);
-const liquid=new THREE.Mesh(new THREE.BoxGeometry(LX*2,SURF-FLOOR,LZ*2),new THREE.MeshStandardMaterial({color:0x3fa0d6,transparent:true,opacity:.22,roughness:.1}));liquid.position.y=(SURF+FLOOR)/2;scene.add(liquid);
-// electrodes
-const eGeo=new THREE.BoxGeometry(2,26,4);
-const cathode=new THREE.Mesh(eGeo,mat(0xc8d2dc,{m:.6,r:.4}));cathode.position.set(-9,2,0);scene.add(cathode);
-const anode=new THREE.Mesh(eGeo,mat(0xc8d2dc,{m:.6,r:.4}));anode.position.set(9,2,0);scene.add(anode);
-label('cathode (−)',-9,18,0,'#ff9a9a');label('anode (+)',9,18,0,'#9fd0ff');
-const o_prodC=label('',-9,FLOOR-3,0,'#ff9a9a');const o_prodA=label('',9,FLOOR-3,0,'#9fd0ff');
+function label(text,x,y,z,col,sz){const c=document.createElement('canvas');c.width=384;c.height=72;const g=c.getContext('2d');g.fillStyle=col||'#dfeaf5';g.font='600 32px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,192,38);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(sz||16,(sz||16)/5.3,1);s.position.set(x,y,z);scene.add(s);return s;}
+function setLabel(spr,text,col){const c=document.createElement('canvas');c.width=384;c.height=72;const g=c.getContext('2d');g.fillStyle=col;g.font='600 32px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,192,38);spr.material.map=new THREE.CanvasTexture(c);spr.material.needsUpdate=true;}
+// --- cell geometry ---
+const SURF=4, FLOOR=-16, LX=15, LZ=9;
+const beaker=new THREE.Mesh(new THREE.BoxGeometry(LX*2+2,26,LZ*2+2),new THREE.MeshStandardMaterial({color:0xbfe0f0,transparent:true,opacity:.07,roughness:.05,side:THREE.DoubleSide}));beaker.position.y=FLOOR+13;scene.add(beaker);
+const bedge=new THREE.LineSegments(new THREE.EdgesGeometry(beaker.geometry),new THREE.LineBasicMaterial({color:0x8fd6e6,transparent:true,opacity:.4}));bedge.position.y=FLOOR+13;scene.add(bedge);
+const liquid=new THREE.Mesh(new THREE.BoxGeometry(LX*2,SURF-FLOOR,LZ*2),new THREE.MeshStandardMaterial({color:0x3fa0d6,transparent:true,opacity:.2,roughness:.1}));liquid.position.y=(SURF+FLOOR)/2;scene.add(liquid);
+// electrodes (carbon)
+const eGeo=new THREE.BoxGeometry(2,28,4);
+const cathode=new THREE.Mesh(eGeo,mat(0x3a4654,{m:.3,r:.6}));cathode.position.set(-9,1,0);scene.add(cathode);
+const anode=new THREE.Mesh(eGeo,mat(0x3a4654,{m:.3,r:.6}));anode.position.set(9,1,0);scene.add(anode);
+label('Cathode (−)',-9,20,0,'#ff9a9a');label('Anode (+)',9,20,0,'#9fd0ff');
+label('carbon electrodes',0,-7,9.5,'#9fb6cf',13);
+const prodC=label('',-9,FLOOR-3.5,0,'#ff9a9a');const prodA=label('',9,FLOOR-3.5,0,'#9fd0ff');
+const nameLab=label('',0,FLOOR-7,0,'#cfe0ee',20);
 // battery + wires
-const batt=new THREE.Group();batt.add(new THREE.Mesh(new THREE.BoxGeometry(10,4,4),mat(0x2e4a66)));batt.position.set(0,24,0);scene.add(batt);
-function wire(x){const pts=[new THREE.Vector3(x<0?-3:3,24,0),new THREE.Vector3(x,24,0),new THREE.Vector3(x,16,0)];const cv=new THREE.CatmullRomCurve3(pts);return new THREE.Mesh(new THREE.TubeGeometry(cv,20,0.4,6),mat(0x9fb6cf,{m:.5}));}
-scene.add(wire(-9));scene.add(wire(9));
+const batt=new THREE.Group();batt.add(new THREE.Mesh(new THREE.BoxGeometry(12,4.5,4),mat(0x2e4a66)));batt.position.set(0,27,0);scene.add(batt);
+label('battery (d.c. supply)',0,31,0,'#cfe0ee',17);label('−',-6.4,27,0,'#ff9a9a',5);label('+',6.4,27,0,'#9fd0ff',5);
+function wireCurve(a,b){return new THREE.CatmullRomCurve3([a,new THREE.Vector3((a.x+b.x)/2,a.y+1,0),b]);}
+const wN=wireCurve(new THREE.Vector3(-5,27,0),new THREE.Vector3(-9,15,0)); // battery(−) -> cathode  (electrons go this way)
+const wP=wireCurve(new THREE.Vector3(9,15,0),new THREE.Vector3(5,27,0));   // anode -> battery(+)      (electrons go this way)
+scene.add(new THREE.Mesh(new THREE.TubeGeometry(wN,24,0.4,6),mat(0x9fb6cf,{m:.5})));
+scene.add(new THREE.Mesh(new THREE.TubeGeometry(wP,24,0.4,6),mat(0x9fb6cf,{m:.5})));
+label('electron flow ▶',-7.6,23,0,'#ffe066',13);label('▶ electron flow',7.6,23,0,'#ffe066',13);
+// electrons in wires
+const eGeoS=new THREE.SphereGeometry(0.5,8,8);const eMat=new THREE.MeshStandardMaterial({color:0xffe066,emissive:0xf6a623,emissiveIntensity:1});
+const elecs=[];[wN,wP].forEach(cv=>{for(let i=0;i<6;i++){const m=new THREE.Mesh(eGeoS,eMat);scene.add(m);elecs.push({m,cv,u:i/6});}});
 // ions
 const ionGeo=new THREE.SphereGeometry(0.85,10,8);
-const cationMat=mat(0xff6b6b,{e:0x4a1010,ei:.4}),anionMat=mat(0x74c0fc,{e:0x10324a,ei:.4});
-const ions=[];
-function randPos(){return new THREE.Vector3(rnd()*2*(LX-3),FLOOR+1+Math.random()*(SURF-FLOOR-2),rnd()*2*(LZ-2));}
-for(let i=0;i<26;i++){const cation=i%2===0;const m=new THREE.Mesh(ionGeo,cation?cationMat:anionMat);m.position.copy(randPos());scene.add(m);ions.push({m,cation});}
-// bubbles
-const bubGeo=new THREE.SphereGeometry(0.7,8,8);
-let bubMatC=new THREE.MeshStandardMaterial({color:0xcfe6ff,transparent:true,opacity:.7,roughness:.2});
-let bubMatA=new THREE.MeshStandardMaterial({color:0xcfe6ff,transparent:true,opacity:.7,roughness:.2});
-const bubbles=[];
-function spawnBubble(x,which){const m=new THREE.Mesh(bubGeo,which==='c'?bubMatC:bubMatA);m.position.set(x+rnd()*2,FLOOR+1,rnd()*4);scene.add(m);bubbles.push({m,x});}
-let mode='water';
-function setMode(mm){mode=mm;$('m-water').classList.toggle('on',mm==='water');$('m-cucl').classList.toggle('on',mm==='cucl');
-  if(mm==='water'){$('o-cat').textContent='Hydrogen';$('o-an').textContent='Oxygen';o_prodC.material.map.image; setProd('H₂','O₂');
-    cathode.material.color.set(0xc8d2dc);bubMatC.color.set(0xcfe6ff);bubMatA.color.set(0xcfe6ff);
-    $('o-tip').innerHTML='<b>Acidified water:</b> H⁺ ions → <b style="color:#ff9a9a">hydrogen</b> at the cathode; OH⁻ ions → <b style="color:#9fd0ff">oxygen</b> at the anode (2 : 1).';}
-  else{$('o-cat').textContent='Copper';$('o-an').textContent='Chlorine';setProd('Cu','Cl₂');
-    cathode.material.color.set(0xc77b3a);bubMatA.color.set(0xc7e87a);
-    $('o-tip').innerHTML='<b>Copper chloride:</b> Cu²⁺ ions → <b style="color:#c77b3a">copper</b> coats the cathode; Cl⁻ ions → <b style="color:#b5e48c">chlorine</b> gas at the anode.';}
+let ions=[],bubbles=[],deposits=[];
+function randPos(){return new THREE.Vector3(rnd()*2*(LX-3),FLOOR+1.5+Math.random()*(SURF-FLOOR-3),rnd()*2*(LZ-2));}
+const MODES={
+  molten:{name:'Molten lead bromide',state:'liquid — PbBr₂(l), heated until molten',
+    ions:[['Pb²⁺',0xff6b6b,true,true],['Br⁻',0xc98a3a,false,true]], // [label,color,cation,discharges]
+    legend:[['Pb²⁺','#ff6b6b'],['Br⁻','#c98a3a']],
+    cProd:'Lead (Pb)',aProd:'Bromine (Br₂)',cBub:'metal',aBub:0xc98a3a,
+    eq:'<span class="c">Cathode (−): Pb²⁺ + 2e⁻ → Pb</span><br><span class="a">Anode (+): 2Br⁻ → Br₂ + 2e⁻</span>',
+    note:'A <b>molten</b> compound splits into its <b>elements</b>: the metal forms at the cathode, the non-metal at the anode.'},
+  aq:{name:'Aqueous sodium chloride',state:'solution — NaCl(aq), dissolved in water',
+    ions:[['Na⁺',0xff6b6b,true,false],['H⁺',0xff8fd6,true,true],['Cl⁻',0x8ce99a,false,true],['OH⁻',0x74c0fc,false,false]],
+    legend:[['Na⁺','#ff6b6b'],['H⁺','#ff8fd6'],['Cl⁻','#8ce99a'],['OH⁻','#74c0fc']],
+    cProd:'Hydrogen (H₂)',aProd:'Chlorine (Cl₂)',cBub:0xcfe6ff,aBub:0xb5e48c,
+    eq:'<span class="c">Cathode (−): 2H⁺ + 2e⁻ → H₂</span><br><span class="a">Anode (+): 2Cl⁻ → Cl₂ + 2e⁻</span><br>Na⁺ &amp; OH⁻ stay → <b>NaOH</b>',
+    note:'In <b>water</b>, the ions compete. Sodium is too reactive, so <b>hydrogen</b> is made at the cathode instead; Na⁺ &amp; OH⁻ stay in solution as NaOH.'}
+};
+let M=MODES.molten;
+function buildIons(){ions.forEach(o=>scene.remove(o.m));bubbles.forEach(o=>scene.remove(o.m));deposits.forEach(o=>scene.remove(o.m));ions=[];bubbles=[];deposits=[];
+  const defs=M.ions;
+  for(let i=0;i<24;i++){const d=defs[i%defs.length];const m=new THREE.Mesh(ionGeo,mat(d[1],{e:d[1],ei:.35}));m.position.copy(randPos());scene.add(m);ions.push({m,cation:d[2],discharges:d[3]});}
 }
-function setProd(c,a){labelText(o_prodC,c,'#ff9a9a');labelText(o_prodA,a,'#9fd0ff');}
-function labelText(spr,text,col){const c=document.createElement('canvas');c.width=320;c.height=64;const g=c.getContext('2d');g.fillStyle=col;g.font='600 32px Hanken Grotesk,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,160,34);spr.material.map=new THREE.CanvasTexture(c);spr.material.needsUpdate=true;}
+function setMode(mm){M=MODES[mm];$('m-molten').classList.toggle('on',mm==='molten');$('m-aq').classList.toggle('on',mm==='aq');
+  $('o-name').textContent=M.name;$('o-state').textContent=M.state;
+  $('o-leg').innerHTML=M.legend.map(l=>`<span><i style="background:${l[1]}"></i>${l[0]}</span>`).join('');
+  $('o-eq').innerHTML=M.eq;$('o-note').innerHTML=M.note;
+  setLabel(prodC,M.cProd,'#ff9a9a');setLabel(prodA,M.aProd,'#9fd0ff');setLabel(nameLab,M.name+(mm==='molten'?' (l)':' (aq)'),'#cfe0ee');
+  liquid.material.color.set(mm==='molten'?0xc97b3a:0x3fa0d6);liquid.material.opacity=mm==='molten'?0.16:0.2;
+  buildIons();
+}
 window.setMode=setMode;
+function spawnBubble(x,col){const m=new THREE.Mesh(new THREE.SphereGeometry(0.75,8,8),new THREE.MeshStandardMaterial({color:col,transparent:true,opacity:.75,roughness:.2}));m.position.set(x+rnd()*2,FLOOR+1.5,rnd()*4);scene.add(m);bubbles.push({m});}
+function spawnMetal(x){if(deposits.length>14)return;const m=new THREE.Mesh(new THREE.SphereGeometry(0.9,10,8),mat(0xd0d6dc,{m:.8,r:.3}));m.position.set(x+rnd()*2.4,FLOOR+1.2,rnd()*5);scene.add(m);deposits.push({m});}
 function upd(){$('v-v').textContent=$('v').value+' V';}
 window.upd=upd;
-let bubTimer=0;
-const orbit={th:0.0,ph:1.05,R:74,tgt:new THREE.Vector3(0,-2,0),drag:false,px:0,py:0};
+const orbit={th:0.0,ph:1.0,R:80,tgt:new THREE.Vector3(0,-2,0),drag:false,px:0,py:0};
 function applyCam(){const{th,ph,R,tgt}=orbit;camera.position.set(tgt.x+R*Math.sin(ph)*Math.sin(th),tgt.y+R*Math.cos(ph),tgt.z+R*Math.sin(ph)*Math.cos(th));camera.lookAt(tgt);}
-/* zoom controls — wheel/trackpad + on-screen buttons */
 function zoom(f){orbit.R=clamp(orbit.R*f,8,340);applyCam();}
 canvas.addEventListener('wheel',function(e){e.preventDefault();zoom(e.deltaY>0?1.08:0.926);},{passive:false});
 (function(){var z=document.createElement('div');z.style.cssText='position:fixed;left:16px;bottom:132px;z-index:14;display:flex;flex-direction:column;gap:7px';var bp=document.createElement('button'),bm=document.createElement('button');bp.textContent='+';bm.textContent='−';[bp,bm].forEach(function(x){x.style.cssText='width:40px;height:40px;border-radius:11px;border:1px solid rgba(234,241,247,.18);background:rgba(16,28,46,.62);color:#eaf1f7;font-size:22px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)';});bp.onclick=function(){zoom(0.8);};bm.onclick=function(){zoom(1.25);};z.appendChild(bp);z.appendChild(bm);document.body.appendChild(z);if(document.body.classList.contains('preview'))z.style.display='none';})();
@@ -117,21 +141,18 @@ addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.th-=(e.clientX-or
 addEventListener('pointerup',()=>orbit.drag=false);
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(canvas);
-const clock=new THREE.Clock();
+const clock=new THREE.Clock(),tmp=new THREE.Vector3();
 function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);if(!orbit.drag)orbit.th+=dt*.05;applyCam();
   const V=+$('v').value, sp=4+V*2.2;
+  for(const e of elecs){e.u=(e.u+dt*(0.1+V*0.03))%1;e.cv.getPointAt(e.u,tmp);e.m.position.copy(tmp);}
   for(const io of ions){const tx=io.cation?-9:9;const p=io.m.position;p.x+=Math.sign(tx-p.x)*sp*dt;p.y+=rnd()*sp*dt;p.z+=rnd()*sp*dt;
-    p.y=clamp(p.y,FLOOR+1,SURF-1);p.z=clamp(p.z,-LZ+1,LZ-1);
-    if(Math.abs(p.x-tx)<2.2){ // reached electrode
-      const isCathode=io.cation; const bubble = mode==='water'? true : !isCathode; // CuCl2: no bubbles at cathode (deposit)
-      if(bubble)spawnBubble(tx,isCathode?'c':'a');
-      io.m.position.copy(randPos());
-    }
+    p.y=clamp(p.y,FLOOR+1.5,SURF-1);p.z=clamp(p.z,-LZ+1,LZ-1);
+    if(Math.abs(p.x-tx)<2.4){if(io.discharges){if(io.cation && M.cBub==='metal')spawnMetal(tx);else spawnBubble(tx,io.cation?M.cBub:M.aBub);}io.m.position.copy(randPos());}
   }
-  for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.m.position.y+=(8+V)*dt;b.m.position.x+=rnd()*2*dt;if(b.m.position.y>SURF){scene.remove(b.m);bubbles.splice(i,1);}}
+  for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.m.position.y+=(8+V)*dt;b.m.position.x+=rnd()*2*dt;if(b.m.position.y>SURF+2){scene.remove(b.m);bubbles.splice(i,1);}}
   renderer.render(scene,camera);}
-if(PREVIEW){$('v').value=8;orbit.R=78;}
-setMode('water');upd();resize();applyCam();tick();
+if(PREVIEW){$('v').value=8;orbit.R=86;}
+setMode('molten');upd();resize();applyCam();tick();
 setTimeout(()=>$('loader').classList.add('hide'),700);
 </script>
 </body>

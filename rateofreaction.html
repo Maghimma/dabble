@@ -49,7 +49,6 @@
   </div>
   <div class="ctrl"><div class="wrap2">
     <div class="topline">
-      <div class="seg"><button id="rev" onclick="toggleRev()">Reaction: →</button></div>
       <div class="seg"><button id="cat" onclick="toggleCat()">Catalyst: OFF</button></div>
       <button class="ghost" onclick="reset()">↻ Reset</button>
     </div>
@@ -123,9 +122,6 @@ function step(dt){const tgt=speedTarget();
       if(((a.t==='A'&&b.t==='B')||(a.t==='B'&&b.t==='A')) && Math.abs(rel)>Ea()){
         a.t=b.t='P';a.mesh.material=makeMat('P');b.mesh.material=makeMat('P');
         a.mesh.material.emissiveIntensity=1.4;b.mesh.material.emissiveIntensity=1.4;reacted+=2;
-      } else if(reversible && a.t==='P'&&b.t==='P' && Math.abs(rel)>EaRev()){
-        a.t='A';b.t='B';a.mesh.material=makeMat('A');b.mesh.material=makeMat('B');
-        a.mesh.material.emissiveIntensity=1.0;b.mesh.material.emissiveIntensity=1.0;reacted=Math.max(0,reacted-2);
       }
     }
   }
