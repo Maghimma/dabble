@@ -90,9 +90,7 @@
   .tdot{position:absolute;top:9px;z-index:3;width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;background:rgba(10,18,30,.5);color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:.55;transition:opacity .15s,transform .15s}
   .tile:hover .tdot{opacity:1}.tdot:hover{transform:scale(1.12)}
   .tdot.fav{right:9px}.tdot.fav.on{background:#f6a623;color:#3a2500;opacity:1}
-  .tdot.share{right:46px}
-  .tried-badge{position:absolute;top:11px;left:11px;z-index:3;background:var(--teal);color:#04302c;font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 8px;display:none}
-  .tile.tried .tried-badge{display:block}
+  .tdot.share{right:46px}.tdot.share svg{display:block}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
   .toast.on{opacity:1}
   .soon{background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.05);border-radius:22px;padding:32px;text-align:center;margin-top:16px;backdrop-filter:blur(10px)}
@@ -198,17 +196,14 @@
 <script>
 (function(){
   var tiles=[].slice.call(document.querySelectorAll('.tile')),groups=[].slice.call(document.querySelectorAll('.subject')),tabs=[].slice.call(document.querySelectorAll('.ftab')),search=document.getElementById('search'),f='all';
-  var tried=JSON.parse(localStorage.getItem('dabble_tried')||'{}'),fav=JSON.parse(localStorage.getItem('dabble_fav')||'{}');
-  function save(){localStorage.setItem('dabble_tried',JSON.stringify(tried));localStorage.setItem('dabble_fav',JSON.stringify(fav));}
+  var fav=JSON.parse(localStorage.getItem('dabble_fav')||'{}');
+  function save(){localStorage.setItem('dabble_fav',JSON.stringify(fav));}
   var T=document.getElementById('toast');function toast(m){T.textContent=m;T.classList.add('on');clearTimeout(T._t);T._t=setTimeout(function(){T.classList.remove('on');},1600);}
   tiles.forEach(function(tile){var href=tile.getAttribute('href');
-    if(tried[href])tile.classList.add('tried');
-    var b=document.createElement('div');b.className='tried-badge';b.textContent='✓ tried';tile.appendChild(b);
     var fb=document.createElement('button');fb.className='tdot fav'+(fav[href]?' on':'');fb.type='button';fb.textContent='★';fb.title='Save';
     fb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(fav[href])delete fav[href];else fav[href]=1;fb.classList.toggle('on',!!fav[href]);save();toast(fav[href]?'Saved ⭐':'Removed');if(f==='fav')apply();});tile.appendChild(fb);
-    var sb=document.createElement('button');sb.className='tdot share';sb.type='button';sb.textContent='↗';sb.title='Share';
+    var sb=document.createElement('button');sb.className='tdot share';sb.type='button';sb.title='Share';sb.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13"/><path d="M8 7l4-4 4 4"/></svg>';
     sb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var url=new URL(href,location.href).href;if(navigator.share){navigator.share({title:'Dabble',url:url}).catch(function(){});}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){toast('Link copied!');});}else toast(url);});tile.appendChild(sb);
-    tile.addEventListener('click',function(){tried[href]=1;tile.classList.add('tried');save();});
   });
   function apply(){var q=(search.value||'').trim().toLowerCase();groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var href=t.getAttribute('href');var ok=(f==='all'||(f==='fav'?fav[href]:f===g.dataset.subj))&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok)any=true;});g.style.display=any?'':'none';});}
   tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
