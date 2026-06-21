@@ -65,7 +65,7 @@ const PR=[
 ];
 let cur=0,dot={x:0,y:0},stepIdx=0;
 const XMIN=-2,XMAX=9,YMIN=-2,YMAX=9;
-function plot(){const w=Math.min(W-300,500),h=Math.min(W-300,500,H-300),L=Math.max(56,((W-280)-w)/2+10),T=Math.max(96,(H-150-h)/2),B=T+h,R=L+w;return{L,R,T,B,w,h};}
+function plot(){const w=Math.min(W-160,500),h=Math.min(w,H-300),L=Math.max(56,(W-w)/2),T=Math.max(96,(H-150-h)/2),B=T+h,R=L+w;return{L,R,T,B,w,h};}
 function gx(x){const p=plot();return p.L+(x-XMIN)/(XMAX-XMIN)*p.w;}
 function gy(y){const p=plot();return p.B-(y-YMIN)/(YMAX-YMIN)*p.h;}
 function ix(px){const p=plot();return XMIN+(px-p.L)/p.w*(XMAX-XMIN);}
