@@ -49,7 +49,7 @@
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
 <script type="module">
 const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,140);l.style.color='#ff9a8a';}};
-window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+window.addEventListener('error',function(e){var m=String(e.message||e.error||e.filename||'');if(/webgl|context/i.test(m)){__err('Could not start 3D - close some browser tabs or reload. Tap to retry.');}else{__err('ERR: '+m);}var l=document.getElementById('loader');if(l){l.style.cursor='pointer';l.onclick=function(){location.reload();};}});
 import * as THREE from 'three';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');

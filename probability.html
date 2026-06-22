@@ -116,7 +116,8 @@ resize();setMode('exp');
 <script type="module">
 import * as THREE from 'three';
 const dc=document.getElementById('die');
-const rn=new THREE.WebGLRenderer({canvas:dc,antialias:true,alpha:true});rn.setPixelRatio(Math.min(devicePixelRatio,2));
+let rn;try{rn=new THREE.WebGLRenderer({canvas:dc,antialias:true,alpha:true});}catch(_e){var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:99;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 28px;line-height:1.7;background:#0a1622;color:#ff9a8a;font:600 13px Hanken Grotesk,sans-serif;cursor:pointer';o.textContent='Could not start 3D - close some browser tabs or reload. Tap to retry.';o.onclick=function(){location.reload();};document.body.appendChild(o);throw _e;}
+rn.setPixelRatio(Math.min(devicePixelRatio,2));
 const sc=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(36,1,0.1,100);cam.position.set(1.5,1.7,5.4);cam.lookAt(0,0,0);
 sc.add(new THREE.HemisphereLight(0xffffff,0x3a4658,1.05));
