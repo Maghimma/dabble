@@ -104,8 +104,8 @@ const carRoot=new THREE.Group();scene.add(carRoot);carRoot.visible=false;
 const road=new THREE.Mesh(new THREE.BoxGeometry(160,1,34),new THREE.MeshStandardMaterial({color:0x29333f,roughness:.97}));road.position.y=-11.1;carRoot.add(road);
 const dashes=[];for(let i=0;i<10;i++){const d=new THREE.Mesh(new THREE.BoxGeometry(7,0.2,1.5),new THREE.MeshStandardMaterial({color:0xccd5df}));d.position.set(-63+i*14,-10.5,0);carRoot.add(d);dashes.push(d);}
 const csh=new THREE.Mesh(new THREE.CircleGeometry(18,40),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.32}));csh.rotation.x=-Math.PI/2;csh.position.set(0,-10.45,0);csh.scale.set(1.15,0.42,1);carRoot.add(csh);
-label('hydrogen car — fuel cell + H₂ tank on board',0,11,0,'#bfe2f0',carRoot);
-label('💧 water — the only exhaust',-22,-7,0,'#9fd0ff',carRoot);
+label('🚗 hydrogen car',0,24,0,'#bfe2f0',carRoot);
+label('💧 water — the only exhaust',-13,-8,0,'#9fd0ff',carRoot);
 // fallback simple car (only if every model fails)
 const prim=new THREE.Group();carRoot.add(prim);prim.visible=false;
 prim.add(new THREE.Mesh(new THREE.BoxGeometry(26,6,11),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4})));
@@ -127,7 +127,7 @@ for(let i=0;i<5;i++){const fn=new THREE.Mesh(new THREE.BoxGeometry(6.3,0.18,5.3)
 stack.position.set(-5,cutY,0);carRoot.add(stack);
 const ctank=new THREE.Mesh(new THREE.CapsuleGeometry(1.6,5,8,14),new THREE.MeshStandardMaterial({color:0xbfe2f0,metalness:.5,roughness:.25}));ctank.rotation.z=Math.PI/2;ctank.position.set(6,cutY,0);carRoot.add(ctank);
 label('fuel cell stack',-5,cutY+3.6,0,'#7fffe8',carRoot);label('H₂ tank',6,cutY+3.2,0,'#bfe2f0',carRoot);
-label('↓ these sit inside the car',0,cutY-3.6,0,'#cfe0ee',carRoot);
+label('↓ these sit inside the car',0,cutY-4.2,0,'#cfe0ee',carRoot);
 function conn(x){return new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,cutY-2.2,0),new THREE.Vector3(x*0.4,1,0)]),new THREE.LineBasicMaterial({color:0x8895a4,transparent:true,opacity:.5}));}
 carRoot.add(conn(-5));carRoot.add(conn(6));
 let exhaust=[];
