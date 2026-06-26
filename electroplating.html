@@ -7,29 +7,35 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--copper:#e0853f;--panel:rgba(16,28,46,.6)}
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--copper:#e0853f;--panel:rgba(16,28,46,.55)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
   body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
-  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
   .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
   .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:20px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
-  .typetoggle{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle{position:fixed;top:46px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
   .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 13px;cursor:pointer}
   .typetoggle button.on{background:var(--teal);color:#04302c}
-  .info{position:fixed;top:100px;right:14px;z-index:9;width:min(238px,54vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .info{position:fixed;top:100px;right:14px;z-index:9;width:min(236px,54vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
   .eq{font-size:12px;margin-top:9px;padding:8px 10px;border-radius:9px;line-height:1.5}.eq:first-child{margin-top:0}
   .eq.an{background:rgba(224,133,63,.15)}.eq.ca{background:rgba(46,196,182,.13)}.eq b{font-family:'Fraunces',serif}
   .eq .h{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--dim)}
   .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
   .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
   .wrap2{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:14px}
-  .wrap2 .name{flex:0 0 90px;font-weight:600;font-size:14px}
+  .wrap2 .name{flex:0 0 80px;font-weight:600;font-size:14px}
   .wrap2 input{flex:1;accent-color:var(--amber);height:28px}
-  .wrap2 .val{flex:0 0 80px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--amber)}
+  .wrap2 .val{flex:0 0 78px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--amber)}
   .wrap2 button{font-family:inherit;font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
+  #loader{position:fixed;inset:0;z-index:30;background:#0a1622;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;letter-spacing:.3em;text-transform:uppercase;transition:opacity .7s}
+  #loader.hide{opacity:0;pointer-events:none}
+  body.preview .back,body.preview .title,body.preview .typetoggle,body.preview .info,body.preview .ctrl,body.preview .zoom{display:none!important}
+  .zoom{position:fixed;left:16px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:10;display:flex;flex-direction:column;gap:8px}
+  .zoom button{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:20px;cursor:pointer;backdrop-filter:blur(8px)}
 </style>
 </head>
 <body>
+  <div id="loader">wiring up the cell…</div>
   <canvas id="gl"></canvas>
   <a class="back" href="index.html">← Dabble</a>
   <div class="title">🔌 Electroplating &amp; Electrorefining</div>
@@ -42,68 +48,101 @@
     <div class="eq ca"><span class="h">Cathode (−) — gains mass</span><br><b>Cu²⁺ + 2e⁻ → Cu</b></div>
     <div class="note" id="o-note"></div>
   </div>
+  <div class="zoom"><button onclick="zoom(0.85)">+</button><button onclick="zoom(1.18)">−</button></div>
   <div class="ctrl"><div class="wrap2"><span class="name">Current</span><input type="range" id="cur" min="1" max="10" step="1" value="5" oninput="upd()"><span class="val" id="cur-v">medium</span><button onclick="reset()">↻ Reset</button></div></div>
 
-<script>
-const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
-let W,H,mode='plate',ions=[],sludge=[],ePhase=0,anode=1,coat=0,last=0;
-function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);}
-new ResizeObserver(resize).observe(cv);
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+<script type="module">
+const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,150);l.style.color='#ff9a8a';}};
+window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
+import * as THREE from 'three';
+const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
+const canvas=$('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x16283e,110,230);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,500);
+(()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#24405c');gr.addColorStop(.6,'#15293f');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x202a38,.85));
+const key=new THREE.DirectionalLight(0xffffff,1.15);key.position.set(18,32,16);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=140;key.shadow.camera.left=-44;key.shadow.camera.right=44;key.shadow.camera.top=44;key.shadow.camera.bottom=-44;key.shadow.bias=-0.0004;scene.add(key);
+scene.add(new THREE.AmbientLight(0xffffff,.3));
+const FLOOR=-13;
+const bench=new THREE.Mesh(new THREE.BoxGeometry(90,4,50),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.92}));bench.position.y=FLOOR-2;bench.receiveShadow=true;scene.add(bench);
+// beaker
+const BR=14,BH=22;
+const glass=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR,BH,52,1,true),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.12,roughness:.05,side:THREE.DoubleSide}));glass.position.y=FLOOR+BH/2;scene.add(glass);
+const base=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR*.97,1,52),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.3}));base.position.y=FLOOR+.5;scene.add(base);
+const WTOP=FLOOR+BH-4;
+const water=new THREE.Mesh(new THREE.CylinderGeometry(BR-.5,BR-.5,BH-5,44),new THREE.MeshStandardMaterial({color:0x3a78d0,transparent:true,opacity:.34,roughness:.15}));water.position.y=FLOOR+(BH-5)/2+.6;scene.add(water);
+// electrodes
+const EH=26,EW=2.4,ED=11,XA=-7,XC=7;
+const anodeMat=new THREE.MeshStandardMaterial({color:0xe0853f,roughness:.55,metalness:.25});
+const anode=new THREE.Mesh(new THREE.BoxGeometry(EW,EH,ED),anodeMat);anode.position.set(XA,FLOOR+EH/2-1,0);anode.castShadow=true;scene.add(anode);
+const greyMat=new THREE.MeshStandardMaterial({color:0x9aa6b2,roughness:.6,metalness:.3});
+const copMat=new THREE.MeshStandardMaterial({color:0xe89154,roughness:.45,metalness:.35});
+const cathode=new THREE.Mesh(new THREE.BoxGeometry(EW,EH,ED),greyMat);cathode.position.set(XC,FLOOR+EH/2-1,0);cathode.castShadow=true;scene.add(cathode);
+const coatMesh=new THREE.Mesh(new THREE.BoxGeometry(EW,EH-1,ED),copMat);coatMesh.position.copy(cathode.position);coatMesh.visible=false;scene.add(coatMesh);
+// battery
+const batt=new THREE.Mesh(new THREE.BoxGeometry(16,5,6),new THREE.MeshStandardMaterial({color:0x33445a,roughness:.7}));batt.position.set(0,FLOOR+EH+12,0);scene.add(batt);
+// wires
+function wire(pts,col){const g=new THREE.BufferGeometry().setFromPoints(pts);return new THREE.Line(g,new THREE.LineBasicMaterial({color:col}));}
+const aTop=new THREE.Vector3(XA,FLOOR+EH-1,0),cTop=new THREE.Vector3(XC,FLOOR+EH-1,0),bL=new THREE.Vector3(-6,batt.position.y,0),bR=new THREE.Vector3(6,batt.position.y,0);
+scene.add(wire([aTop,new THREE.Vector3(XA,bL.y,0),bL],0xff8f6b));
+scene.add(wire([bR,new THREE.Vector3(XC,bR.y,0),cTop],0x9fc4ff));
+// electrons travelling anode->battery->cathode
+const eGeo=new THREE.SphereGeometry(.5,8,8),eMat=new THREE.MeshBasicMaterial({color:0x9fe0ff});
+const elec=[];for(let i=0;i<10;i++){const m=new THREE.Mesh(eGeo,eMat);scene.add(m);elec.push(m);}
+const ePath=[aTop,new THREE.Vector3(XA,bL.y,0),bL,bR,new THREE.Vector3(XC,bR.y,0),cTop];
+function alongPath(path,t){const seg=path.length-1;const f=t*seg;const i=Math.min(seg-1,Math.floor(f));return path[i].clone().lerp(path[i+1],f-i);}
+// labels
+function label(text,x,y,z,col){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2.1*w/46,2.1,1);s.position.set(x,y,z);scene.add(s);return s;}
+const labA=label('ANODE +',XA,FLOOR+EH+3,0,'#ff8f6b'),labC=label('CATHODE −',XC,FLOOR+EH+3,0,'#9fc4ff');
+label('CuSO₄ solution',0,FLOOR-4,0,'#9fc4ff');
+const subA=label('pure copper',XA,FLOOR-1.5,8,'#e8b48a');
+// ions + sludge pools
+const ionGeo=new THREE.SphereGeometry(.95,12,10),ionMat=new THREE.MeshStandardMaterial({color:0x5fa8ff,emissive:0x12345a,emissiveIntensity:.5});
+let ions=[],sludge=[],anodeS=1,coat=0,spawnAcc=0;
+function reset(){ions.forEach(o=>scene.remove(o.m));sludge.forEach(s=>scene.remove(s));ions=[];sludge=[];anodeS=1;coat=0;anode.scale.x=1;cathode.scale.x=1;coatMesh.scale.set(1,1,1);
+  const plate=mode==='plate';cathode.material=plate?greyMat:copMat;coatMesh.visible=plate;
+  anode.material.color.set(plate?0xe0853f:0xc2702f);subA.material.map=label0(plate?'pure copper':'impure copper');
+  $('o-note').innerHTML=plate
+   ?'<b>Electroplating:</b> coat a cheap object (cathode) with metal. The <b>anode is pure copper</b>; the electrolyte is a <b>copper salt</b> (CuSO₄). Copper dissolves off the anode and deposits as a thin layer on the object.'
+   :'<b>Electrorefining:</b> purify copper. The <b>anode is impure copper</b>, the <b>cathode is pure copper</b>. Pure Cu crosses over; impurities drop off as <b>anode sludge</b> at the bottom.';}
+function label0(txt){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(txt).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle='#e8b48a';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,w/2,25);subA.scale.set(2.1*w/46,2.1,1);return new THREE.CanvasTexture(c);}
+let mode='plate';
 function setMode(m){mode=m;$('t-plate').classList.toggle('on',m==='plate');$('t-refine').classList.toggle('on',m==='refine');reset();}
 window.setMode=setMode;
-function reset(){ions=[];sludge=[];anode=1;coat=0;
-  $('o-note').innerHTML=mode==='plate'
-   ?'<b>Electroplating:</b> coat a cheap object with metal. The <b>object</b> is the cathode; the <b>anode is pure copper</b>; the electrolyte is a <b>copper salt</b> (CuSO₄). Copper dissolves off the anode and deposits as a thin layer on the object.'
-   :'<b>Electrorefining:</b> purify copper. The <b>anode is impure copper</b>, the <b>cathode is pure copper</b>. Pure Cu transfers across; the impurities drop off as <b>anode sludge</b> at the bottom.';}
-window.reset=reset;
 function upd(){const c=+$('cur').value;$('cur-v').textContent=c<=3?'low':c<=7?'medium':'high';}
 window.upd=upd;
-function geo(){const bl=W/2-Math.min(W*0.30,260),br=W/2+Math.min(W*0.30,260),ty=H*0.30,by=H*0.82;return{bl,br,ty,by,xa:bl+(br-bl)*0.30,xc:bl+(br-bl)*0.70,liq:ty+24};}
-function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const c=+$('cur').value,g=geo();ePhase+=dt*c*0.5;
-  ctx.clearRect(0,0,W,H);
-  // battery
-  const byT=H*0.10;ctx.fillStyle='#2a3a4d';ctx.strokeStyle='rgba(234,241,247,.4)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(W/2-50,byT,100,30,7);ctx.fill();ctx.stroke();
-  ctx.fillStyle='#ff8f6b';ctx.font='700 16px Fraunces';ctx.textAlign='center';ctx.fillText('+',W/2-34,byT+21);ctx.fillStyle='#9fc4ff';ctx.fillText('−',W/2+34,byT+21);
-  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='11px Hanken Grotesk';ctx.fillText('battery',W/2,byT-6);
-  // wires
-  ctx.strokeStyle='rgba(234,241,247,.5)';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(W/2-40,byT+30);ctx.lineTo(W/2-40,byT+50);ctx.lineTo(g.xa,byT+50);ctx.lineTo(g.xa,g.ty);ctx.moveTo(W/2+40,byT+30);ctx.lineTo(W/2+40,byT+50);ctx.lineTo(g.xc,byT+50);ctx.lineTo(g.xc,g.ty);ctx.stroke();
-  // electrons on wires: anode -> battery (left up) and battery -> cathode (right down)
-  ctx.fillStyle='#7fd6ff';for(let i=0;i<6;i++){const p=((ePhase+i/6)%1);
-    // left path: from anode top up then to battery
-    let lx=g.xa,ly=g.ty+(byT+50-g.ty)*(1-p);if((1-p)>0.78){const q=((1-p)-0.78)/0.22;lx=g.xa+(W/2-40-g.xa)*q;ly=byT+50;}
-    ctx.beginPath();ctx.arc(lx,ly,3,0,7);ctx.fill();
-    // right path: battery down to cathode
-    let rx=g.xc,ry=byT+50+(g.ty-(byT+50))*p;if(p<0.22){const q=p/0.22;rx=W/2+40+(g.xc-(W/2+40))*q;ry=byT+50;}
-    ctx.beginPath();ctx.arc(rx,ry,3,0,7);ctx.fill();}
-  // beaker + electrolyte
-  ctx.fillStyle='rgba(74,144,217,.22)';ctx.fillRect(g.bl,g.liq,g.br-g.bl,g.by-g.liq);
-  ctx.fillStyle='rgba(80,150,255,.10)';// tint = copper sulfate blue
-  ctx.strokeStyle='rgba(191,226,240,.5)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(g.bl,g.ty);ctx.lineTo(g.bl,g.by);ctx.lineTo(g.br,g.by);ctx.lineTo(g.br,g.ty);ctx.stroke();
-  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='11px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('copper(II) sulfate solution (Cu²⁺ ions)',W/2,g.by-8);
-  // anode (left, +) — shrinks
-  const aw=10+22*anode;ctx.fillStyle=mode==='refine'?'#c2702f':'#e0853f';ctx.fillRect(g.xa-aw/2,g.ty,aw,(g.by-12)-g.ty);
-  if(mode==='refine'){ctx.fillStyle='rgba(40,30,20,.7)';for(let i=0;i<10;i++){const yy=g.ty+20+((i*53)%((g.by-40)-g.ty));ctx.beginPath();ctx.arc(g.xa-aw/4+((i*31)%aw)-aw/4,yy,1.8,0,7);ctx.fill();}}
-  // cathode (right, −)
-  if(mode==='plate'){ // object to be plated (grey blank) with growing copper coat
-    const ow=22;ctx.fillStyle='#9aa6b2';ctx.fillRect(g.xc-ow/2,g.ty+10,ow,(g.by-12)-(g.ty+10));
-    const ct=coat*10;ctx.fillStyle='rgba(224,133,63,.9)';ctx.fillRect(g.xc-ow/2-ct,g.ty+10,ct,(g.by-12)-(g.ty+10));ctx.fillRect(g.xc+ow/2,g.ty+10,ct,(g.by-12)-(g.ty+10));
-    ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='10px Hanken Grotesk';ctx.fillText('object + copper coat',g.xc,g.by+2);
-  }else{const cw=14+coat*16;ctx.fillStyle='#e8975a';ctx.fillRect(g.xc-cw/2,g.ty+6,cw,(g.by-12)-(g.ty+6));
-    ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='10px Hanken Grotesk';ctx.fillText('pure copper grows',g.xc,g.by+2);}
-  // electrode labels
-  ctx.font='700 14px Fraunces';ctx.fillStyle='#ff8f6b';ctx.fillText('ANODE +',g.xa,g.ty-8);ctx.fillStyle='#9fc4ff';ctx.fillText('CATHODE −',g.xc,g.ty-8);
-  ctx.font='10px Hanken Grotesk';ctx.fillStyle='rgba(234,241,247,.55)';ctx.fillText(mode==='refine'?'impure copper':'pure copper',g.xa,g.by+2);
-  // ions Cu2+ from anode -> cathode
-  if(anode>0.05){for(let k=0;k<c;k++)if(Math.random()<0.05)ions.push({x:g.xa+aw/2,y:g.ty+30+Math.random()*((g.by-40)-g.ty),t:0});}
-  ctx.font='700 11px Hanken Grotesk';
-  for(let i=ions.length-1;i>=0;i--){const io=ions[i];io.t+=dt*0.35*(0.6+c*0.08);io.x=g.xa+aw/2+(g.xc-g.xa-aw/2)*io.t;io.y+=Math.sin(now/300+i)*0.3;
-    ctx.fillStyle='#5fa8ff';ctx.beginPath();ctx.arc(io.x,io.y,7,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillText('Cu²⁺',io.x,io.y+3.5);
-    if(io.t>=1){ions.splice(i,1);coat=Math.min(1,coat+0.012);anode=Math.max(0,anode-0.004);if(mode==='refine'&&Math.random()<0.5)sludge.push({x:g.xa+(Math.random()-0.5)*aw,y:g.by-14});}}
-  // anode sludge
-  ctx.fillStyle='rgba(60,45,30,.85)';sludge.forEach(function(s){s.y=Math.min(g.by-4,s.y+0.5);ctx.beginPath();ctx.arc(s.x,s.y,2.4,0,7);ctx.fill();});
-  if(mode==='refine'&&sludge.length>3){ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='10px Hanken Grotesk';ctx.fillText('anode sludge (impurities)',g.xa,g.by+14);}
-  requestAnimationFrame(loop);}
-resize();upd();reset();requestAnimationFrame(loop);
+// camera
+const orbit={th:0.45,ph:1.12,R:70,tgt:new THREE.Vector3(0,2,0)};
+function applyCam(){const s=orbit;camera.position.set(s.tgt.x+s.R*Math.sin(s.ph)*Math.sin(s.th),s.tgt.y+s.R*Math.cos(s.ph),s.tgt.z+s.R*Math.sin(s.ph)*Math.cos(s.th));camera.lookAt(s.tgt);}
+window.zoom=f=>{orbit.R=clamp(orbit.R*f,38,130);applyCam();};
+let drag=false,px=0,py=0;
+canvas.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;});
+addEventListener('pointerup',()=>drag=false);
+addEventListener('pointermove',e=>{if(!drag)return;orbit.th-=(e.clientX-px)*0.008;orbit.ph=clamp(orbit.ph-(e.clientY-py)*0.008,0.35,1.5);px=e.clientX;py=e.clientY;applyCam();});
+canvas.addEventListener('wheel',e=>{e.preventDefault();window.zoom(e.deltaY>0?1.08:0.92);},{passive:false});
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas);resize();applyCam();
+let last=performance.now();
+function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const c=+$('cur').value;
+  // electrons
+  for(let i=0;i<elec.length;i++){const t=((now/1000*c*0.12)+i/elec.length)%1;elec[i].position.copy(alongPath(ePath,t));}
+  // spawn ions
+  spawnAcc+=dt*c*1.1;while(spawnAcc>=1){spawnAcc-=1;if(anodeS>0.08&&ions.length<90){const m=new THREE.Mesh(ionGeo,ionMat);const ax=XA+EW/2*anode.scale.x;m.position.set(ax+1,FLOOR+3+Math.random()*(EH-6),(Math.random()-0.5)*ED*0.7);scene.add(m);ions.push({m,t:0,y0:m.position.y,z0:m.position.z});}}
+  const ax=XA+EW/2*anode.scale.x, cx=XC-EW/2*cathode.scale.x-coat*2.2;
+  for(let i=ions.length-1;i>=0;i--){const io=ions[i];io.t+=dt*(0.3+c*0.05);io.m.position.x=ax+(cx-ax)*io.t;io.m.position.y=io.y0+Math.sin(now/400+i)*0.6;
+    if(io.t>=1){scene.remove(io.m);ions.splice(i,1);coat=Math.min(1,coat+0.01);anodeS=Math.max(0,anodeS-0.0045);
+      if(mode==='refine'&&Math.random()<0.5){const s=new THREE.Mesh(new THREE.SphereGeometry(.6+Math.random()*.4,8,6),new THREE.MeshStandardMaterial({color:0x4a3422,roughness:1}));s.position.set(XA+(Math.random()-0.5)*ED*0.6,FLOOR+0.5,(Math.random()-0.5)*ED*0.6);scene.add(s);sludge.push(s);}}}
+  // apply growth/shrink
+  anode.scale.x=0.12+0.88*anodeS;
+  if(mode==='plate'){coatMesh.visible=true;coatMesh.scale.set(1+coat*1.6,1,1+coat*0.5);}
+  else{cathode.scale.x=1+coat*1.4;}
+  if(!drag)orbit.th+=dt*0.18;applyCam();
+  renderer.render(scene,camera);requestAnimationFrame(loop);}
+upd();reset();requestAnimationFrame(loop);
+setTimeout(()=>$('loader').classList.add('hide'),500);
 </script>
 </body>
 </html>
