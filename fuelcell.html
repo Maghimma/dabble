@@ -111,7 +111,7 @@ const prim=new THREE.Group();carRoot.add(prim);prim.visible=false;
 prim.add(new THREE.Mesh(new THREE.BoxGeometry(26,6,11),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4})));
 const _pcab=new THREE.Mesh(new THREE.BoxGeometry(13,4.5,10),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4}));_pcab.position.y=4;prim.add(_pcab);prim.position.y=-4;
 let carModel=null,carWheels=[];
-function placeCar(m){let b=new THREE.Box3().setFromObject(m);const sz=b.getSize(new THREE.Vector3());m.scale.setScalar(30/Math.max(sz.x,sz.z,0.001));b=new THREE.Box3().setFromObject(m);const c=b.getCenter(new THREE.Vector3());m.position.x-=c.x;m.position.z-=c.z;m.position.y-=b.min.y;m.position.y-=10.5;carModel=m;carRoot.add(m);
+function placeCar(m){m.rotation.y=Math.PI/2;let b=new THREE.Box3().setFromObject(m);const sz=b.getSize(new THREE.Vector3());m.scale.setScalar(30/Math.max(sz.x,sz.z,0.001));b=new THREE.Box3().setFromObject(m);const c=b.getCenter(new THREE.Vector3());m.position.x-=c.x;m.position.z-=c.z;m.position.y-=b.min.y;m.position.y-=10.5;carModel=m;carRoot.add(m);
   ['wheel_fl','wheel_fr','wheel_rl','wheel_rr'].forEach(function(n){const w=m.getObjectByName(n);if(w)carWheels.push(w);});}
 function stripCloth(m){let best=0,cloth=null;m.traverse(function(o){if(!o.isMesh||!o.geometry)return;o.geometry.computeBoundingBox();const s=o.geometry.boundingBox.getSize(new THREE.Vector3());const w=o.getWorldScale(new THREE.Vector3());const sx=s.x*w.x,sy=s.y*w.y,sz=s.z*w.z,ar=sx*sz;if(ar>best&&sy<0.35*Math.max(sx,sz)){best=ar;cloth=o;}});if(cloth)cloth.removeFromParent();}
 const _draco=new DRACOLoader();_draco.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
@@ -119,6 +119,17 @@ const _gl=new GLTFLoader();_gl.setDRACOLoader(_draco);
 _gl.load('https://threejs.org/examples/models/gltf/ferrari.glb',function(g){placeCar(g.scene);},undefined,function(){
   new GLTFLoader().load('https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/ToyCar/glTF-Binary/ToyCar.glb',function(g){stripCloth(g.scene);placeCar(g.scene);},undefined,function(){prim.visible=true;});
 });
+// cutaway callout: the fuel cell + H2 tank that power the car
+const cutY=15;
+const stack=new THREE.Group();
+stack.add(new THREE.Mesh(new THREE.BoxGeometry(6,3.2,5),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4,emissive:0x10504a,emissiveIntensity:.55})));
+for(let i=0;i<5;i++){const fn=new THREE.Mesh(new THREE.BoxGeometry(6.3,0.18,5.3),new THREE.MeshStandardMaterial({color:0x186b62}));fn.position.y=-1.4+i*0.7;stack.add(fn);}
+stack.position.set(-5,cutY,0);carRoot.add(stack);
+const ctank=new THREE.Mesh(new THREE.CapsuleGeometry(1.6,5,8,14),new THREE.MeshStandardMaterial({color:0xbfe2f0,metalness:.5,roughness:.25}));ctank.rotation.z=Math.PI/2;ctank.position.set(6,cutY,0);carRoot.add(ctank);
+label('fuel cell stack',-5,cutY+3.6,0,'#7fffe8',carRoot);label('H₂ tank',6,cutY+3.2,0,'#bfe2f0',carRoot);
+label('↓ these sit inside the car',0,cutY-3.6,0,'#cfe0ee',carRoot);
+function conn(x){return new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,cutY-2.2,0),new THREE.Vector3(x*0.4,1,0)]),new THREE.LineBasicMaterial({color:0x8895a4,transparent:true,opacity:.5}));}
+carRoot.add(conn(-5));carRoot.add(conn(6));
 let exhaust=[];
 function spawnExhaust(){const m=new THREE.Mesh(SW,mW);m.position.set(-13,rnd(-7,-5),rnd(-3,3));carRoot.add(m);exhaust.push(m);}
 
@@ -127,7 +138,7 @@ function setView(v){mode=v;$('t-cell').classList.toggle('on',v==='cell');$('t-ca
   $('o-note').innerHTML=v==='cell'
    ?'Hydrogen is oxidised, releasing <b>electrons</b> that flow round the circuit (powering the bulb). The <b>H⁺ ions cross the membrane</b>. The <b>only product is water</b> — clean energy.'
    :'🚗 In a car the fuel cell turns <b>H₂ + O₂ → electricity</b> that drives the <b>electric motor</b>, so the wheels turn. The <b>only thing out of the exhaust is water</b> — no CO₂. (Used in hydrogen cars & buses.)';
-  orbit.tgt.set(0,v==='car'?-3:3,0);applyCam();}
+  orbit.tgt.set(0,v==='car'?4:3,0);orbit.R=v==='car'?98:78;applyCam();}
 window.setView=setView;
 function upd(){const f=+$('flow').value;$('flow-v').textContent=f<=3?'low':f<=7?'medium':'high';}
 window.upd=upd;

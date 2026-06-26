@@ -260,7 +260,9 @@
 <script>
 var FEEDBACK_URL=''; /* paste the Apps Script /exec URL here */
 var _fbType='';
-function openFeedback(){var s=document.getElementById('fbSim');if(s&&!s.options.length){var o=document.createElement('option');o.textContent='Whole site / not sure';s.appendChild(o);document.querySelectorAll('.tile h3').forEach(function(h){var op=document.createElement('option');op.textContent=h.textContent.replace(/^[^A-Za-z0-9]+/,'').trim();s.appendChild(op);});}document.getElementById('fbModal').classList.add('on');}
+function openFeedback(preset){var s=document.getElementById('fbSim');if(s&&!s.options.length){var o=document.createElement('option');o.textContent='Whole site / not sure';s.appendChild(o);document.querySelectorAll('.tile h3').forEach(function(h){var op=document.createElement('option');op.textContent=h.textContent.replace(/^[^A-Za-z0-9]+/,'').trim();s.appendChild(op);});}
+  if(preset&&typeof preset==='string'&&s){for(var i=0;i<s.options.length;i++){if(s.options[i].textContent===preset){s.selectedIndex=i;break;}}}
+  document.getElementById('fbModal').classList.add('on');}
 function closeFeedback(){document.getElementById('fbModal').classList.remove('on');}
 window.openFeedback=openFeedback;window.closeFeedback=closeFeedback;
 (function(){var t=document.getElementById('fbType');if(t)t.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;_fbType=b.dataset.v;[].forEach.call(t.children,function(c){c.classList.toggle('on',c===b);});});var mo=document.getElementById('fbModal');if(mo)mo.addEventListener('click',function(e){if(e.target===mo)closeFeedback();});})();
@@ -268,6 +270,9 @@ function sendFeedback(){var p={ts:new Date().toISOString(),sim:(document.getElem
   if(FEEDBACK_URL){try{fetch(FEEDBACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)});}catch(e){}}
   document.getElementById('fbThanks').classList.add('on');var b=document.querySelector('.fbsend');if(b)b.style.display='none';setTimeout(function(){closeFeedback();var th=document.getElementById('fbThanks');if(th)th.classList.remove('on');if(b)b.style.display='';document.getElementById('fbMsg').value='';},1400);}
 window.sendFeedback=sendFeedback;
+try{document.querySelectorAll('.tile').forEach(function(t){t.addEventListener('click',function(){var h=t.querySelector('h3');try{sessionStorage.setItem('dabble_lastSim',h?h.textContent.replace(/^[^A-Za-z0-9]+/,'').trim():'');}catch(e){}});});}catch(e){}
+function _maybeAsk(){try{var last=sessionStorage.getItem('dabble_lastSim');if(last&&!sessionStorage.getItem('dabble_fbAsked')){sessionStorage.setItem('dabble_fbAsked','1');sessionStorage.removeItem('dabble_lastSim');setTimeout(function(){openFeedback(last);},1100);}}catch(e){}}
+_maybeAsk();window.addEventListener('pageshow',_maybeAsk);
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
