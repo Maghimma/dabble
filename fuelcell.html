@@ -99,16 +99,28 @@ const elec=[];for(let i=0;i<12;i++){const m=new THREE.Mesh(SE,mE);cellRoot.add(m
 const carRoot=new THREE.Group();scene.add(carRoot);carRoot.visible=false;
 const road=new THREE.Mesh(new THREE.BoxGeometry(160,1,34),new THREE.MeshStandardMaterial({color:0x29333f,roughness:.97}));road.position.y=-12;carRoot.add(road);
 const dashes=[];for(let i=0;i<10;i++){const d=new THREE.Mesh(new THREE.BoxGeometry(7,0.2,1.5),new THREE.MeshStandardMaterial({color:0xccd5df}));d.position.set(-63+i*14,-11.4,0);carRoot.add(d);dashes.push(d);}
-const bodyMat=new THREE.MeshStandardMaterial({color:0x2ec4b6,roughness:.4,metalness:.35});
-const lower=new THREE.Mesh(new THREE.BoxGeometry(26,6,11),bodyMat);lower.position.set(0,-5,0);carRoot.add(lower);
-const cabin=new THREE.Mesh(new THREE.BoxGeometry(13,5,10),bodyMat);cabin.position.set(-1,0.4,0);carRoot.add(cabin);
-const winMat=new THREE.MeshStandardMaterial({color:0x14202c,roughness:.15,metalness:.6});
-const glassC=new THREE.Mesh(new THREE.BoxGeometry(13.3,3.3,8.6),winMat);glassC.position.set(-1,0.9,0);carRoot.add(glassC);
-const wheels=[];const wMat=new THREE.MeshStandardMaterial({color:0x1b2128,roughness:.85});
-[[-8,5.6],[-8,-5.6],[8,5.6],[8,-5.6]].forEach(function(p){const w=new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.4,2,20),wMat);w.rotation.x=Math.PI/2;w.position.set(p[0],-9,p[1]);
-  const hub=new THREE.Mesh(new THREE.BoxGeometry(0.6,4.6,0.6),new THREE.MeshStandardMaterial({color:0x9aa6b2,metalness:.6,roughness:.3}));w.add(hub);carRoot.add(w);wheels.push(w);});
-const tank=new THREE.Mesh(new THREE.CapsuleGeometry(2,7,8,14),new THREE.MeshStandardMaterial({color:0xbfe2f0,metalness:.4,roughness:.3}));tank.rotation.z=Math.PI/2;tank.position.set(8,-3.5,0);carRoot.add(tank);
-const fcbox=new THREE.Mesh(new THREE.BoxGeometry(6,4,8),new THREE.MeshStandardMaterial({color:0x4a5562,roughness:.6,emissive:0x163a40,emissiveIntensity:.4}));fcbox.position.set(-7,-3.5,0);carRoot.add(fcbox);
+const bodyMat=new THREE.MeshStandardMaterial({color:0x2ec4b6,roughness:.32,metalness:.5,transparent:true,opacity:.62,side:THREE.DoubleSide});
+const prof=new THREE.Shape();
+prof.moveTo(-13,-8);prof.lineTo(12.6,-8);prof.lineTo(13,-5.4);
+prof.quadraticCurveTo(12.7,-4,10.5,-3.7);prof.lineTo(5.6,-3.3);
+prof.quadraticCurveTo(4.2,-3.1,3.4,0.4);prof.quadraticCurveTo(2.6,3.7,-0.4,3.9);
+prof.lineTo(-5,3.8);prof.quadraticCurveTo(-7.3,3.6,-8.4,0.5);
+prof.lineTo(-10.7,-3.1);prof.quadraticCurveTo(-12.4,-3.5,-13,-5.2);prof.lineTo(-13,-8);
+const bgeo=new THREE.ExtrudeGeometry(prof,{depth:10,bevelEnabled:true,bevelThickness:0.8,bevelSize:0.8,bevelSegments:3,steps:1});bgeo.translate(0,0,-5);
+carRoot.add(new THREE.Mesh(bgeo,bodyMat));
+const winMat=new THREE.MeshStandardMaterial({color:0x101c28,roughness:.1,metalness:.7});
+[5.07,-5.07].forEach(function(z){const w=new THREE.Mesh(new THREE.BoxGeometry(7.4,2.6,0.25),winMat);w.position.set(-1.4,1.5,z);carRoot.add(w);});
+[3.6,-3.6].forEach(function(z){const hl=new THREE.Mesh(new THREE.SphereGeometry(0.85,12,10),new THREE.MeshStandardMaterial({color:0xfff7d0,emissive:0xffe27a,emissiveIntensity:.9}));hl.position.set(12.7,-5,z);carRoot.add(hl);
+  const tl=new THREE.Mesh(new THREE.SphereGeometry(0.7,12,10),new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0x7a1010,emissiveIntensity:.8}));tl.position.set(-13,-5,z);carRoot.add(tl);});
+const wMat=new THREE.MeshStandardMaterial({color:0x15181d,roughness:.85});
+function makeWheel(){const g=new THREE.Group();
+  const tire=new THREE.Mesh(new THREE.CylinderGeometry(3.5,3.5,2.6,26),wMat);tire.rotation.x=Math.PI/2;g.add(tire);
+  const rim=new THREE.Mesh(new THREE.CylinderGeometry(2.0,2.0,2.8,22),new THREE.MeshStandardMaterial({color:0xc6d0da,metalness:.85,roughness:.22}));rim.rotation.x=Math.PI/2;g.add(rim);
+  for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(0.5,3.4,1.0),new THREE.MeshStandardMaterial({color:0x8b97a4,metalness:.7,roughness:.3}));s.rotation.z=i/6*Math.PI*2;g.add(s);}
+  return g;}
+const wheels=[];[[8,5.4],[8,-5.4],[-8,5.4],[-8,-5.4]].forEach(function(p){const w=makeWheel();w.position.set(p[0],-8,p[1]);carRoot.add(w);wheels.push(w);});
+const tank=new THREE.Mesh(new THREE.CapsuleGeometry(1.8,7,8,14),new THREE.MeshStandardMaterial({color:0xbfe2f0,metalness:.5,roughness:.3}));tank.rotation.z=Math.PI/2;tank.position.set(7,-5.6,0);carRoot.add(tank);
+const fcbox=new THREE.Mesh(new THREE.BoxGeometry(6,4,7),new THREE.MeshStandardMaterial({color:0x3a8a82,roughness:.5,emissive:0x12504a,emissiveIntensity:.5}));fcbox.position.set(-7,-5.6,0);carRoot.add(fcbox);
 label('H₂ tank',8,1.5,0,'#bfe2f0',carRoot);label('fuel cell',-7,2.2,0,'#9fd0ff',carRoot);label('electric motor → wheels turn',0,-15.5,0,'#ffe08a',carRoot);label('💧 only emission: water',-17,-6,0,'#9fd0ff',carRoot);
 let exhaust=[];
 function spawnExhaust(){const m=new THREE.Mesh(SW,mW);m.position.set(-13,rnd(-7,-5),rnd(-3,3));carRoot.add(m);exhaust.push(m);}
@@ -144,7 +156,7 @@ function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const f=+$('f
     for(let i=water.length-1;i>=0;i--){const w=water[i];w.position.y-=dt*6;w.position.x+=dt*4;if(w.position.y<-13){cellRoot.remove(w);water.splice(i,1);}}
     elec.forEach((m,i)=>{const t=((now/1000*f*0.13)+i/12)%1;m.position.copy(alongPath(path,t));});
   }else{
-    wheels.forEach(w=>{w.rotation.y-=dt*f*1.3;});
+    wheels.forEach(w=>{w.rotation.z-=dt*f*1.3;});
     fcbox.material.emissiveIntensity=0.2+0.06*f;
     for(let i=0;i<dashes.length;i++){dashes[i].position.x-=dt*f*7;if(dashes[i].position.x<-70)dashes[i].position.x+=140;}
     if(Math.random()<dt*f*1.2)spawnExhaust();
