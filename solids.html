@@ -92,6 +92,30 @@ function boxNet(l,h,w){const grp=new THREE.Group();const F=[];
   f(w,h, V(-1,0,0),V(0,0,1),V(-l/2,0,0), V(0,1,0),V(0,0,-1),V(xl,0,0));     // left -x
   grp.setUnfold=function(t){F.forEach(function(g){g.position.lerpVectors(g.userData.aP,g.userData.fP,t);g.quaternion.copy(g.userData.aQ).slerp(g.userData.fQ,t);});};
   grp.setUnfold(0);return grp;}
+// --- general polygonal net (vertex morph between assembled & flat) ---
+function polyFace(aV,fV){const n=aV.length;const geo=new THREE.BufferGeometry();const pos=new Float32Array(n*3);geo.setAttribute('position',new THREE.BufferAttribute(pos,3));const idx=[];for(let i=1;i<n-1;i++)idx.push(0,i,i+1);geo.setIndex(idx);
+  const eg=new THREE.BufferGeometry();const ep=new Float32Array(n*3);eg.setAttribute('position',new THREE.BufferAttribute(ep,3));
+  const g=new THREE.Group();g.add(new THREE.Mesh(geo,MAT));g.add(new THREE.LineLoop(eg,new THREE.LineBasicMaterial({color:0xaffff5,transparent:true,opacity:.55})));g.userData={aV:aV,fV:fV,pos:pos,ep:ep,geo:geo,eg:eg};return g;}
+function setPolyFace(g,t){const u=g.userData;for(let i=0;i<u.aV.length;i++){const a=u.aV[i],fv=u.fV[i];const x=a.x+(fv.x-a.x)*t,y=a.y+(fv.y-a.y)*t,z=a.z+(fv.z-a.z)*t;u.pos[i*3]=x;u.pos[i*3+1]=y;u.pos[i*3+2]=z;u.ep[i*3]=x;u.ep[i*3+1]=y;u.ep[i*3+2]=z;}u.geo.attributes.position.needsUpdate=true;u.geo.computeVertexNormals();u.eg.attributes.position.needsUpdate=true;}
+function makeNet(faces){const grp=new THREE.Group();const gs=faces.map(function(fc){const g=polyFace(fc.a,fc.f);grp.add(g);return g;});grp.setUnfold=function(t){gs.forEach(function(g){setPolyFace(g,t);});};grp.setUnfold(0);return grp;}
+function sqPyrFaces(b,h){const l=Math.sqrt((b/2)*(b/2)+h*h);const A=V(-b/2,0,-b/2),B=V(b/2,0,-b/2),C=V(b/2,0,b/2),Dd=V(-b/2,0,b/2),P=V(0,h,0);
+  return [{a:[A,B,C,Dd],f:[A,B,C,Dd]},
+   {a:[P,A,B],f:[V(0,0,-b/2-l),V(-b/2,0,-b/2),V(b/2,0,-b/2)]},
+   {a:[P,C,Dd],f:[V(0,0,b/2+l),V(b/2,0,b/2),V(-b/2,0,b/2)]},
+   {a:[P,B,C],f:[V(b/2+l,0,0),V(b/2,0,-b/2),V(b/2,0,b/2)]},
+   {a:[P,Dd,A],f:[V(-b/2-l,0,0),V(-b/2,0,b/2),V(-b/2,0,-b/2)]}];}
+function rectPyrFaces(l,w,h){const l1=Math.sqrt((w/2)*(w/2)+h*h),l2=Math.sqrt((l/2)*(l/2)+h*h);const A=V(-l/2,0,-w/2),B=V(l/2,0,-w/2),C=V(l/2,0,w/2),Dd=V(-l/2,0,w/2),P=V(0,h,0);
+  return [{a:[A,B,C,Dd],f:[A,B,C,Dd]},
+   {a:[P,A,B],f:[V(0,0,-w/2-l1),V(-l/2,0,-w/2),V(l/2,0,-w/2)]},
+   {a:[P,C,Dd],f:[V(0,0,w/2+l1),V(l/2,0,w/2),V(-l/2,0,w/2)]},
+   {a:[P,B,C],f:[V(l/2+l2,0,0),V(l/2,0,-w/2),V(l/2,0,w/2)]},
+   {a:[P,Dd,A],f:[V(-l/2-l2,0,0),V(-l/2,0,w/2),V(-l/2,0,-w/2)]}];}
+function triPrismFaces(a,L){const R=a/Math.sqrt(3),hh=Math.sqrt(3)/2*a;const T=[0,R],Bl=[-a/2,-R/2],Br=[a/2,-R/2];const A=(p,z)=>V(p[0],p[1],z);
+  return [{a:[A(T,-L/2),A(Bl,-L/2),A(Br,-L/2)],f:[V(0,0,-L/2-hh),V(-a/2,0,-L/2),V(a/2,0,-L/2)]},
+   {a:[A(T,L/2),A(Bl,L/2),A(Br,L/2)],f:[V(0,0,L/2+hh),V(-a/2,0,L/2),V(a/2,0,L/2)]},
+   {a:[A(Bl,-L/2),A(Br,-L/2),A(Br,L/2),A(Bl,L/2)],f:[V(-a/2,0,-L/2),V(a/2,0,-L/2),V(a/2,0,L/2),V(-a/2,0,L/2)]},
+   {a:[A(T,-L/2),A(Bl,-L/2),A(Bl,L/2),A(T,L/2)],f:[V(-3*a/2,0,-L/2),V(-a/2,0,-L/2),V(-a/2,0,L/2),V(-3*a/2,0,L/2)]},
+   {a:[A(T,-L/2),A(Br,-L/2),A(Br,L/2),A(T,L/2)],f:[V(3*a/2,0,-L/2),V(a/2,0,-L/2),V(a/2,0,L/2),V(3*a/2,0,L/2)]}];}
 // ---- shapes ----
 const S=[
  {n:'Cube',d:[['a','side a',1,10,4]],mesh:D=>Box(D.a,D.a,D.a),
@@ -129,16 +153,23 @@ const S=[
 ];
 let si=0,D={},solid=null,solveMode=false,cur=null;
 let netMode=false,unfoldT=0,unfoldTarget=0,netObj=null;
-const NETABLE={0:true,1:true};
-function netDims(){return si===0?[D.a,D.a,D.a]:[D.l,D.h,D.w];}
-function buildNet(){if(netObj)scene.remove(netObj);const d=netDims();netObj=boxNet(d[0],d[1],d[2]);netObj.setUnfold(unfoldT);scene.add(netObj);}
+const NETABLE={0:true,1:true,6:true,7:true,8:true};
+function buildNet(reframe){if(netObj)scene.remove(netObj);
+  if(si===0)netObj=boxNet(D.a,D.a,D.a);
+  else if(si===1)netObj=boxNet(D.l,D.h,D.w);
+  else if(si===6)netObj=makeNet(sqPyrFaces(D.b,D.h));
+  else if(si===7)netObj=makeNet(rectPyrFaces(D.l,D.w,D.h));
+  else if(si===8)netObj=makeNet(triPrismFaces(D.a,D.L));
+  else return;
+  if(reframe){netObj.setUnfold(1);const bb=new THREE.Box3().setFromObject(netObj);const sz=bb.getSize(new THREE.Vector3());orbit.R=Math.max(sz.x,sz.y,sz.z)*0.8+10;}
+  netObj.setUnfold(unfoldT);scene.add(netObj);}
 function toggleNet(){if(!NETABLE[si])return;netMode=!netMode;$('netBtn').classList.toggle('on',netMode);
-  if(netMode){buildNet();if(solid)solid.visible=false;unfoldTarget=1;const d=netDims();orbit.R=(d[0]+2*d[1]+2*d[2])*0.85+10;}
+  if(netMode){buildNet(true);if(solid)solid.visible=false;unfoldTarget=1;}
   else{unfoldTarget=0;}}
 window.toggleNet=toggleNet;
 function buildShapeButtons(){$('shapes').innerHTML=S.map((s,i)=>`<button class="${i===si?'on':''}" onclick="pick(${i})">${s.n}</button>`).join('');}
 function buildSliders(){const s=S[si];$('sliders').innerHTML=s.d.map(d=>`<div class="row"><span class="name">${d[1]}</span><input type="range" id="d_${d[0]}" min="${d[2]}" max="${d[3]}" step="0.5" value="${D[d[0]]}" oninput="setDim('${d[0]}',this.value)"><span class="val" id="dv_${d[0]}">${D[d[0]]}</span></div>`).join('');}
-function setDim(k,v){D[k]=+v;$('dv_'+k).textContent=v;rebuild(false);if(netMode){if(solid)solid.visible=false;buildNet();}}
+function setDim(k,v){D[k]=+v;$('dv_'+k).textContent=v;rebuild(false);if(netMode){if(solid)solid.visible=false;buildNet(false);}}
 window.setDim=setDim;
 function rebuild(reframe){if(solid)scene.remove(solid);solid=S[si].mesh(D);scene.add(solid);
   const b=new THREE.Box3().setFromObject(solid);const c=b.getCenter(new THREE.Vector3());solid.position.sub(c);
