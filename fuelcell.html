@@ -111,7 +111,7 @@ const prim=new THREE.Group();carRoot.add(prim);prim.visible=false;
 prim.add(new THREE.Mesh(new THREE.BoxGeometry(26,6,11),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4})));
 const _pcab=new THREE.Mesh(new THREE.BoxGeometry(13,4.5,10),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4}));_pcab.position.y=4;prim.add(_pcab);prim.position.y=-4;
 let carModel=null,carWheels=[];
-function placeCar(m){m.rotation.y=Math.PI/2;let b=new THREE.Box3().setFromObject(m);const sz=b.getSize(new THREE.Vector3());m.scale.setScalar(30/Math.max(sz.x,sz.z,0.001));b=new THREE.Box3().setFromObject(m);const c=b.getCenter(new THREE.Vector3());m.position.x-=c.x;m.position.z-=c.z;m.position.y-=b.min.y;m.position.y-=10.5;carModel=m;carRoot.add(m);
+function placeCar(m){m.rotation.y=-Math.PI/2;let b=new THREE.Box3().setFromObject(m);const sz=b.getSize(new THREE.Vector3());m.scale.setScalar(30/Math.max(sz.x,sz.z,0.001));b=new THREE.Box3().setFromObject(m);const c=b.getCenter(new THREE.Vector3());m.position.x-=c.x;m.position.z-=c.z;m.position.y-=b.min.y;m.position.y-=10.5;carModel=m;carRoot.add(m);
   ['wheel_fl','wheel_fr','wheel_rl','wheel_rr'].forEach(function(n){const w=m.getObjectByName(n);if(w)carWheels.push(w);});}
 function stripCloth(m){let best=0,cloth=null;m.traverse(function(o){if(!o.isMesh||!o.geometry)return;o.geometry.computeBoundingBox();const s=o.geometry.boundingBox.getSize(new THREE.Vector3());const w=o.getWorldScale(new THREE.Vector3());const sx=s.x*w.x,sy=s.y*w.y,sz=s.z*w.z,ar=sx*sz;if(ar>best&&sy<0.35*Math.max(sx,sz)){best=ar;cloth=o;}});if(cloth)cloth.removeFromParent();}
 const _draco=new DRACOLoader();_draco.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
