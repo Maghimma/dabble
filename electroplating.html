@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--copper:#e0853f;--panel:rgba(16,28,46,.55)}
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--panel:rgba(16,28,46,.55)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
   body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -44,8 +44,8 @@
     <button id="t-refine" onclick="setMode('refine')">Electrorefining</button>
   </div>
   <div class="info">
-    <div class="eq an"><span class="h">Anode (+) — dissolves, loses mass</span><br><b>Cu → Cu²⁺ + 2e⁻</b></div>
-    <div class="eq ca"><span class="h">Cathode (−) — gains mass</span><br><b>Cu²⁺ + 2e⁻ → Cu</b></div>
+    <div class="eq an"><span class="h" id="o-anh">Anode (+) — dissolves</span><br><b id="o-aneq">—</b></div>
+    <div class="eq ca"><span class="h" id="o-cah">Cathode (−) — gains mass</span><br><b id="o-caeq">—</b></div>
     <div class="note" id="o-note"></div>
   </div>
   <div class="zoom"><button onclick="zoom(0.85)">+</button><button onclick="zoom(1.18)">−</button></div>
@@ -68,56 +68,70 @@ const key=new THREE.DirectionalLight(0xffffff,1.15);key.position.set(18,32,16);k
 scene.add(new THREE.AmbientLight(0xffffff,.3));
 const FLOOR=-13;
 const bench=new THREE.Mesh(new THREE.BoxGeometry(90,4,50),new THREE.MeshStandardMaterial({color:0x2b3a4d,roughness:.92}));bench.position.y=FLOOR-2;bench.receiveShadow=true;scene.add(bench);
-// beaker
 const BR=14,BH=22;
 const glass=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR,BH,52,1,true),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.12,roughness:.05,side:THREE.DoubleSide}));glass.position.y=FLOOR+BH/2;scene.add(glass);
 const base=new THREE.Mesh(new THREE.CylinderGeometry(BR,BR*.97,1,52),new THREE.MeshStandardMaterial({color:0xbfe2f0,transparent:true,opacity:.3}));base.position.y=FLOOR+.5;scene.add(base);
-const WTOP=FLOOR+BH-4;
 const water=new THREE.Mesh(new THREE.CylinderGeometry(BR-.5,BR-.5,BH-5,44),new THREE.MeshStandardMaterial({color:0x3a78d0,transparent:true,opacity:.34,roughness:.15}));water.position.y=FLOOR+(BH-5)/2+.6;scene.add(water);
-// electrodes
 const EH=26,EW=2.4,ED=11,XA=-7,XC=7;
-const anodeMat=new THREE.MeshStandardMaterial({color:0xe0853f,roughness:.55,metalness:.25});
+// anode (bar)
+const anodeMat=new THREE.MeshStandardMaterial({color:0xe0853f,roughness:.5,metalness:.35});
 const anode=new THREE.Mesh(new THREE.BoxGeometry(EW,EH,ED),anodeMat);anode.position.set(XA,FLOOR+EH/2-1,0);anode.castShadow=true;scene.add(anode);
-const greyMat=new THREE.MeshStandardMaterial({color:0x9aa6b2,roughness:.6,metalness:.3});
-const copMat=new THREE.MeshStandardMaterial({color:0xe89154,roughness:.45,metalness:.35});
-const cathode=new THREE.Mesh(new THREE.BoxGeometry(EW,EH,ED),greyMat);cathode.position.set(XC,FLOOR+EH/2-1,0);cathode.castShadow=true;scene.add(cathode);
-const coatMesh=new THREE.Mesh(new THREE.BoxGeometry(EW,EH-1,ED),copMat);coatMesh.position.copy(cathode.position);coatMesh.visible=false;scene.add(coatMesh);
-// battery
+// impurity specks on anode (refine)
+const speckGrp=new THREE.Group();scene.add(speckGrp);
+for(let i=0;i<14;i++){const s=new THREE.Mesh(new THREE.SphereGeometry(.5,6,6),new THREE.MeshStandardMaterial({color:0x3a2c1a,roughness:1}));s.position.set(XA+(Math.random()<.5?1:-1)*(EW/2+0.2),FLOOR+2+Math.random()*(EH-4),(Math.random()-0.5)*ED*0.8);speckGrp.add(s);}
+// cathode: copper bar (refine)
+const barMat=new THREE.MeshStandardMaterial({color:0xe89154,roughness:.45,metalness:.35});
+const cathode=new THREE.Mesh(new THREE.BoxGeometry(EW,EH,ED),barMat);cathode.position.set(XC,FLOOR+EH/2-1,0);cathode.castShadow=true;scene.add(cathode);
+// cathode: SPOON (plate)
+const spoonMat=new THREE.MeshStandardMaterial({color:0x96a2af,roughness:.5,metalness:.4});
+const spoon=new THREE.Group();
+const handle=new THREE.Mesh(new THREE.CapsuleGeometry(0.9,15,6,14),spoonMat);handle.position.set(XC,FLOOR+13,0);handle.castShadow=true;
+const bowl=new THREE.Mesh(new THREE.SphereGeometry(3.4,22,16),spoonMat);bowl.scale.set(1,0.34,1.6);bowl.position.set(XC,FLOOR+3,0);bowl.castShadow=true;
+spoon.add(handle);spoon.add(bowl);scene.add(spoon);
+// battery + wires
 const batt=new THREE.Mesh(new THREE.BoxGeometry(16,5,6),new THREE.MeshStandardMaterial({color:0x33445a,roughness:.7}));batt.position.set(0,FLOOR+EH+12,0);scene.add(batt);
-// wires
-function wire(pts,col){const g=new THREE.BufferGeometry().setFromPoints(pts);return new THREE.Line(g,new THREE.LineBasicMaterial({color:col}));}
+function wire(pts,col){return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:col}));}
 const aTop=new THREE.Vector3(XA,FLOOR+EH-1,0),cTop=new THREE.Vector3(XC,FLOOR+EH-1,0),bL=new THREE.Vector3(-6,batt.position.y,0),bR=new THREE.Vector3(6,batt.position.y,0);
 scene.add(wire([aTop,new THREE.Vector3(XA,bL.y,0),bL],0xff8f6b));
 scene.add(wire([bR,new THREE.Vector3(XC,bR.y,0),cTop],0x9fc4ff));
-// electrons travelling anode->battery->cathode
-const eGeo=new THREE.SphereGeometry(.5,8,8),eMat=new THREE.MeshBasicMaterial({color:0x9fe0ff});
-const elec=[];for(let i=0;i<10;i++){const m=new THREE.Mesh(eGeo,eMat);scene.add(m);elec.push(m);}
 const ePath=[aTop,new THREE.Vector3(XA,bL.y,0),bL,bR,new THREE.Vector3(XC,bR.y,0),cTop];
-function alongPath(path,t){const seg=path.length-1;const f=t*seg;const i=Math.min(seg-1,Math.floor(f));return path[i].clone().lerp(path[i+1],f-i);}
-// labels
-function label(text,x,y,z,col){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2.1*w/46,2.1,1);s.position.set(x,y,z);scene.add(s);return s;}
-const labA=label('ANODE +',XA,FLOOR+EH+3,0,'#ff8f6b'),labC=label('CATHODE −',XC,FLOOR+EH+3,0,'#9fc4ff');
-label('CuSO₄ solution',0,FLOOR-4,0,'#9fc4ff');
-const subA=label('pure copper',XA,FLOOR-1.5,8,'#e8b48a');
-// ions + sludge pools
-const ionGeo=new THREE.SphereGeometry(.95,12,10),ionMat=new THREE.MeshStandardMaterial({color:0x5fa8ff,emissive:0x12345a,emissiveIntensity:.5});
-let ions=[],sludge=[],anodeS=1,coat=0,spawnAcc=0;
-function reset(){ions.forEach(o=>scene.remove(o.m));sludge.forEach(s=>scene.remove(s));ions=[];sludge=[];anodeS=1;coat=0;anode.scale.x=1;cathode.scale.x=1;coatMesh.scale.set(1,1,1);
-  const plate=mode==='plate';cathode.material=plate?greyMat:copMat;coatMesh.visible=plate;
-  anode.material.color.set(plate?0xe0853f:0xc2702f);subA.material.map=label0(plate?'pure copper':'impure copper');
+const elec=[];for(let i=0;i<10;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.5,8,8),new THREE.MeshBasicMaterial({color:0x9fe0ff}));scene.add(m);elec.push(m);}
+function alongPath(p,t){const seg=p.length-1,f=t*seg,i=Math.min(seg-1,Math.floor(f));return p[i].clone().lerp(p[i+1],f-i);}
+// labels (updatable)
+function mkLabel(text,col){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);return{tex:new THREE.CanvasTexture(c),w:w};}
+function label(text,x,y,z,col){const L=mkLabel(text,col);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:L.tex,transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2.1*L.w/46,2.1,1);s.position.set(x,y,z);scene.add(s);return s;}
+function setLabel(s,text,col){const L=mkLabel(text,col);s.material.map=L.tex;s.material.needsUpdate=true;s.scale.set(2.1*L.w/46,2.1,1);}
+label('ANODE +',XA,FLOOR+EH+3,0,'#ff8f6b');label('CATHODE −',XC,FLOOR+EH+3,0,'#9fc4ff');
+const elabel=label('—',0,FLOOR-4,0,'#9fc4ff');
+const subA=label('—',XA,FLOOR-1.5,9,'#e8b48a');
+const subC=label('—',XC,FLOOR-1.5,9,'#bfe0ff');
+const mudLabel=label('anode mud (Ag, Au, Pt)',XA,FLOOR-3,-9,'#ffd27a');mudLabel.visible=false;
+// ions + sludge
+const ionGeo=new THREE.SphereGeometry(.95,12,10);const ionMat=new THREE.MeshStandardMaterial({color:0x5fa8ff,emissive:0x12345a,emissiveIntensity:.5});
+let ions=[],sludge=[],anodeS=1,coat=0,spawnAcc=0,mode='plate';
+function reset(){ions.forEach(o=>scene.remove(o.m));sludge.forEach(s=>scene.remove(s));ions=[];sludge=[];anodeS=1;coat=0;anode.scale.x=1;cathode.scale.x=1;
+  const plate=mode==='plate';
+  spoon.visible=plate;cathode.visible=!plate;speckGrp.visible=!plate;mudLabel.visible=false;
+  spoonMat.color.set(0x96a2af);spoonMat.metalness=0.4;spoonMat.roughness=0.5;
+  anodeMat.color.set(plate?0xd6dade:0xc2702f);anodeMat.metalness=plate?0.7:0.3;
+  ionMat.color.set(plate?0xd8dde6:0x5fa8ff);ionMat.emissive.set(plate?0x40454c:0x12345a);
+  $('o-aneq').textContent=plate?'Ag → Ag⁺ + e⁻':'Cu → Cu²⁺ + 2e⁻';
+  $('o-caeq').textContent=plate?'Ag⁺ + e⁻ → Ag':'Cu²⁺ + 2e⁻ → Cu';
+  $('o-anh').textContent='Anode (+) — '+(plate?'pure silver, dissolves':'impure copper, dissolves');
+  $('o-cah').textContent='Cathode (−) — '+(plate?'the spoon gets coated':'pure copper grows');
+  setLabel(elabel,plate?'silver nitrate (AgNO₃)':'copper(II) sulfate (CuSO₄)','#9fc4ff');
+  setLabel(subA,plate?'pure silver':'impure copper','#e8b48a');
+  setLabel(subC,plate?'steel spoon':'pure copper','#bfe0ff');
   $('o-note').innerHTML=plate
-   ?'<b>Electroplating:</b> coat a cheap object (cathode) with metal. The <b>anode is pure copper</b>; the electrolyte is a <b>copper salt</b> (CuSO₄). Copper dissolves off the anode and deposits as a thin layer on the object.'
-   :'<b>Electrorefining:</b> purify copper. The <b>anode is impure copper</b>, the <b>cathode is pure copper</b>. Pure Cu crosses over; impurities drop off as <b>anode sludge</b> at the bottom.';}
-function label0(txt){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(txt).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle='#e8b48a';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,w/2,25);subA.scale.set(2.1*w/46,2.1,1);return new THREE.CanvasTexture(c);}
-let mode='plate';
+   ?'<b>Electroplating a spoon:</b> a cheap <b>steel spoon</b> (cathode) is coated with <b>silver</b>. The <b>anode is pure silver</b>, the solution is a <b>silver salt</b>. Silver dissolves off the anode and deposits as a thin shiny layer on the spoon.'
+   :'<b>Electrorefining copper:</b> the <b>impure copper anode</b> dissolves; <b>pure copper</b> builds up on the cathode. The leftover impurities (often valuable <b>silver, gold, platinum</b>) drop to the bottom as <b>anode mud</b>.';}
 function setMode(m){mode=m;$('t-plate').classList.toggle('on',m==='plate');$('t-refine').classList.toggle('on',m==='refine');reset();}
 window.setMode=setMode;
 function upd(){const c=+$('cur').value;$('cur-v').textContent=c<=3?'low':c<=7?'medium':'high';}
 window.upd=upd;
-// camera
-const orbit={th:0.45,ph:1.12,R:70,tgt:new THREE.Vector3(0,2,0)};
+const orbit={th:0.45,ph:1.12,R:72,tgt:new THREE.Vector3(0,2,0)};
 function applyCam(){const s=orbit;camera.position.set(s.tgt.x+s.R*Math.sin(s.ph)*Math.sin(s.th),s.tgt.y+s.R*Math.cos(s.ph),s.tgt.z+s.R*Math.sin(s.ph)*Math.cos(s.th));camera.lookAt(s.tgt);}
-window.zoom=f=>{orbit.R=clamp(orbit.R*f,38,130);applyCam();};
+window.zoom=f=>{orbit.R=clamp(orbit.R*f,40,135);applyCam();};
 let drag=false,px=0,py=0;
 canvas.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;});
 addEventListener('pointerup',()=>drag=false);
@@ -126,18 +140,15 @@ canvas.addEventListener('wheel',e=>{e.preventDefault();window.zoom(e.deltaY>0?1.
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(canvas);resize();applyCam();
 let last=performance.now();
-function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const c=+$('cur').value;
-  // electrons
+function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const c=+$('cur').value,plate=mode==='plate';
   for(let i=0;i<elec.length;i++){const t=((now/1000*c*0.12)+i/elec.length)%1;elec[i].position.copy(alongPath(ePath,t));}
-  // spawn ions
-  spawnAcc+=dt*c*1.1;while(spawnAcc>=1){spawnAcc-=1;if(anodeS>0.08&&ions.length<90){const m=new THREE.Mesh(ionGeo,ionMat);const ax=XA+EW/2*anode.scale.x;m.position.set(ax+1,FLOOR+3+Math.random()*(EH-6),(Math.random()-0.5)*ED*0.7);scene.add(m);ions.push({m,t:0,y0:m.position.y,z0:m.position.z});}}
-  const ax=XA+EW/2*anode.scale.x, cx=XC-EW/2*cathode.scale.x-coat*2.2;
+  spawnAcc+=dt*c*1.1;while(spawnAcc>=1){spawnAcc-=1;if(anodeS>0.08&&ions.length<90){const m=new THREE.Mesh(ionGeo,ionMat);const ax=XA+EW/2*anode.scale.x;m.position.set(ax+1,FLOOR+3+Math.random()*(EH-6),(Math.random()-0.5)*ED*0.7);scene.add(m);ions.push({m,t:0,y0:m.position.y});}}
+  const ax=XA+EW/2*anode.scale.x, cx=plate?XC-3.4:XC-EW/2*cathode.scale.x-1;
   for(let i=ions.length-1;i>=0;i--){const io=ions[i];io.t+=dt*(0.3+c*0.05);io.m.position.x=ax+(cx-ax)*io.t;io.m.position.y=io.y0+Math.sin(now/400+i)*0.6;
     if(io.t>=1){scene.remove(io.m);ions.splice(i,1);coat=Math.min(1,coat+0.01);anodeS=Math.max(0,anodeS-0.0045);
-      if(mode==='refine'&&Math.random()<0.5){const s=new THREE.Mesh(new THREE.SphereGeometry(.6+Math.random()*.4,8,6),new THREE.MeshStandardMaterial({color:0x4a3422,roughness:1}));s.position.set(XA+(Math.random()-0.5)*ED*0.6,FLOOR+0.5,(Math.random()-0.5)*ED*0.6);scene.add(s);sludge.push(s);}}}
-  // apply growth/shrink
+      if(!plate&&Math.random()<0.5){const col=[0xffd27a,0xd9d9e0,0x6a4a2a][Math.floor(Math.random()*3)];const s=new THREE.Mesh(new THREE.SphereGeometry(.55+Math.random()*.4,8,6),new THREE.MeshStandardMaterial({color:col,roughness:.8,metalness:.4}));s.position.set(XA+(Math.random()-0.5)*ED*0.7,FLOOR+0.6,(Math.random()-0.5)*ED*0.7);scene.add(s);sludge.push(s);if(sludge.length>4)mudLabel.visible=true;}}}
   anode.scale.x=0.12+0.88*anodeS;
-  if(mode==='plate'){coatMesh.visible=true;coatMesh.scale.set(1+coat*1.6,1,1+coat*0.5);}
+  if(plate){spoonMat.color.setHex(0x96a2af);spoonMat.color.lerp(new THREE.Color(0xeef2f6),coat);spoonMat.metalness=0.4+0.5*coat;spoonMat.roughness=0.5-0.28*coat;}
   else{cathode.scale.x=1+coat*1.4;}
   if(!drag)orbit.th+=dt*0.18;applyCam();
   renderer.render(scene,camera);requestAnimationFrame(loop);}
