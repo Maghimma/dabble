@@ -116,6 +116,31 @@ function triPrismFaces(a,L){const R=a/Math.sqrt(3),hh=Math.sqrt(3)/2*a;const T=[
    {a:[A(Bl,-L/2),A(Br,-L/2),A(Br,L/2),A(Bl,L/2)],f:[V(-a/2,0,-L/2),V(a/2,0,-L/2),V(a/2,0,L/2),V(-a/2,0,L/2)]},
    {a:[A(T,-L/2),A(Bl,-L/2),A(Bl,L/2),A(T,L/2)],f:[V(-3*a/2,0,-L/2),V(-a/2,0,-L/2),V(-a/2,0,L/2),V(-3*a/2,0,L/2)]},
    {a:[A(T,-L/2),A(Br,-L/2),A(Br,L/2),A(T,L/2)],f:[V(3*a/2,0,-L/2),V(a/2,0,-L/2),V(a/2,0,L/2),V(3*a/2,0,L/2)]}];}
+// --- curved-surface nets (cylinder, cone): morph a tessellated surface flat ---
+function stripFace(aV,fV,cols){const n=aV.length;const geo=new THREE.BufferGeometry();const pos=new Float32Array(n*3);geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const idx=[];for(let c=0;c<cols-1;c++){const b0=c,b1=c+1,t0=cols+c,t1=cols+c+1;idx.push(b0,b1,t1,b0,t1,t0);}geo.setIndex(idx);
+  const bnd=[];for(let c=0;c<cols;c++)bnd.push(c);for(let c=cols-1;c>=0;c--)bnd.push(cols+c);
+  const eg=new THREE.BufferGeometry();const ep=new Float32Array(bnd.length*3);eg.setAttribute('position',new THREE.BufferAttribute(ep,3));
+  const g=new THREE.Group();g.add(new THREE.Mesh(geo,MAT));g.add(new THREE.LineLoop(eg,new THREE.LineBasicMaterial({color:0xaffff5,transparent:true,opacity:.55})));
+  function set(t){for(let i=0;i<n;i++){const a=aV[i],fv=fV[i];pos[i*3]=a.x+(fv.x-a.x)*t;pos[i*3+1]=a.y+(fv.y-a.y)*t;pos[i*3+2]=a.z+(fv.z-a.z)*t;}geo.attributes.position.needsUpdate=true;geo.computeVertexNormals();for(let j=0;j<bnd.length;j++){const k=bnd[j];ep[j*3]=pos[k*3];ep[j*3+1]=pos[k*3+1];ep[j*3+2]=pos[k*3+2];}eg.attributes.position.needsUpdate=true;}
+  return {g:g,set:set};}
+function cylNet(r,h){const N=30,M=26;const grp=new THREE.Group();const items=[];
+  const aV=[],fV=[];
+  for(let i=0;i<=N;i++){const th=i/N*2*PI;aV.push(V(r*Math.cos(th),-h/2,r*Math.sin(th)));}
+  for(let i=0;i<=N;i++){const th=i/N*2*PI;aV.push(V(r*Math.cos(th),h/2,r*Math.sin(th)));}
+  for(let i=0;i<=N;i++){const arc=r*(i/N*2*PI)-PI*r;fV.push(V(arc,0,-h/2));}
+  for(let i=0;i<=N;i++){const arc=r*(i/N*2*PI)-PI*r;fV.push(V(arc,0,h/2));}
+  const strip=stripFace(aV,fV,N+1);grp.add(strip.g);items.push(t=>strip.set(t));
+  const ba=[],bf=[],ta=[],tf=[];for(let i=0;i<M;i++){const th=i/M*2*PI;ba.push(V(r*Math.cos(th),-h/2,r*Math.sin(th)));bf.push(V(r*Math.cos(th),0,(-h/2-r)+r*Math.sin(th)));ta.push(V(r*Math.cos(th),h/2,r*Math.sin(th)));tf.push(V(r*Math.cos(th),0,(h/2+r)+r*Math.sin(th)));}
+  const bc=polyFace(ba,bf),tc=polyFace(ta,tf);grp.add(bc);grp.add(tc);items.push(t=>setPolyFace(bc,t));items.push(t=>setPolyFace(tc,t));
+  grp.setUnfold=function(t){items.forEach(fn=>fn(t));};grp.setUnfold(0);return grp;}
+function coneNet(r,h){const N=36,M=26;const l=Math.sqrt(r*r+h*h),Phi=2*PI*r/l;const grp=new THREE.Group();const items=[];
+  const aV=[V(0,h,0)],fV=[V(0,0,0)];
+  for(let i=0;i<=N;i++){const th=i/N*2*PI;aV.push(V(r*Math.cos(th),0,r*Math.sin(th)));const phi=-Phi/2+(i/N)*Phi;fV.push(V(l*Math.cos(phi),0,l*Math.sin(phi)));}
+  const lat=polyFace(aV,fV);grp.add(lat);items.push(t=>setPolyFace(lat,t));
+  const ba=[],bf=[],cx=l+r;for(let i=0;i<M;i++){const th=i/M*2*PI;ba.push(V(r*Math.cos(th),0,r*Math.sin(th)));bf.push(V(cx+r*Math.cos(th),0,r*Math.sin(th)));}
+  const bc=polyFace(ba,bf);grp.add(bc);items.push(t=>setPolyFace(bc,t));
+  grp.setUnfold=function(t){items.forEach(fn=>fn(t));};grp.setUnfold(0);return grp;}
 // ---- shapes ----
 const S=[
  {n:'Cube',d:[['a','side a',1,10,4]],mesh:D=>Box(D.a,D.a,D.a),
@@ -153,10 +178,12 @@ const S=[
 ];
 let si=0,D={},solid=null,solveMode=false,cur=null;
 let netMode=false,unfoldT=0,unfoldTarget=0,netObj=null;
-const NETABLE={0:true,1:true,6:true,7:true,8:true};
+const NETABLE={0:true,1:true,2:true,3:true,6:true,7:true,8:true};
 function buildNet(reframe){if(netObj)scene.remove(netObj);
   if(si===0)netObj=boxNet(D.a,D.a,D.a);
   else if(si===1)netObj=boxNet(D.l,D.h,D.w);
+  else if(si===2)netObj=cylNet(D.r,D.h);
+  else if(si===3)netObj=coneNet(D.r,D.h);
   else if(si===6)netObj=makeNet(sqPyrFaces(D.b,D.h));
   else if(si===7)netObj=makeNet(rectPyrFaces(D.l,D.w,D.h));
   else if(si===8)netObj=makeNet(triPrismFaces(D.a,D.L));
