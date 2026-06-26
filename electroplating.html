@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Electroplating &amp; Electrorefining — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--copper:#e0853f;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:#0a1622}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:20px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .typetoggle{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;backdrop-filter:blur(14px)}
+  .typetoggle button{font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--dim);background:transparent;border:0;border-radius:8px;padding:7px 13px;cursor:pointer}
+  .typetoggle button.on{background:var(--teal);color:#04302c}
+  .info{position:fixed;top:100px;right:14px;z-index:9;width:min(238px,54vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .eq{font-size:12px;margin-top:9px;padding:8px 10px;border-radius:9px;line-height:1.5}.eq:first-child{margin-top:0}
+  .eq.an{background:rgba(224,133,63,.15)}.eq.ca{background:rgba(46,196,182,.13)}.eq b{font-family:'Fraunces',serif}
+  .eq .h{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--dim)}
+  .note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}.note b{color:var(--amber)}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:16px clamp(14px,5vw,60px) calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .wrap2 .name{flex:0 0 90px;font-weight:600;font-size:14px}
+  .wrap2 input{flex:1;accent-color:var(--amber);height:28px}
+  .wrap2 .val{flex:0 0 80px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--amber)}
+  .wrap2 button{font-family:inherit;font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <a class="back" href="index.html">← Dabble</a>
+  <div class="title">🔌 Electroplating &amp; Electrorefining</div>
+  <div class="typetoggle">
+    <button id="t-plate" class="on" onclick="setMode('plate')">Electroplating</button>
+    <button id="t-refine" onclick="setMode('refine')">Electrorefining</button>
+  </div>
+  <div class="info">
+    <div class="eq an"><span class="h">Anode (+) — dissolves, loses mass</span><br><b>Cu → Cu²⁺ + 2e⁻</b></div>
+    <div class="eq ca"><span class="h">Cathode (−) — gains mass</span><br><b>Cu²⁺ + 2e⁻ → Cu</b></div>
+    <div class="note" id="o-note"></div>
+  </div>
+  <div class="ctrl"><div class="wrap2"><span class="name">Current</span><input type="range" id="cur" min="1" max="10" step="1" value="5" oninput="upd()"><span class="val" id="cur-v">medium</span><button onclick="reset()">↻ Reset</button></div></div>
+
+<script>
+const $=id=>document.getElementById(id);const cv=$('gl'),ctx=cv.getContext('2d');
+let W,H,mode='plate',ions=[],sludge=[],ePhase=0,anode=1,coat=0,last=0;
+function resize(){const dp=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dp;cv.height=H*dp;ctx.setTransform(dp,0,0,dp,0,0);}
+new ResizeObserver(resize).observe(cv);
+function setMode(m){mode=m;$('t-plate').classList.toggle('on',m==='plate');$('t-refine').classList.toggle('on',m==='refine');reset();}
+window.setMode=setMode;
+function reset(){ions=[];sludge=[];anode=1;coat=0;
+  $('o-note').innerHTML=mode==='plate'
+   ?'<b>Electroplating:</b> coat a cheap object with metal. The <b>object</b> is the cathode; the <b>anode is pure copper</b>; the electrolyte is a <b>copper salt</b> (CuSO₄). Copper dissolves off the anode and deposits as a thin layer on the object.'
+   :'<b>Electrorefining:</b> purify copper. The <b>anode is impure copper</b>, the <b>cathode is pure copper</b>. Pure Cu transfers across; the impurities drop off as <b>anode sludge</b> at the bottom.';}
+window.reset=reset;
+function upd(){const c=+$('cur').value;$('cur-v').textContent=c<=3?'low':c<=7?'medium':'high';}
+window.upd=upd;
+function geo(){const bl=W/2-Math.min(W*0.30,260),br=W/2+Math.min(W*0.30,260),ty=H*0.30,by=H*0.82;return{bl,br,ty,by,xa:bl+(br-bl)*0.30,xc:bl+(br-bl)*0.70,liq:ty+24};}
+function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const c=+$('cur').value,g=geo();ePhase+=dt*c*0.5;
+  ctx.clearRect(0,0,W,H);
+  // battery
+  const byT=H*0.10;ctx.fillStyle='#2a3a4d';ctx.strokeStyle='rgba(234,241,247,.4)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(W/2-50,byT,100,30,7);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#ff8f6b';ctx.font='700 16px Fraunces';ctx.textAlign='center';ctx.fillText('+',W/2-34,byT+21);ctx.fillStyle='#9fc4ff';ctx.fillText('−',W/2+34,byT+21);
+  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='11px Hanken Grotesk';ctx.fillText('battery',W/2,byT-6);
+  // wires
+  ctx.strokeStyle='rgba(234,241,247,.5)';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(W/2-40,byT+30);ctx.lineTo(W/2-40,byT+50);ctx.lineTo(g.xa,byT+50);ctx.lineTo(g.xa,g.ty);ctx.moveTo(W/2+40,byT+30);ctx.lineTo(W/2+40,byT+50);ctx.lineTo(g.xc,byT+50);ctx.lineTo(g.xc,g.ty);ctx.stroke();
+  // electrons on wires: anode -> battery (left up) and battery -> cathode (right down)
+  ctx.fillStyle='#7fd6ff';for(let i=0;i<6;i++){const p=((ePhase+i/6)%1);
+    // left path: from anode top up then to battery
+    let lx=g.xa,ly=g.ty+(byT+50-g.ty)*(1-p);if((1-p)>0.78){const q=((1-p)-0.78)/0.22;lx=g.xa+(W/2-40-g.xa)*q;ly=byT+50;}
+    ctx.beginPath();ctx.arc(lx,ly,3,0,7);ctx.fill();
+    // right path: battery down to cathode
+    let rx=g.xc,ry=byT+50+(g.ty-(byT+50))*p;if(p<0.22){const q=p/0.22;rx=W/2+40+(g.xc-(W/2+40))*q;ry=byT+50;}
+    ctx.beginPath();ctx.arc(rx,ry,3,0,7);ctx.fill();}
+  // beaker + electrolyte
+  ctx.fillStyle='rgba(74,144,217,.22)';ctx.fillRect(g.bl,g.liq,g.br-g.bl,g.by-g.liq);
+  ctx.fillStyle='rgba(80,150,255,.10)';// tint = copper sulfate blue
+  ctx.strokeStyle='rgba(191,226,240,.5)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(g.bl,g.ty);ctx.lineTo(g.bl,g.by);ctx.lineTo(g.br,g.by);ctx.lineTo(g.br,g.ty);ctx.stroke();
+  ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='11px Hanken Grotesk';ctx.textAlign='center';ctx.fillText('copper(II) sulfate solution (Cu²⁺ ions)',W/2,g.by-8);
+  // anode (left, +) — shrinks
+  const aw=10+22*anode;ctx.fillStyle=mode==='refine'?'#c2702f':'#e0853f';ctx.fillRect(g.xa-aw/2,g.ty,aw,(g.by-12)-g.ty);
+  if(mode==='refine'){ctx.fillStyle='rgba(40,30,20,.7)';for(let i=0;i<10;i++){const yy=g.ty+20+((i*53)%((g.by-40)-g.ty));ctx.beginPath();ctx.arc(g.xa-aw/4+((i*31)%aw)-aw/4,yy,1.8,0,7);ctx.fill();}}
+  // cathode (right, −)
+  if(mode==='plate'){ // object to be plated (grey blank) with growing copper coat
+    const ow=22;ctx.fillStyle='#9aa6b2';ctx.fillRect(g.xc-ow/2,g.ty+10,ow,(g.by-12)-(g.ty+10));
+    const ct=coat*10;ctx.fillStyle='rgba(224,133,63,.9)';ctx.fillRect(g.xc-ow/2-ct,g.ty+10,ct,(g.by-12)-(g.ty+10));ctx.fillRect(g.xc+ow/2,g.ty+10,ct,(g.by-12)-(g.ty+10));
+    ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='10px Hanken Grotesk';ctx.fillText('object + copper coat',g.xc,g.by+2);
+  }else{const cw=14+coat*16;ctx.fillStyle='#e8975a';ctx.fillRect(g.xc-cw/2,g.ty+6,cw,(g.by-12)-(g.ty+6));
+    ctx.fillStyle='rgba(234,241,247,.7)';ctx.font='10px Hanken Grotesk';ctx.fillText('pure copper grows',g.xc,g.by+2);}
+  // electrode labels
+  ctx.font='700 14px Fraunces';ctx.fillStyle='#ff8f6b';ctx.fillText('ANODE +',g.xa,g.ty-8);ctx.fillStyle='#9fc4ff';ctx.fillText('CATHODE −',g.xc,g.ty-8);
+  ctx.font='10px Hanken Grotesk';ctx.fillStyle='rgba(234,241,247,.55)';ctx.fillText(mode==='refine'?'impure copper':'pure copper',g.xa,g.by+2);
+  // ions Cu2+ from anode -> cathode
+  if(anode>0.05){for(let k=0;k<c;k++)if(Math.random()<0.05)ions.push({x:g.xa+aw/2,y:g.ty+30+Math.random()*((g.by-40)-g.ty),t:0});}
+  ctx.font='700 11px Hanken Grotesk';
+  for(let i=ions.length-1;i>=0;i--){const io=ions[i];io.t+=dt*0.35*(0.6+c*0.08);io.x=g.xa+aw/2+(g.xc-g.xa-aw/2)*io.t;io.y+=Math.sin(now/300+i)*0.3;
+    ctx.fillStyle='#5fa8ff';ctx.beginPath();ctx.arc(io.x,io.y,7,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillText('Cu²⁺',io.x,io.y+3.5);
+    if(io.t>=1){ions.splice(i,1);coat=Math.min(1,coat+0.012);anode=Math.max(0,anode-0.004);if(mode==='refine'&&Math.random()<0.5)sludge.push({x:g.xa+(Math.random()-0.5)*aw,y:g.by-14});}}
+  // anode sludge
+  ctx.fillStyle='rgba(60,45,30,.85)';sludge.forEach(function(s){s.y=Math.min(g.by-4,s.y+0.5);ctx.beginPath();ctx.arc(s.x,s.y,2.4,0,7);ctx.fill();});
+  if(mode==='refine'&&sludge.length>3){ctx.fillStyle='rgba(234,241,247,.5)';ctx.font='10px Hanken Grotesk';ctx.fillText('anode sludge (impurities)',g.xa,g.by+14);}
+  requestAnimationFrame(loop);}
+resize();upd();reset();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
