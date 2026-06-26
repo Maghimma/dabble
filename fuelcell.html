@@ -55,6 +55,8 @@
 const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=1;l.textContent=String(m).slice(0,150);l.style.color='#ff9a8a';}};
 window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
 import * as THREE from 'three';
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/GLTFLoader.js';
+import {RoomEnvironment} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=(a,b)=>a+Math.random()*(b-a);
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
 const canvas=$('gl');
@@ -64,6 +66,7 @@ const camera=new THREE.PerspectiveCamera(50,1,0.1,500);
 (()=>{const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#24405c');gr.addColorStop(.6,'#15293f');gr.addColorStop(1,'#0c1b2c');g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);})();
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x202a38,.9));
 const key=new THREE.DirectionalLight(0xffffff,1.05);key.position.set(16,32,22);scene.add(key);scene.add(new THREE.AmbientLight(0xffffff,.35));
+try{const _pm=new THREE.PMREMGenerator(renderer);scene.environment=_pm.fromScene(new RoomEnvironment(),0.04).texture;}catch(e){}
 function label(text,x,y,z,col,parent){const t=document.createElement('canvas').getContext('2d');t.font='600 30px Hanken Grotesk,sans-serif';const w=Math.ceil(t.measureText(text).width)+24;const c=document.createElement('canvas');c.width=w;c.height=46;const g=c.getContext('2d');g.font='600 30px Hanken Grotesk,sans-serif';g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,25);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,depthTest:false}));s.scale.set(2*w/46,2,1);s.position.set(x,y,z);(parent||scene).add(s);return s;}
 
 // ===== CELL VIEW =====
@@ -99,35 +102,18 @@ const elec=[];for(let i=0;i<12;i++){const m=new THREE.Mesh(SE,mE);cellRoot.add(m
 const carRoot=new THREE.Group();scene.add(carRoot);carRoot.visible=false;
 const road=new THREE.Mesh(new THREE.BoxGeometry(160,1,34),new THREE.MeshStandardMaterial({color:0x29333f,roughness:.97}));road.position.y=-11.1;carRoot.add(road);
 const dashes=[];for(let i=0;i<10;i++){const d=new THREE.Mesh(new THREE.BoxGeometry(7,0.2,1.5),new THREE.MeshStandardMaterial({color:0xccd5df}));d.position.set(-63+i*14,-10.5,0);carRoot.add(d);dashes.push(d);}
-const bodyMat=new THREE.MeshStandardMaterial({color:0x2ec4b6,roughness:.26,metalness:.6});
-const RW=3.8;const prof=new THREE.Shape();
-prof.moveTo(-15,-7);
-prof.lineTo(-9-RW,-7);prof.absarc(-9,-7,RW,Math.PI,0,true);
-prof.lineTo(9-RW,-7);prof.absarc(9,-7,RW,Math.PI,0,true);
-prof.lineTo(14.5,-7);prof.lineTo(15,-4.6);
-prof.quadraticCurveTo(14.3,-2.4,11,-2);prof.lineTo(6.2,-1.7);
-prof.quadraticCurveTo(3.6,-1.5,2,2.2);prof.quadraticCurveTo(0.6,4.3,-3,4.4);
-prof.lineTo(-7,4.0);prof.quadraticCurveTo(-11,3.6,-12.8,0.2);
-prof.quadraticCurveTo(-14.6,-1.6,-15,-3.2);prof.lineTo(-15,-7);
-const bgeo=new THREE.ExtrudeGeometry(prof,{depth:11,bevelEnabled:true,bevelThickness:0.9,bevelSize:0.9,bevelSegments:4,steps:1});bgeo.translate(0,0,-5.5);
-carRoot.add(new THREE.Mesh(bgeo,bodyMat));
-const trim=new THREE.Mesh(new THREE.BoxGeometry(30,0.5,11.6),new THREE.MeshStandardMaterial({color:0x15303a,metalness:.4,roughness:.5}));trim.position.set(0,-2.3,0);carRoot.add(trim);
-const winMat=new THREE.MeshStandardMaterial({color:0x0e1a24,roughness:.06,metalness:.75});
-[5.62,-5.62].forEach(function(z){const w=new THREE.Mesh(new THREE.BoxGeometry(8.6,2.5,0.25),winMat);w.position.set(-2.6,2.95,z);carRoot.add(w);});
-const wsh=new THREE.Mesh(new THREE.BoxGeometry(0.25,3.1,9.9),winMat);wsh.position.set(2.7,1.2,0);wsh.rotation.z=0.92;carRoot.add(wsh);
-[4,-4].forEach(function(z){const hl=new THREE.Mesh(new THREE.BoxGeometry(0.5,1.0,1.9),new THREE.MeshStandardMaterial({color:0xfff7d0,emissive:0xffe27a,emissiveIntensity:1}));hl.position.set(14.8,-3.3,z);carRoot.add(hl);
-  const tl=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.9,1.9),new THREE.MeshStandardMaterial({color:0xff5a5a,emissive:0x8a1414,emissiveIntensity:1}));tl.position.set(-15,-3.3,z);carRoot.add(tl);});
-const wMat=new THREE.MeshStandardMaterial({color:0x14171c,roughness:.85});
-function makeWheel(){const g=new THREE.Group();
-  const tire=new THREE.Mesh(new THREE.CylinderGeometry(3.6,3.6,2.8,30),wMat);tire.rotation.x=Math.PI/2;g.add(tire);
-  const rim=new THREE.Mesh(new THREE.CylinderGeometry(2.1,2.1,3.0,26),new THREE.MeshStandardMaterial({color:0xccd6e0,metalness:.9,roughness:.18}));rim.rotation.x=Math.PI/2;g.add(rim);
-  for(let i=0;i<7;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(0.45,3.6,1.1),new THREE.MeshStandardMaterial({color:0x9aa6b2,metalness:.78,roughness:.26}));s.rotation.z=i/7*Math.PI*2;g.add(s);}
-  return g;}
-const wheels=[];[[9,5.7],[9,-5.7],[-9,5.7],[-9,-5.7]].forEach(function(p){const w=makeWheel();w.position.set(p[0],-7,p[1]);carRoot.add(w);wheels.push(w);});
-const tank=new THREE.Mesh(new THREE.CapsuleGeometry(1.7,8,8,14),new THREE.MeshStandardMaterial({color:0xbfe2f0,metalness:.5,roughness:.3}));tank.rotation.z=Math.PI/2;tank.position.set(3,-8.7,0);carRoot.add(tank);
-const fcbox=new THREE.Mesh(new THREE.BoxGeometry(6,2.6,8),new THREE.MeshStandardMaterial({color:0x3a8a82,roughness:.5,emissive:0x12504a,emissiveIntensity:.55}));fcbox.position.set(-5,-8.7,0);carRoot.add(fcbox);
-const csh=new THREE.Mesh(new THREE.CircleGeometry(16,32),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3}));csh.rotation.x=-Math.PI/2;csh.position.set(0,-10.4,0);csh.scale.set(1,0.4,1);carRoot.add(csh);
-label('H₂ tank',6,-11.8,8.5,'#bfe2f0',carRoot);label('fuel cell',-6,-11.8,8.5,'#9fd0ff',carRoot);label('electric motor → wheels turn',13,-13.2,0,'#ffe08a',carRoot);label('💧 water exhaust',-18,-6,0,'#9fd0ff',carRoot);
+const csh=new THREE.Mesh(new THREE.CircleGeometry(18,40),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.32}));csh.rotation.x=-Math.PI/2;csh.position.set(0,-10.45,0);csh.scale.set(1.15,0.42,1);carRoot.add(csh);
+label('hydrogen car — fuel cell + H₂ tank on board',0,11,0,'#bfe2f0',carRoot);
+label('💧 water — the only exhaust',-22,-7,0,'#9fd0ff',carRoot);
+// fallback simple car (shown only if the model fails to load)
+const prim=new THREE.Group();carRoot.add(prim);prim.visible=false;
+prim.add(new THREE.Mesh(new THREE.BoxGeometry(26,6,11),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4})));
+const _pcab=new THREE.Mesh(new THREE.BoxGeometry(13,4.5,10),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4}));_pcab.position.y=4;prim.add(_pcab);prim.position.y=-4;
+// load a real 3D car model (photoreal PBR)
+let carModel=null;
+new GLTFLoader().load('https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/ToyCar/glTF-Binary/ToyCar.glb',
+  function(g){const m=g.scene;let b=new THREE.Box3().setFromObject(m);const sz=b.getSize(new THREE.Vector3());m.scale.setScalar(30/Math.max(sz.x,sz.z,0.001));b=new THREE.Box3().setFromObject(m);const c=b.getCenter(new THREE.Vector3());m.position.x-=c.x;m.position.z-=c.z;m.position.y-=b.min.y;m.position.y-=10.5;carModel=m;carRoot.add(m);},
+  undefined,function(){prim.visible=true;});
 let exhaust=[];
 function spawnExhaust(){const m=new THREE.Mesh(SW,mW);m.position.set(-13,rnd(-7,-5),rnd(-3,3));carRoot.add(m);exhaust.push(m);}
 
@@ -162,11 +148,9 @@ function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const f=+$('f
     for(let i=water.length-1;i>=0;i--){const w=water[i];w.position.y-=dt*6;w.position.x+=dt*4;if(w.position.y<-13){cellRoot.remove(w);water.splice(i,1);}}
     elec.forEach((m,i)=>{const t=((now/1000*f*0.13)+i/12)%1;m.position.copy(alongPath(path,t));});
   }else{
-    wheels.forEach(w=>{w.rotation.z-=dt*f*1.3;});
-    fcbox.material.emissiveIntensity=0.2+0.06*f;
-    for(let i=0;i<dashes.length;i++){dashes[i].position.x-=dt*f*7;if(dashes[i].position.x<-70)dashes[i].position.x+=140;}
+    for(let i=0;i<dashes.length;i++){dashes[i].position.x-=dt*f*7;if(dashes[i].position.x<-72)dashes[i].position.x+=140;}
     if(Math.random()<dt*f*1.2)spawnExhaust();
-    for(let i=exhaust.length-1;i>=0;i--){const e=exhaust[i];e.position.x-=dt*(8+f);e.position.y-=dt*2;if(e.position.x<-40||e.position.y<-13){carRoot.remove(e);exhaust.splice(i,1);}}
+    for(let i=exhaust.length-1;i>=0;i--){const e=exhaust[i];e.position.x-=dt*(8+f);e.position.y-=dt*1.5;if(e.position.x<-46||e.position.y<-13){carRoot.remove(e);exhaust.splice(i,1);}}
   }
   if(!drag)orbit.th+=dt*0.16;applyCam();
   renderer.render(scene,camera);requestAnimationFrame(loop);}
