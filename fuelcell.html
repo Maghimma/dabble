@@ -56,6 +56,7 @@ const __err=m=>{const l=document.getElementById('loader');if(l){l.style.opacity=
 window.addEventListener('error',e=>__err('ERR: '+(e.message||e.error)));
 import * as THREE from 'three';
 import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/GLTFLoader.js';
+import {DRACOLoader} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/DRACOLoader.js';
 import {RoomEnvironment} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
 const $=id=>document.getElementById(id);const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const rnd=(a,b)=>a+Math.random()*(b-a);
 const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('preview');
@@ -105,15 +106,19 @@ const dashes=[];for(let i=0;i<10;i++){const d=new THREE.Mesh(new THREE.BoxGeomet
 const csh=new THREE.Mesh(new THREE.CircleGeometry(18,40),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.32}));csh.rotation.x=-Math.PI/2;csh.position.set(0,-10.45,0);csh.scale.set(1.15,0.42,1);carRoot.add(csh);
 label('hydrogen car — fuel cell + H₂ tank on board',0,11,0,'#bfe2f0',carRoot);
 label('💧 water — the only exhaust',-22,-7,0,'#9fd0ff',carRoot);
-// fallback simple car (shown only if the model fails to load)
+// fallback simple car (only if every model fails)
 const prim=new THREE.Group();carRoot.add(prim);prim.visible=false;
 prim.add(new THREE.Mesh(new THREE.BoxGeometry(26,6,11),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4})));
 const _pcab=new THREE.Mesh(new THREE.BoxGeometry(13,4.5,10),new THREE.MeshStandardMaterial({color:0x2ec4b6,metalness:.4,roughness:.4}));_pcab.position.y=4;prim.add(_pcab);prim.position.y=-4;
-// load a real 3D car model (photoreal PBR)
-let carModel=null;
-new GLTFLoader().load('https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/ToyCar/glTF-Binary/ToyCar.glb',
-  function(g){const m=g.scene;let b=new THREE.Box3().setFromObject(m);const sz=b.getSize(new THREE.Vector3());m.scale.setScalar(30/Math.max(sz.x,sz.z,0.001));b=new THREE.Box3().setFromObject(m);const c=b.getCenter(new THREE.Vector3());m.position.x-=c.x;m.position.z-=c.z;m.position.y-=b.min.y;m.position.y-=10.5;carModel=m;carRoot.add(m);},
-  undefined,function(){prim.visible=true;});
+let carModel=null,carWheels=[];
+function placeCar(m){let b=new THREE.Box3().setFromObject(m);const sz=b.getSize(new THREE.Vector3());m.scale.setScalar(30/Math.max(sz.x,sz.z,0.001));b=new THREE.Box3().setFromObject(m);const c=b.getCenter(new THREE.Vector3());m.position.x-=c.x;m.position.z-=c.z;m.position.y-=b.min.y;m.position.y-=10.5;carModel=m;carRoot.add(m);
+  ['wheel_fl','wheel_fr','wheel_rl','wheel_rr'].forEach(function(n){const w=m.getObjectByName(n);if(w)carWheels.push(w);});}
+function stripCloth(m){let best=0,cloth=null;m.traverse(function(o){if(!o.isMesh||!o.geometry)return;o.geometry.computeBoundingBox();const s=o.geometry.boundingBox.getSize(new THREE.Vector3());const w=o.getWorldScale(new THREE.Vector3());const sx=s.x*w.x,sy=s.y*w.y,sz=s.z*w.z,ar=sx*sz;if(ar>best&&sy<0.35*Math.max(sx,sz)){best=ar;cloth=o;}});if(cloth)cloth.removeFromParent();}
+const _draco=new DRACOLoader();_draco.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+const _gl=new GLTFLoader();_gl.setDRACOLoader(_draco);
+_gl.load('https://threejs.org/examples/models/gltf/ferrari.glb',function(g){placeCar(g.scene);},undefined,function(){
+  new GLTFLoader().load('https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/ToyCar/glTF-Binary/ToyCar.glb',function(g){stripCloth(g.scene);placeCar(g.scene);},undefined,function(){prim.visible=true;});
+});
 let exhaust=[];
 function spawnExhaust(){const m=new THREE.Mesh(SW,mW);m.position.set(-13,rnd(-7,-5),rnd(-3,3));carRoot.add(m);exhaust.push(m);}
 
@@ -148,6 +153,7 @@ function loop(now){const dt=Math.min((now-last)/1000,.05);last=now;const f=+$('f
     for(let i=water.length-1;i>=0;i--){const w=water[i];w.position.y-=dt*6;w.position.x+=dt*4;if(w.position.y<-13){cellRoot.remove(w);water.splice(i,1);}}
     elec.forEach((m,i)=>{const t=((now/1000*f*0.13)+i/12)%1;m.position.copy(alongPath(path,t));});
   }else{
+    carWheels.forEach(w=>{w.rotation.x-=dt*f*1.2;});
     for(let i=0;i<dashes.length;i++){dashes[i].position.x-=dt*f*7;if(dashes[i].position.x<-72)dashes[i].position.x+=140;}
     if(Math.random()<dt*f*1.2)spawnExhaust();
     for(let i=exhaust.length-1;i>=0;i--){const e=exhaust[i];e.position.x-=dt*(8+f);e.position.y-=dt*1.5;if(e.position.x<-46||e.position.y<-13){carRoot.remove(e);exhaust.splice(i,1);}}
