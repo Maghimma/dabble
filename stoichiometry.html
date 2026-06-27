@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Stoichiometry — Reacting Masses — Dabble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#eaf1f7;--dim:rgba(234,241,247,.62);--line:rgba(234,241,247,.16);--teal:#2ec4b6;--amber:#f6a623;--blue:#5b9bff;--panel:rgba(16,28,46,.6)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);overflow:hidden;background:radial-gradient(60% 50% at 50% 22%,#1d3346,transparent 60%),#0a1622}
+  .back{position:fixed;top:16px;left:18px;z-index:10;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}.back:hover{color:var(--ink)}
+  .title{position:fixed;top:14px;left:0;right:0;text-align:center;z-index:9;font-family:'Fraunces',serif;font-weight:600;font-size:21px}
+  .stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:92px 16px 240px}
+  .eq{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;justify-content:center}
+  .sp{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 12px;border-radius:14px;border:1px solid transparent;min-width:78px}
+  .sp.known{background:rgba(91,155,255,.14);border-color:rgba(91,155,255,.45)}
+  .sp .f{font-family:'Fraunces',serif;font-size:26px}
+  .sp .mr{font-size:10.5px;color:var(--dim)}
+  .sp .nn{font-family:'Fraunces',serif;font-size:15px;color:var(--teal);margin-top:5px}
+  .sp .mm{font-family:'Fraunces',serif;font-size:17px;font-weight:600}
+  .op{font-family:'Fraunces',serif;font-size:24px;color:var(--dim);align-self:center;margin-top:14px}
+  .info{position:fixed;top:84px;right:14px;z-index:9;width:min(230px,52vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;backdrop-filter:blur(14px)}
+  .info h4{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .step{font-size:12px;line-height:1.7;color:var(--dim)}.step b{color:var(--amber);font-family:'Fraunces',serif}
+  .ctrl{position:fixed;bottom:0;left:0;right:0;z-index:9;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px clamp(14px,5vw,60px) calc(16px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+  .wrap2{max-width:640px;margin:0 auto}
+  .rx{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:11px}
+  .rx button{font-family:'Fraunces',serif;font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer}
+  .rx button.on{background:var(--teal);color:#04302c;border-color:var(--teal)}
+  .row{display:flex;align-items:center;gap:12px}
+  .row .name{flex:0 0 auto;font-weight:600;font-size:14px}
+  .row input[type=range]{flex:1;accent-color:var(--blue);height:26px}
+  .row select{font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#16243a;color:var(--ink)}
+  .row .val{flex:0 0 56px;text-align:right;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--blue)}
+</style>
+</head>
+<body>
+  <a class="back" href="index.html">← Dabble</a>
+  <div class="title">🧮 Stoichiometry — Reacting Masses</div>
+  <div class="stage"><div class="eq" id="eq"></div></div>
+  <div class="info"><h4>Working</h4><div class="step" id="work"></div></div>
+  <div class="ctrl"><div class="wrap2">
+    <div class="rx" id="rx"></div>
+    <div class="row"><span class="name">Start with</span><input type="range" id="amt" min="1" max="100" step="1" value="32" oninput="render()"><span class="val" id="amt-v">32 g</span><span class="name">of</span><select id="known" onchange="render()"></select></div>
+  </div></div>
+
+<script>
+const $=id=>document.getElementById(id);const f=n=>{n=Math.round(n*100)/100;return ''+n;};
+const RX=[
+  {n:'2H₂ + O₂ → 2H₂O', r:[{f:'H₂',c:2,mr:2},{f:'O₂',c:1,mr:32}], p:[{f:'H₂O',c:2,mr:18}]},
+  {n:'CaCO₃ → CaO + CO₂', r:[{f:'CaCO₃',c:1,mr:100}], p:[{f:'CaO',c:1,mr:56},{f:'CO₂',c:1,mr:44}]},
+  {n:'2Mg + O₂ → 2MgO', r:[{f:'Mg',c:2,mr:24},{f:'O₂',c:1,mr:32}], p:[{f:'MgO',c:2,mr:40}]},
+  {n:'N₂ + 3H₂ → 2NH₃', r:[{f:'N₂',c:1,mr:28},{f:'H₂',c:3,mr:2}], p:[{f:'NH₃',c:2,mr:17}]},
+  {n:'CH₄ + 2O₂ → CO₂ + 2H₂O', r:[{f:'CH₄',c:1,mr:16},{f:'O₂',c:2,mr:32}], p:[{f:'CO₂',c:1,mr:44},{f:'H₂O',c:2,mr:18}]}
+];
+let ri=0;
+function sps(){return RX[ri].r.concat(RX[ri].p);}
+function setRx(i){ri=i;buildRx();var sel=$('known');sel.innerHTML='';sps().forEach(function(s,k){var o=document.createElement('option');o.value=k;o.textContent=s.f;sel.appendChild(o);});sel.value=0;render();}
+window.setRx=setRx;
+function buildRx(){$('rx').innerHTML='';RX.forEach(function(rx,i){var b=document.createElement('button');b.textContent=rx.n;b.className=i===ri?'on':'';b.onclick=function(){setRx(i);};$('rx').appendChild(b);});}
+function render(){const rx=RX[ri],all=sps(),nR=rx.r.length;const g=+$('amt').value;$('amt-v').textContent=g+' g';
+  const ki=+$('known').value;const kn=all[ki];const knMol=g/kn.mr;
+  const eq=$('eq');eq.innerHTML='';
+  all.forEach(function(s,i){const mol=knMol*(s.c/kn.c),mass=mol*s.mr;
+    const w=document.createElement('div');w.className='sp'+(i===ki?' known':'');
+    w.innerHTML='<span class="f">'+(s.c>1?s.c:'')+s.f+'</span><span class="mr">Mr = '+s.mr+'</span><span class="nn">'+f(mol)+' mol</span><span class="mm">'+f(mass)+' g</span>';
+    eq.appendChild(w);
+    const sep=(i===nR-1)?'→':(i===all.length-1?'':'+');if(sep){const o=document.createElement('span');o.className='op';o.textContent=sep;eq.appendChild(o);}
+  });
+  // working (show for first species that isn't the known one)
+  let tgt=all[ki===0?(all.length-1):0];
+  const tMol=knMol*(tgt.c/kn.c);
+  $('work').innerHTML='1) moles of '+kn.f+' = mass ÷ Mr = '+g+' ÷ '+kn.mr+' = <b>'+f(knMol)+' mol</b><br>'+
+   '2) ratio '+kn.f+' : '+tgt.f+' = '+kn.c+' : '+tgt.c+' → moles '+tgt.f+' = '+f(knMol)+' × '+tgt.c+'/'+kn.c+' = <b>'+f(tMol)+' mol</b><br>'+
+   '3) mass '+tgt.f+' = moles × Mr = '+f(tMol)+' × '+tgt.mr+' = <b>'+f(tMol*tgt.mr)+' g</b>';
+}
+setRx(0);
+</script>
+</body>
+</html>
