@@ -5,9 +5,7 @@ import {RoundedBoxGeometry} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/exa
 
 const M=(c,r)=>new THREE.MeshStandardMaterial({color:c,roughness:r==null?0.6:r,metalness:0.04});
 const metal=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:0.28,metalness:0.9,envMapIntensity:1.2});
-function glass(c,mobile){ return mobile
-  ? new THREE.MeshPhysicalMaterial({color:c,transparent:true,opacity:0.42,roughness:0.08,clearcoat:1,envMapIntensity:1.4,side:THREE.DoubleSide})
-  : new THREE.MeshPhysicalMaterial({color:0xffffff,transmission:0.92,thickness:0.6,roughness:0.06,ior:1.35,transparent:true,envMapIntensity:1.4,side:THREE.DoubleSide}); }
+function glass(c,mobile){ return new THREE.MeshPhysicalMaterial({color:c,roughness:0.14,metalness:0,transmission:0.35,thickness:0.5,ior:1.3,transparent:true,opacity:0.82,envMapIntensity:1.3,clearcoat:0.5,side:THREE.DoubleSide}); }
 const liquid=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:0.25,transparent:true,opacity:0.92});
 
 // ---- interactive sim objects (base sits at y=0) ----
