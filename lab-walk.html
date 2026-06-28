@@ -26,9 +26,9 @@
 </head>
 <body>
   <canvas id="c"></canvas>
-  <a class="back" href="lab.html">← Lab</a>
-  <div class="badge">🚶 Walk-around demo</div>
-  <a class="switch" href="lab-diorama.html">Try diorama →</a>
+  <a class="back" href="index.html">📋 Browse all sims</a>
+  <div class="badge">🚶 Walk the lab</div>
+  <a class="switch" href="lab-diorama.html">🏠 Diorama view →</a>
   <div class="cross"></div>
   <div class="look" id="look"></div>
   <div class="joy" id="joy"><div class="knob" id="knob"></div></div>
@@ -57,7 +57,7 @@ key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=14;k
 const {pickables,update,bounds}=buildScene(scene,{mobile:mob});
 
 // ---- controls ----
-let yaw=0,pitch=-0.05;
+let yaw=0,pitch=-0.16;
 const keys={};
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
