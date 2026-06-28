@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Lab — Diorama demo — Dabble</title>
+<style>
+  :root{--ink:#1d1d1f;--dim:#6e6e73}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;color:var(--ink);
+    background:radial-gradient(58% 50% at 50% 6%,rgba(110,150,255,.2),transparent 60%),radial-gradient(55% 50% at 88% 100%,rgba(60,205,195,.16),transparent 62%),linear-gradient(180deg,#fcfcfe,#eef0f6 82%)}
+  #c{position:fixed;inset:0;display:block;touch-action:none}
+  .badge{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:6;background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.06);
+    padding:8px 16px;border-radius:999px;font-size:13px;font-weight:700;backdrop-filter:blur(14px);box-shadow:0 6px 20px rgba(30,40,80,.1)}
+  .back{position:fixed;top:14px;left:16px;z-index:6;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600;background:rgba(255,255,255,.7);padding:8px 13px;border-radius:999px;backdrop-filter:blur(10px)}
+  .switch{position:fixed;top:14px;right:16px;z-index:6;color:#fff;text-decoration:none;font-size:13px;font-weight:700;background:#0071e3;padding:9px 15px;border-radius:999px;box-shadow:0 6px 18px rgba(0,113,227,.4)}
+  .hint{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:5;font-size:12.5px;font-weight:600;color:var(--dim);background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.06);padding:8px 15px;border-radius:999px;backdrop-filter:blur(12px)}
+  .label{position:fixed;z-index:7;pointer-events:none;transform:translate(-50%,-130%);background:rgba(20,28,44,.92);color:#fff;padding:7px 12px;border-radius:11px;font-size:13px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .14s}
+  .label.on{opacity:1}.label .go{font-weight:600;opacity:.7;font-size:11.5px;margin-left:5px}
+  .loader{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fcfcfe,#eef0f6);transition:opacity .6s}
+  .loader.gone{opacity:0;pointer-events:none}.spin{width:40px;height:40px;border-radius:50%;border:3px solid rgba(0,0,0,.1);border-top-color:#0071e3;animation:r 1s linear infinite}@keyframes r{to{transform:rotate(360deg)}}
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <a class="back" href="lab.html">← Lab</a>
+  <div class="badge">🏠 Diorama demo</div>
+  <a class="switch" href="lab-walk.html">Try walk-around →</a>
+  <div class="hint">🖐️ drag to spin the room · tap an object to open it</div>
+  <div class="label" id="label"></div>
+  <div class="loader" id="loader"><div class="spin"></div></div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+import {RoomEnvironment} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
+import {buildScene} from './lab-scene.js';
+
+const mob=Math.min(innerWidth,innerHeight)<760;
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:!mob,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,mob?1.5:2)); renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,0.1,120); camera.position.set(0,9,16);
+const pmrem=new THREE.PMREMGenerator(renderer); scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+scene.add(new THREE.HemisphereLight(0xdfe9ff,0xcfc4ad,0.85));
+const key=new THREE.DirectionalLight(0xffffff,2.0); key.position.set(7,14,9); key.castShadow=true;
+key.shadow.mapSize.set(mob?1024:2048,mob?1024:2048); key.shadow.camera.near=0.5; key.shadow.camera.far=60;
+key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=14;key.shadow.camera.bottom=-14;key.shadow.bias=-0.0004;key.shadow.radius=5; scene.add(key);
+const fill=new THREE.DirectionalLight(0xbcd0ff,0.5); fill.position.set(-8,5,4); scene.add(fill);
+
+const {pickables,update}=buildScene(scene,{mobile:mob});
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.target.set(0,0.2,-1); controls.enablePan=false; controls.enableDamping=true; controls.dampingFactor=0.08;
+controls.minDistance=7; controls.maxDistance=26; controls.minPolarAngle=0.25; controls.maxPolarAngle=1.4;
+controls.autoRotate=true; controls.autoRotateSpeed=0.4; let arT;
+controls.addEventListener('start',()=>{controls.autoRotate=false;clearTimeout(arT);});
+controls.addEventListener('end',()=>{clearTimeout(arT);arT=setTimeout(()=>controls.autoRotate=true,4500);});
+
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(); let hovered=null,down=null,dragged=false;
+const label=document.getElementById('label');
+function setN(e){ndc.x=e.clientX/innerWidth*2-1;ndc.y=-(e.clientY/innerHeight)*2+1;}
+function pick(){ray.setFromCamera(ndc,camera);const h=ray.intersectObjects(pickables,true)[0];if(!h)return null;let o=h.object;while(o&&!o.userData.href)o=o.parent;return o||null;}
+canvas.addEventListener('pointermove',e=>{if(down){if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>9)dragged=true;return;}setN(e);hovered=pick();document.body.style.cursor=hovered?'pointer':'default';});
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};dragged=false;setN(e);hovered=pick();});
+canvas.addEventListener('pointerup',e=>{const w=down;down=null;if(dragged||!w)return;setN(e);const h=pick();if(h&&h.userData.href){document.body.style.opacity=0;document.body.style.transition='opacity .3s';setTimeout(()=>location.href=h.userData.href,280);}});
+
+const clock=new THREE.Clock(); let started=false;
+function frame(){ requestAnimationFrame(frame); const t=clock.getElapsedTime();
+  pickables.forEach(o=>{const tg=o===hovered?1:0;o.userData.hover+=(tg-o.userData.hover)*0.18;o.scale.setScalar(1+o.userData.hover*0.13);o.position.y=o.userData.base+o.userData.hover*0.3;});
+  update(t); controls.update(); renderer.render(scene,camera);
+  if(hovered){const p=new THREE.Vector3();hovered.getWorldPosition(p);p.y+=1.4;p.project(camera);label.style.left=(p.x*0.5+0.5)*innerWidth+'px';label.style.top=(-p.y*0.5+0.5)*innerHeight+'px';label.innerHTML=hovered.userData.name+'<span class="go">open ›</span>';label.classList.add('on');}else label.classList.remove('on');
+  if(!started){started=true;const l=document.getElementById('loader');l.classList.add('gone');setTimeout(()=>l.remove(),700);}
+}
+frame();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+</script>
+</body>
+</html>

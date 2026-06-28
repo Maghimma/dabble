@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Lab — Walk-around demo — Dabble</title>
+<style>
+  :root{--ink:#1d1d1f;--dim:#6e6e73}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;color:var(--ink);background:#cfe0f0}
+  #c{position:fixed;inset:0;display:block;touch-action:none}
+  .back{position:fixed;top:14px;left:16px;z-index:6;color:var(--ink);text-decoration:none;font-size:14px;font-weight:600;background:rgba(255,255,255,.8);padding:8px 13px;border-radius:999px;backdrop-filter:blur(10px)}
+  .badge{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:6;background:rgba(255,255,255,.82);border:1px solid rgba(0,0,0,.06);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:700;backdrop-filter:blur(14px)}
+  .switch{position:fixed;top:14px;right:16px;z-index:6;color:#fff;text-decoration:none;font-size:13px;font-weight:700;background:#0071e3;padding:9px 15px;border-radius:999px;box-shadow:0 6px 18px rgba(0,113,227,.4)}
+  .cross{position:fixed;top:50%;left:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;border:2px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.25);z-index:5;pointer-events:none}
+  .look{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;font-size:13px;font-weight:700;color:#fff;background:rgba(20,28,44,.78);padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .15s;pointer-events:none}
+  .look.on{opacity:1}
+  .joy{position:fixed;left:24px;bottom:28px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.32);border:1px solid rgba(255,255,255,.6);z-index:6;backdrop-filter:blur(8px);touch-action:none}
+  .knob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .tip{position:fixed;right:18px;bottom:34px;z-index:6;font-size:12px;font-weight:600;color:#26405e;background:rgba(255,255,255,.7);padding:8px 13px;border-radius:12px;max-width:150px;text-align:right;backdrop-filter:blur(10px)}
+  .loader{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:#cfe0f0;transition:opacity .6s}
+  .loader.gone{opacity:0;pointer-events:none}.spin{width:40px;height:40px;border-radius:50%;border:3px solid rgba(0,0,0,.1);border-top-color:#0071e3;animation:r 1s linear infinite}@keyframes r{to{transform:rotate(360deg)}}
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <a class="back" href="lab.html">← Lab</a>
+  <div class="badge">🚶 Walk-around demo</div>
+  <a class="switch" href="lab-diorama.html">Try diorama →</a>
+  <div class="cross"></div>
+  <div class="look" id="look"></div>
+  <div class="joy" id="joy"><div class="knob" id="knob"></div></div>
+  <div class="tip">drag screen to look · joystick to move · WASD on a computer</div>
+  <div class="loader" id="loader"><div class="spin"></div></div>
+<script type="module">
+import * as THREE from 'three';
+import {RoomEnvironment} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
+import {buildScene} from './lab-scene.js';
+
+const mob=Math.min(innerWidth,innerHeight)<760;
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:!mob,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,mob?1.5:2)); renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xdfeefc);
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,0.05,120);
+camera.rotation.order='YXZ'; camera.position.set(0,1.55,9);
+const pmrem=new THREE.PMREMGenerator(renderer); scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+scene.add(new THREE.HemisphereLight(0xdfe9ff,0xcfc4ad,0.9));
+const key=new THREE.DirectionalLight(0xffffff,2.0); key.position.set(7,14,9); key.castShadow=true;
+key.shadow.mapSize.set(mob?1024:2048,mob?1024:2048); key.shadow.camera.near=0.5; key.shadow.camera.far=60;
+key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=14;key.shadow.camera.bottom=-14;key.shadow.bias=-0.0004;key.shadow.radius=5; scene.add(key);
+
+const {pickables,update,bounds}=buildScene(scene,{mobile:mob});
+
+// ---- controls ----
+let yaw=0,pitch=-0.05;
+const keys={};
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+const joyEl=document.getElementById('joy'),knob=document.getElementById('knob');
+let joy={id:null,x:0,z:0}, look={id:null,lx:0,ly:0,moved:0,dx:0,dy:0,t:0};
+function inJoy(x,y){const r=joyEl.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;}
+addEventListener('pointerdown',e=>{ if(e.target.closest('a,.switch,.back'))return;
+  if(inJoy(e.clientX,e.clientY)){joy.id=e.pointerId;updJoy(e);}
+  else{look.id=e.pointerId;look.lx=e.clientX;look.ly=e.clientY;look.moved=0;look.dx=e.clientX;look.dy=e.clientY;look.t=performance.now();} });
+addEventListener('pointermove',e=>{ if(e.pointerId===joy.id){updJoy(e);}
+  else if(e.pointerId===look.id){const dx=e.clientX-look.lx,dy=e.clientY-look.ly;look.lx=e.clientX;look.ly=e.clientY;yaw-=dx*0.005;pitch=Math.max(-1.1,Math.min(0.5,pitch-dy*0.005));look.moved+=Math.abs(dx)+Math.abs(dy);} });
+addEventListener('pointerup',e=>{ if(e.pointerId===joy.id){joy.id=null;joy.x=0;joy.z=0;knob.style.transform='translate(0,0)';}
+  else if(e.pointerId===look.id){ const quick=performance.now()-look.t<350; if(look.moved<10&&quick){tapAt(e.clientX,e.clientY);} look.id=null;} });
+function updJoy(e){const r=joyEl.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const m=Math.min(1,Math.hypot(dx,dy)/(r.width/2));const ang=Math.atan2(dy,dx);const kx=Math.cos(ang)*m*(r.width/2-26),ky=Math.sin(ang)*m*(r.width/2-26);knob.style.transform=`translate(${kx}px,${ky}px)`;joy.x=Math.cos(ang)*m;joy.z=Math.sin(ang)*m;}
+
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+function tapAt(x,y){ ndc.x=x/innerWidth*2-1;ndc.y=-(y/innerHeight)*2+1; ray.setFromCamera(ndc,camera); const h=ray.intersectObjects(pickables,true)[0];
+  if(h){let o=h.object;while(o&&!o.userData.href)o=o.parent;if(o&&o.userData.href){document.body.style.opacity=0;document.body.style.transition='opacity .3s';setTimeout(()=>location.href=o.userData.href,280);}} }
+const lookEl=document.getElementById('look');
+
+const clock=new THREE.Clock(); let started=false;
+function frame(){ requestAnimationFrame(frame); const dt=Math.min(clock.getDelta(),.05); const t=clock.getElapsedTime();
+  // movement
+  let mf=0,ms=0;
+  if(keys['w']||keys['arrowup'])mf+=1; if(keys['s']||keys['arrowdown'])mf-=1;
+  if(keys['a']||keys['arrowleft'])ms-=1; if(keys['d']||keys['arrowright'])ms+=1;
+  mf-=joy.z; ms+=joy.x;
+  const spd=3.4;
+  const fwd=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+  const rgt=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+  camera.position.addScaledVector(fwd, mf*spd*dt); camera.position.addScaledVector(rgt, ms*spd*dt);
+  camera.position.x=Math.max(-bounds.x,Math.min(bounds.x,camera.position.x));
+  camera.position.z=Math.max(-bounds.z,Math.min(bounds.z,camera.position.z));
+  camera.position.y=1.55;
+  camera.rotation.y=yaw; camera.rotation.x=pitch;
+  update(t);
+  // center crosshair label
+  ndc.set(0,0); ray.setFromCamera(ndc,camera); const h=ray.intersectObjects(pickables,true)[0]; let hit=null;
+  if(h){let o=h.object;while(o&&!o.userData.href)o=o.parent;hit=o;}
+  if(hit){lookEl.textContent='tap to open · '+hit.userData.name;lookEl.classList.add('on');}else lookEl.classList.remove('on');
+  renderer.render(scene,camera);
+  if(!started){started=true;const l=document.getElementById('loader');l.classList.add('gone');setTimeout(()=>l.remove(),700);}
+}
+frame();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+</script>
+</body>
+</html>
