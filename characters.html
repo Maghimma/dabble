@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Lab crew — preview — Dabble</title>
+<style>
+  :root{--ink:#1d1d1f;--dim:#6e6e73}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;color:var(--ink);
+    background:radial-gradient(60% 50% at 50% 8%,rgba(110,150,255,.2),transparent 60%),radial-gradient(55% 50% at 88% 100%,rgba(60,205,195,.18),transparent 62%),linear-gradient(180deg,#fcfcfe,#eef0f6 82%)}
+  #c{position:fixed;inset:0;display:block;touch-action:none}
+  .top{position:fixed;top:18px;left:0;right:0;text-align:center;z-index:5;padding:0 18px;pointer-events:none}
+  .top .tag{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#0071e3}
+  .top h1{font-size:clamp(22px,3.6vw,32px);font-weight:700;letter-spacing:-.02em;margin-top:5px}
+  .top p{font-size:13.5px;color:var(--dim);font-weight:600;margin-top:6px}
+  .back{position:fixed;top:16px;left:18px;z-index:6;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600}
+  .caps{position:fixed;bottom:22px;left:0;right:0;display:flex;justify-content:center;gap:clamp(24px,12vw,120px);z-index:5;pointer-events:none}
+  .caps span{font-size:13px;font-weight:700;color:var(--ink);background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.06);padding:7px 14px;border-radius:999px;backdrop-filter:blur(12px)}
+  .hint{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--dim);font-weight:600;z-index:5}
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <a class="back" href="lab.html">← Lab</a>
+  <div class="top"><div class="tag">Lab crew · preview</div><h1>Like this style?</h1><p>cute low-poly characters · drag to spin them</p></div>
+  <div class="hint">🖐️ drag to look around</div>
+  <div class="caps"><span>🔬 Scientist</span><span>🎓 Student</span><span>🔬 Scientist</span></div>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+import {RoomEnvironment} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
+
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.1,100);
+camera.position.set(0,2.0,7.2);
+const pmrem=new THREE.PMREMGenerator(renderer); scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+
+scene.add(new THREE.HemisphereLight(0xdfe9ff,0xcfc4ad,0.9));
+const key=new THREE.DirectionalLight(0xffffff,2.0); key.position.set(4,8,6); key.castShadow=true;
+key.shadow.mapSize.set(1024,1024); key.shadow.camera.near=0.5; key.shadow.camera.far=30;
+key.shadow.camera.left=-6; key.shadow.camera.right=6; key.shadow.camera.top=6; key.shadow.camera.bottom=-6; key.shadow.bias=-0.0004; key.shadow.radius=4;
+scene.add(key);
+const fill=new THREE.DirectionalLight(0xbcd0ff,0.5); fill.position.set(-6,4,3); scene.add(fill);
+
+// ground
+const ground=new THREE.Mesh(new THREE.CircleGeometry(9,48), new THREE.MeshStandardMaterial({color:0xeef0f5,roughness:0.95}));
+ground.rotation.x=-Math.PI/2; ground.position.y=0; ground.receiveShadow=true; scene.add(ground);
+
+const M=(c,r)=>new THREE.MeshStandardMaterial({color:c,roughness:r==null?0.6:r});
+function person(o){
+  const g=new THREE.Group();
+  const legM=M(0x3a4252,0.7);
+  [-0.13,0.13].forEach(x=>{ const l=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.1,0.8,16),legM); l.position.set(x,0.42,0); l.castShadow=true; g.add(l);
+    const shoe=new THREE.Mesh(new THREE.SphereGeometry(0.13,16,12,0,Math.PI*2,Math.PI/2,Math.PI/2),M(0x222831,0.5)); shoe.scale.set(1,0.7,1.5); shoe.position.set(x,0.03,0.06); g.add(shoe);});
+  const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.42,0.95,24),M(o.coat,0.55)); torso.position.y=1.27; torso.castShadow=true; g.add(torso);
+  const collar=new THREE.Mesh(new THREE.ConeGeometry(0.14,0.34,16),M(o.accent,0.5)); collar.position.set(0,1.56,0.27); collar.scale.set(1,1,0.45); g.add(collar);
+  const armM=M(o.coat,0.55);
+  [-1,1].forEach(s=>{ const arm=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.08,0.82,14),armM); arm.position.set(0.37*s,1.27,0); arm.rotation.z=-0.18*s; arm.castShadow=true; g.add(arm);
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(0.1,14,14),M(o.skin,0.5)); hand.position.set(0.45*s,0.87,0); g.add(hand);});
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,0.12,12),M(o.skin,0.5)); neck.position.y=1.8; g.add(neck);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.27,28,28),M(o.skin,0.45)); head.position.y=2.02; head.castShadow=true; g.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(0.29,24,24,0,Math.PI*2,0,Math.PI*0.6),M(o.hair,0.65)); hair.position.y=2.05; g.add(hair);
+  const eyeM=M(0x16202e,0.3);
+  [-0.1,0.1].forEach(x=>{ const e=new THREE.Mesh(new THREE.SphereGeometry(0.035,12,12),eyeM); e.position.set(x,2.02,0.255); g.add(e);});
+  const smile=new THREE.Mesh(new THREE.TorusGeometry(0.06,0.013,8,16,Math.PI),M(0x9a5b4a,0.5)); smile.position.set(0,1.93,0.255); smile.rotation.z=Math.PI; g.add(smile);
+  return g;
+}
+
+const variants=[
+  {coat:0xffffff, skin:0xf1c9a5, hair:0x4a2f1b, accent:0x2ec4b6}, // scientist
+  {coat:0x5b9bff, skin:0xc78e6a, hair:0x1c1c22, accent:0xffffff}, // student (blue hoodie)
+  {coat:0xffffff, skin:0x8d5a3c, hair:0x141110, accent:0xf6a623}, // scientist
+];
+const people=[];
+variants.forEach((v,i)=>{ const p=person(v); p.position.x=(i-1)*2.3;
+  const ped=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.78,0.12,40),M(0xe3e7ee,0.7)); ped.position.set((i-1)*2.3,0.06,0); ped.receiveShadow=true; scene.add(ped);
+  scene.add(p); people.push(p);
+});
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.target.set(0,1.2,0); controls.enablePan=false; controls.enableDamping=true; controls.dampingFactor=0.08;
+controls.minDistance=4; controls.maxDistance=12; controls.minPolarAngle=0.4; controls.maxPolarAngle=1.5;
+controls.autoRotate=true; controls.autoRotateSpeed=0.6;
+controls.addEventListener('start',()=>controls.autoRotate=false);
+
+function frame(){ requestAnimationFrame(frame); const t=performance.now()/1000;
+  people.forEach((p,i)=>{ p.position.y=Math.sin(t*1.4+i)*0.04; p.rotation.y=Math.sin(t*0.5+i*1.3)*0.5; });
+  controls.update(); renderer.render(scene,camera);
+}
+frame();
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+</script>
+</body>
+</html>
