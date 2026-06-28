@@ -83,6 +83,16 @@
   .ring .e{position:absolute;top:-6px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor}
   @keyframes aspin{to{transform:rotateZ(360deg)}}
   @media(prefers-reduced-motion:reduce){.orbit .ring{animation:none}}
+  @media(max-width:560px){
+    .step{justify-content:flex-start;padding:84px 18px 96px;overflow-y:auto}
+    h1{font-size:26px}
+    .lede{font-size:14px;margin-top:13px}
+    .bul{margin-top:18px;gap:9px}.bul li{font-size:14px}
+    .atom{width:94px;height:94px;margin-bottom:12px}
+    .choices{gap:12px;width:100%}.choice{width:100%;padding:20px 18px}
+    .btn{margin-top:22px}
+    input{font-size:18px;padding:14px 16px}
+  }
 </style>
 </head>
 <body>
