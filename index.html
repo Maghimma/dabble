@@ -53,8 +53,16 @@
   .btn.ghost:hover{background:#fff}
   .display{margin-top:32px;padding:12px;border-radius:24px;width:100%;max-width:920px}
   .screen{border-radius:16px;overflow:hidden;background:#0e2420;position:relative;box-shadow:0 18px 50px rgba(20,30,60,.22)}
-  .screen iframe{width:100%;height:clamp(240px,38vh,420px);border:0;display:block}
-  .screen .open{position:absolute;right:12px;bottom:12px;font-size:12.5px;font-weight:700;text-decoration:none;color:#0b1030;background:rgba(255,255,255,.92);padding:8px 14px;border-radius:999px}
+  .screen iframe{width:100%;height:clamp(240px,40vh,440px);border:0;display:block;pointer-events:none;opacity:0;transition:opacity .5s}
+  .screen .open{position:absolute;right:12px;bottom:12px;z-index:3;font-size:12.5px;font-weight:700;text-decoration:none;color:#0b1030;background:rgba(255,255,255,.92);padding:8px 14px;border-radius:999px}
+  .screenlink{position:absolute;inset:0;z-index:2}
+  .display{transition:transform .2s,box-shadow .2s}
+  .display:hover{transform:translateY(-3px)}
+  .featlabel{margin-top:30px;font-size:13.5px;font-weight:700;color:var(--blue)}
+  .caplive{margin-top:11px;font-size:12.5px;font-weight:600;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:7px}
+  .livedot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .play{position:absolute;top:9px;left:9px;z-index:3;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#0b1030;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:5px 9px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none}
   .scrollcue{margin-top:26px;color:var(--dim);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none}
   .scrollcue .arr{font-size:16px;animation:bob 1.8s ease-in-out infinite}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
@@ -144,7 +152,16 @@
       <a class="btn solid" href="#sims">Start exploring</a>
       <button class="btn ghost" id="surprise" type="button">🎲 Surprise me</button>
     </div>
-    <a class="scrollcue" href="#sims"><span>The simulations</span><span class="arr">↓</span></a>
+    <div class="featlabel">✨ New here? This one's live — tap to play ↓</div>
+    <div class="display glass">
+      <div class="screen">
+        <iframe id="heroFrame" src="wavemotion.html" title="Live simulation preview" loading="eager" scrolling="no"></iframe>
+        <a class="screenlink" id="heroLink" href="wavemotion.html" aria-label="Open this simulation"></a>
+        <a class="open" id="heroOpen" href="wavemotion.html">Open full ↗</a>
+      </div>
+    </div>
+    <div class="caplive"><span class="livedot"></span> Live · <span id="heroName">Wave Motion</span> — tap to open it</div>
+    <a class="scrollcue" href="#sims"><span>All the simulations</span><span class="arr">↓</span></a>
   </header>
 
   <section class="sims">
@@ -252,11 +269,29 @@
     fb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(fav[href])delete fav[href];else fav[href]=1;fb.classList.toggle('on',!!fav[href]);save();toast(fav[href]?'Saved ⭐':'Removed');if(f==='fav')apply();});tile.appendChild(fb);
     var sb=document.createElement('button');sb.className='tdot share';sb.type='button';sb.title='Share';sb.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13"/><path d="M8 7l4-4 4 4"/></svg>';
     sb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var url=new URL(href,location.href).href;if(navigator.share){navigator.share({title:'Dabble',url:url}).catch(function(){});}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){toast('Link copied!');});}else toast(url);});tile.appendChild(sb);
+    var pl=document.createElement('span');pl.className='play';pl.textContent='▶ Interactive';tile.appendChild(pl);
   });
   function apply(){var q=(search.value||'').trim().toLowerCase();var total=0;groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var href=t.getAttribute('href');var ok=(f==='all'||(f==='fav'?fav[href]:f===g.dataset.subj))&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok){any=true;total++;}});g.style.display=any?'':'none';});var se=document.getElementById('savedEmpty');if(se)se.style.display=(f==='fav'&&total===0)?'block':'none';}
   tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
   search.addEventListener('input',apply);apply();
   var sp=document.getElementById('surprise');if(sp)sp.addEventListener('click',function(){var hs=tiles.map(function(t){return t.getAttribute('href');});if(hs.length)location.href=hs[Math.floor(Math.random()*hs.length)];});
+})();
+</script>
+<script>
+// Live hero — rotate through a few auto-animating sims so the homepage always moves
+(function(){
+  var feats=[
+    {f:'wavemotion.html',n:'Wave Motion'},
+    {f:'states.html',n:'States of Matter'},
+    {f:'rateofreaction.html',n:'Rate of Reaction'}
+  ];
+  var fr=document.getElementById('heroFrame'),lk=document.getElementById('heroLink'),op=document.getElementById('heroOpen'),nm=document.getElementById('heroName');
+  if(!fr)return;
+  fr.addEventListener('load',function(){fr.style.opacity=1;});
+  // first frame already loading from markup (wavemotion); reveal it
+  if(fr.contentDocument&&fr.contentDocument.readyState==='complete')fr.style.opacity=1;
+  var i=0;
+  setInterval(function(){i=(i+1)%feats.length;var x=feats[i];fr.style.opacity=0;lk.href=x.f;op.href=x.f;if(nm)nm.textContent=x.n;setTimeout(function(){fr.src=x.f;},260);},9000);
 })();
 </script>
 <script>
