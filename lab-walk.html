@@ -49,7 +49,7 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:!mob,alpha:false});
 renderer.setPixelRatio(Math.min(devicePixelRatio,mob?1.5:2)); renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0xdfeefc); scene.fog=new THREE.Fog(0xdfeefc,26,64);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xdfeefc);
 const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,0.05,120);
 camera.rotation.order='YXZ'; camera.position.set(0,1.55,9);
 const pmrem=new THREE.PMREMGenerator(renderer); scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
@@ -60,10 +60,7 @@ key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=14;k
 
 const {pickables,update,bounds}=buildScene(scene,{mobile:mob});
 
-let composer=null;
-if(!mob){ composer=new EffectComposer(renderer); composer.addPass(new RenderPass(scene,camera));
-  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.28,0.35,0.95));
-  composer.addPass(new OutputPass()); }
+const composer=null; // bloom removed — it washed the bright room out
 
 // ---- controls ----
 let yaw=0,pitch=-0.16;
