@@ -155,15 +155,6 @@
       <button class="btn ghost" id="surprise" type="button">🎲 Surprise me</button>
     </div>
     <div style="margin-top:10px;font-size:12.5px"><a href="lab.html" style="color:var(--dim);text-decoration:none;font-weight:600">🧊 flat table view</a></div>
-    <div class="featlabel">✨ New here? This one's live — tap to play ↓</div>
-    <div class="display glass">
-      <div class="screen">
-        <iframe id="heroFrame" src="wavemotion.html" title="Live simulation preview" loading="eager" scrolling="no"></iframe>
-        <a class="screenlink" id="heroLink" href="wavemotion.html" aria-label="Open this simulation"></a>
-        <a class="open" id="heroOpen" href="wavemotion.html">Open full ↗</a>
-      </div>
-    </div>
-    <div class="caplive"><span class="livedot"></span> Live · <span id="heroName">Wave Motion</span> — tap to open it</div>
     <a class="scrollcue" href="#sims"><span>All the simulations</span><span class="arr">↓</span></a>
   </header>
 
@@ -279,23 +270,6 @@
   search.addEventListener('input',apply);apply();
   try{var _n=localStorage.getItem('dabble_name');if(_n)setTimeout(function(){toast('👋 welcome back, '+_n);},700);}catch(e){}
   var sp=document.getElementById('surprise');if(sp)sp.addEventListener('click',function(){var hs=tiles.map(function(t){return t.getAttribute('href');});if(hs.length)location.href=hs[Math.floor(Math.random()*hs.length)];});
-})();
-</script>
-<script>
-// Live hero — rotate through a few auto-animating sims so the homepage always moves
-(function(){
-  var feats=[
-    {f:'wavemotion.html',n:'Wave Motion'},
-    {f:'states.html',n:'States of Matter'},
-    {f:'rateofreaction.html',n:'Rate of Reaction'}
-  ];
-  var fr=document.getElementById('heroFrame'),lk=document.getElementById('heroLink'),op=document.getElementById('heroOpen'),nm=document.getElementById('heroName');
-  if(!fr)return;
-  fr.addEventListener('load',function(){fr.style.opacity=1;});
-  // first frame already loading from markup (wavemotion); reveal it
-  if(fr.contentDocument&&fr.contentDocument.readyState==='complete')fr.style.opacity=1;
-  var i=0;
-  setInterval(function(){i=(i+1)%feats.length;var x=feats[i];fr.style.opacity=0;lk.href=x.f;op.href=x.f;if(nm)nm.textContent=x.n;setTimeout(function(){fr.src=x.f;},260);},9000);
 })();
 </script>
 <script>
