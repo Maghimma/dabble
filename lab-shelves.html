@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>The Lab — Dabble</title>
+<title>The Collection — Dabble Lab</title>
 <meta name="description" content="Step into Dabble's 3D lab — pick up a beaker, a spring, the dice, and walk straight into an interactive IGCSE simulation." />
 <meta property="og:title" content="Dabble — The Lab (3D)" />
 <meta property="og:description" content="A 3D lab bench where every science & maths sim is an object you can pick up. Tap to explore." />
@@ -11,47 +11,51 @@
 <meta property="og:url" content="https://dabble-sim.vercel.app/lab.html" />
 <meta property="og:type" content="website" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3" />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--ink:#1d1d1f;--dim:#6e6e73;--blue:#0071e3;--gb:rgba(0,0,0,.07);--bluelink:#0066cc}
+  :root{--ink:#1d1d1f;--dim:#6e6e73;--blue:#0071e3;--gb:rgba(0,0,0,.07);--bluelink:#0066cc;
+        --gink:#eef1fb;--gdim:rgba(238,241,251,.62);--gacc:#9db8ff;--gline:rgba(255,255,255,.14)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden}
-  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;color:var(--ink);
+  body{font-family:'Hanken Grotesk',-apple-system,sans-serif;color:var(--gink);
     background:
-      radial-gradient(58% 50% at 14% 6%, rgba(110,150,255,.22), transparent 60%),
-      radial-gradient(52% 46% at 88% 4%, rgba(180,140,255,.18), transparent 60%),
-      radial-gradient(60% 58% at 86% 98%, rgba(60,205,195,.18), transparent 62%),
-      linear-gradient(180deg,#fbfcff,#eef0f6 80%);}
-  #c{position:fixed;inset:0;display:block;touch-action:none}
-  .nav{position:fixed;top:14px;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 18px;pointer-events:none}
+      radial-gradient(72% 60% at 50% 36%, rgba(120,150,255,.22), transparent 62%),
+      radial-gradient(54% 42% at 50% 84%, rgba(246,166,35,.10), transparent 60%),
+      radial-gradient(135% 100% at 50% 28%, #1b2142, #0c1022 72%);}
+  #c{position:fixed;inset:0;display:block;touch-action:none;z-index:1}
+  #vig{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(120% 95% at 50% 42%, transparent 56%, rgba(6,8,20,.6))}
+  .nav{position:fixed;top:16px;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 20px;pointer-events:none}
   .nav>*{pointer-events:auto}
-  .brand{display:inline-flex;align-items:flex-end;gap:1px;font-weight:800;font-size:19px;letter-spacing:-.03em;color:var(--ink);text-decoration:none;line-height:1}
-  .brand .cur{width:20px;height:20px;display:inline-block;margin-left:4px;vertical-align:-3px}
-  .pill{font-family:inherit;cursor:pointer;font-size:13.5px;font-weight:600;text-decoration:none;color:var(--ink);background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.07);
-    padding:9px 16px;border-radius:999px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 6px 20px rgba(30,40,80,.1)}
-  .pill:hover{background:#fff}
-  .intro{position:fixed;left:50%;top:62px;transform:translateX(-50%);z-index:15;text-align:center;pointer-events:none;transition:opacity .6s;padding:8px 18px;width:max-content;max-width:92vw;background:rgba(255,255,255,.66);border:1px solid rgba(0,0,0,.05);border-radius:14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-  .intro .tag{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
-  .intro h1{font-size:18px;font-weight:700;letter-spacing:-.02em;margin-top:1px}
-  .intro p{font-size:12px;color:var(--dim);font-weight:600;margin-top:3px}
-  .label{position:fixed;z-index:16;pointer-events:none;transform:translate(-50%,-130%);background:rgba(20,28,44,.92);color:#fff;
-    padding:8px 13px;border-radius:12px;font-size:13.5px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .14s;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+  .brand{display:inline-flex;align-items:flex-end;gap:1px;font-family:'Fraunces',serif;font-weight:600;font-size:23px;letter-spacing:-.01em;color:var(--gink);text-decoration:none;line-height:1}
+  .brand .cur{width:21px;height:21px;display:inline-block;margin-left:5px;vertical-align:-3px}
+  .brand .cur svg g{fill:var(--gink);stroke:var(--gink)}
+  .pill{font-family:'Hanken Grotesk',sans-serif;cursor:pointer;font-size:13px;font-weight:600;text-decoration:none;color:var(--gink);background:rgba(255,255,255,.08);border:1px solid var(--gline);
+    padding:9px 16px;border-radius:999px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .pill:hover{background:rgba(255,255,255,.17)}
+  .intro{position:fixed;left:50%;top:66px;transform:translateX(-50%);z-index:15;text-align:center;pointer-events:none;transition:opacity .6s;padding:10px 22px;width:max-content;max-width:92vw;background:rgba(18,24,48,.5);border:1px solid var(--gline);border-radius:15px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .intro .tag{font-size:10.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--gacc)}
+  .intro h1{font-family:'Fraunces',serif;font-size:22px;font-weight:600;letter-spacing:-.01em;margin-top:3px;color:#fff}
+  .intro p{font-size:12px;color:var(--gdim);font-weight:500;margin-top:4px}
+  .label{position:fixed;z-index:16;pointer-events:none;transform:translate(-50%,-130%);background:#fff;color:#16182e;
+    padding:8px 14px;border-radius:12px;font-size:13.5px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .14s;box-shadow:0 12px 32px rgba(0,0,0,.45)}
   .label.on{opacity:1}
-  .label .go{font-weight:600;opacity:.7;font-size:12px;margin-left:6px}
-  .label::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:rgba(20,28,44,.92);border-bottom:0}
-  .hint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:15;font-size:12.5px;font-weight:600;color:var(--dim);
-    background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.06);padding:9px 16px;border-radius:999px;backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);transition:opacity .5s;display:flex;align-items:center;gap:8px;text-align:center}
-  .legend{position:fixed;left:16px;bottom:18px;z-index:15;display:flex;gap:13px;flex-wrap:wrap;background:rgba(255,255,255,.72);border:1px solid rgba(0,0,0,.06);
-    padding:9px 14px;border-radius:14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:12px;font-weight:600;color:var(--dim);box-shadow:0 6px 20px rgba(30,40,80,.1)}
+  .label .go{font-weight:600;opacity:.5;font-size:12px;margin-left:6px}
+  .label::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#fff;border-bottom:0}
+  .hint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:15;font-size:12px;font-weight:600;color:var(--gdim);
+    background:rgba(18,24,48,.5);border:1px solid var(--gline);padding:9px 16px;border-radius:999px;backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);transition:opacity .5s}
+  .legend{position:fixed;left:18px;bottom:18px;z-index:15;display:flex;gap:13px;flex-wrap:wrap;background:rgba(18,24,48,.5);border:1px solid var(--gline);
+    padding:9px 14px;border-radius:14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:11.5px;font-weight:600;color:var(--gdim)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
-  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
   @media(max-width:560px){.hint{display:none}.legend{font-size:10.5px;gap:9px;padding:7px 11px;left:8px;right:8px;bottom:10px;justify-content:center}}
   .loader{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-    background:linear-gradient(180deg,#fbfcff,#eef0f6);transition:opacity .6s}
+    background:radial-gradient(135% 100% at 50% 30%, #1b2142, #0c1022 72%);transition:opacity .6s}
   .loader.gone{opacity:0;pointer-events:none}
-  .spin{width:42px;height:42px;border-radius:50%;border:3px solid rgba(0,0,0,.1);border-top-color:var(--blue);animation:rot 1s linear infinite}
+  .spin{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.14);border-top-color:var(--gacc);animation:rot 1s linear infinite}
   @keyframes rot{to{transform:rotate(360deg)}}
-  .loader p{font-size:13px;font-weight:600;color:var(--dim)}
+  .loader p{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--gdim)}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .fbmodal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(10,15,25,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:18px}
   .fbmodal.on{display:flex}
@@ -70,6 +74,7 @@
 </head>
 <body>
   <canvas id="c"></canvas>
+  <div id="vig"></div>
 
   <nav class="nav">
     <a class="brand" href="index.html">dabble<span class="cur"><svg viewBox="0 0 80 80"><g fill="#1d1d1f" stroke="#1d1d1f" stroke-linecap="round" stroke-linejoin="round"><path d="M27 29 L46 75 L53 55 L73 48 Z" stroke-width="4"/><line x1="35" y1="15" x2="39" y2="4" stroke-width="5"/><line x1="19" y1="19" x2="9" y2="9" stroke-width="5"/><line x1="14" y1="34" x2="3" y2="36" stroke-width="5"/></g></svg></span></a>
@@ -80,9 +85,9 @@
   </nav>
 
   <div class="intro" id="intro">
-    <div class="tag">The Lab</div>
-    <h1>Pick something up.</h1>
-    <p>Every object is a simulation. Drag to look around · tap one to open it.</p>
+    <div class="tag">The Collection</div>
+    <h1>Pick a specimen.</h1>
+    <p>31 interactive sims, shelved by subject · drag to look · tap one to open it.</p>
   </div>
 
   <div class="label" id="label"></div>
@@ -149,7 +154,7 @@ scene.add(key);
 const fill = new THREE.DirectionalLight(0xbcd0ff, 0.5); fill.position.set(-8,5,4); scene.add(fill);
 
 // soft floor (the shelf cabinet stands on it)
-const floor = new THREE.Mesh(new THREE.CircleGeometry(22,56), new THREE.MeshStandardMaterial({color:0xe9ecf2, roughness:0.95}));
+const floor = new THREE.Mesh(new THREE.CircleGeometry(24,56), new THREE.MeshStandardMaterial({color:0x141a33, roughness:0.85, metalness:0.1}));
 floor.rotation.x=-Math.PI/2; floor.position.y=-0.95; floor.receiveShadow=true; scene.add(floor);
 
 // ---------- material helpers ----------
@@ -577,7 +582,7 @@ const pickables=[]; let n=0;
 rows.forEach((row,r)=>{ const shelfY=(total-1-r)*ROWH; const colHex='#'+SUB[row.s].toString(16).padStart(6,'0');
   const board=new THREE.Mesh(new THREE.BoxGeometry(W,0.16,1.8),woodM); board.position.set(0,shelfY-0.08,-0.15); board.castShadow=true; board.receiveShadow=true; scene.add(board);
   const strip=new THREE.Mesh(new THREE.BoxGeometry(W,0.06,0.06),new THREE.MeshStandardMaterial({color:SUB[row.s],roughness:0.5})); strip.position.set(0,shelfY+0.0,0.74); scene.add(strip);
-  if(r===0||rows[r-1].s!==row.s){ const lab=new THREE.Mesh(new THREE.PlaneGeometry(1.7,0.42),new THREE.MeshBasicMaterial({map:labelTex(SUBNAME[row.s],colHex),transparent:true})); lab.position.set(-W/2+1.15,shelfY+1.05,0.78); scene.add(lab); }
+  if(r===0||rows[r-1].s!==row.s){ const cnt=items.filter(it=>it.s===row.s).length; const lab=new THREE.Mesh(new THREE.PlaneGeometry(1.85,0.42),new THREE.MeshBasicMaterial({map:labelTex(SUBNAME[row.s]+' · '+cnt,colHex),transparent:true})); lab.position.set(-W/2+1.2,shelfY+1.05,0.78); scene.add(lab); }
   row.items.forEach((it,i)=>{ const x=(i-(row.items.length-1)/2)*COLGAP;
     const inner=it.make(); const outer=new THREE.Group(); outer.position.set(x,shelfY,0.0); outer.scale.setScalar(OBJ); outer.add(inner);
     outer.userData={href:it.href, name:it.name, inner, tick:inner.userData.tick, base:shelfY, phase:(n++)*0.6, hover:0, bscale:OBJ};
@@ -594,10 +599,9 @@ controls.target.set(0,tgtY,0);
 controls.enablePan=false; controls.enableDamping=true; controls.dampingFactor=0.08;
 controls.minDistance=10; controls.maxDistance=46;
 controls.minPolarAngle=0.2; controls.maxPolarAngle=1.45;
-controls.autoRotate=true; controls.autoRotateSpeed=0.42;
+controls.autoRotate=false;
 let arTimer;
-controls.addEventListener('start',()=>{ controls.autoRotate=false; clearTimeout(arTimer); fade(intro); fade(hint); });
-controls.addEventListener('end',()=>{ clearTimeout(arTimer); arTimer=setTimeout(()=>controls.autoRotate=true, 4500); });
+controls.addEventListener('start',()=>{ fade(intro); fade(hint); });
 
 // ---------- interaction ----------
 const ray=new THREE.Raycaster(); const ndc=new THREE.Vector2(); let hovered=null;
