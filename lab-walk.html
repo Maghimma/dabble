@@ -37,6 +37,10 @@
 <script type="module">
 import * as THREE from 'three';
 import {RoomEnvironment} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
+import {EffectComposer} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/postprocessing/EffectComposer.js';
+import {RenderPass} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/postprocessing/OutputPass.js';
 import {buildScene} from './lab-scene.js';
 
 const mob=Math.min(innerWidth,innerHeight)<760;
@@ -45,7 +49,7 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:!mob,alpha:false});
 renderer.setPixelRatio(Math.min(devicePixelRatio,mob?1.5:2)); renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0xdfeefc);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xdfeefc); scene.fog=new THREE.Fog(0xdfeefc,26,64);
 const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,0.05,120);
 camera.rotation.order='YXZ'; camera.position.set(0,1.55,9);
 const pmrem=new THREE.PMREMGenerator(renderer); scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
@@ -55,6 +59,11 @@ key.shadow.mapSize.set(mob?1024:2048,mob?1024:2048); key.shadow.camera.near=0.5;
 key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=14;key.shadow.camera.bottom=-14;key.shadow.bias=-0.0004;key.shadow.radius=5; scene.add(key);
 
 const {pickables,update,bounds}=buildScene(scene,{mobile:mob});
+
+let composer=null;
+if(!mob){ composer=new EffectComposer(renderer); composer.addPass(new RenderPass(scene,camera));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.28,0.35,0.95));
+  composer.addPass(new OutputPass()); }
 
 // ---- controls ----
 let yaw=0,pitch=-0.16;
@@ -98,11 +107,11 @@ function frame(){ requestAnimationFrame(frame); const dt=Math.min(clock.getDelta
   ndc.set(0,0); ray.setFromCamera(ndc,camera); const h=ray.intersectObjects(pickables,true)[0]; let hit=null;
   if(h){let o=h.object;while(o&&!o.userData.href)o=o.parent;hit=o;}
   if(hit){lookEl.textContent='tap to open · '+hit.userData.name;lookEl.classList.add('on');}else lookEl.classList.remove('on');
-  renderer.render(scene,camera);
+  if(composer)composer.render(); else renderer.render(scene,camera);
   if(!started){started=true;const l=document.getElementById('loader');l.classList.add('gone');setTimeout(()=>l.remove(),700);}
 }
 frame();
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);if(composer)composer.setSize(innerWidth,innerHeight);});
 </script>
 </body>
 </html>

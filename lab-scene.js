@@ -57,7 +57,7 @@ function deco(kind,color){ const g=new THREE.Group();
   g.traverse(o=>{if(o.isMesh)o.castShadow=true;}); return g; }
 function counter(len,doorCol){ const g=new THREE.Group();
   const body=new THREE.Mesh(new THREE.BoxGeometry(len,0.85,0.6),M(0xf3f6fb,0.6)); body.position.y=0.43; body.castShadow=true; body.receiveShadow=true; g.add(body);
-  const top=new THREE.Mesh(new THREE.BoxGeometry(len+0.06,0.08,0.66),M(0x2b3340,0.4)); top.position.y=0.9; g.add(top);
+  const top=new THREE.Mesh(new THREE.BoxGeometry(len+0.06,0.08,0.66),new THREE.MeshStandardMaterial({color:0x222a38,roughness:0.16,metalness:0.25,envMapIntensity:1.3})); top.position.y=0.9; g.add(top);
   const n=Math.max(2,Math.round(len/1.1));
   for(let i=0;i<n;i++){ const x=-len/2+(i+0.5)*(len/n);
     const door=new THREE.Mesh(new THREE.BoxGeometry(len/n-0.08,0.62,0.02),M(doorCol==null?0xf2f5f9:doorCol,0.5)); door.position.set(x,0.43,0.31); g.add(door);
@@ -123,11 +123,14 @@ function sign(text,color){ const cv=document.createElement('canvas'); cv.width=3
 // ---- assemble the room ----
 export function buildScene(scene, opts={}){
   const mob=!!opts.mobile;
-  // checkerboard floor (top at y=0)
+  // realistic tiled floor (top at y=0)
   const fc=document.createElement('canvas'); fc.width=fc.height=256; const fx=fc.getContext('2d');
-  for(let i=0;i<8;i++)for(let j=0;j<8;j++){ fx.fillStyle=((i+j)%2)?'#eaf1fb':'#d8e6f6'; fx.fillRect(i*32,j*32,32,32); }
-  const ftex=new THREE.CanvasTexture(fc); ftex.wrapS=ftex.wrapT=THREE.RepeatWrapping; ftex.repeat.set(7,6); ftex.anisotropy=4;
-  const floor=new THREE.Mesh(new THREE.BoxGeometry(28,0.3,24), new THREE.MeshStandardMaterial({map:ftex,roughness:0.9})); floor.position.y=-0.15; floor.receiveShadow=true; scene.add(floor);
+  fx.fillStyle='#e7edf5'; fx.fillRect(0,0,256,256);
+  fx.strokeStyle='#cbd5e3'; fx.lineWidth=6;
+  for(let i=0;i<=256;i+=128){ fx.beginPath();fx.moveTo(i,0);fx.lineTo(i,256);fx.stroke(); fx.beginPath();fx.moveTo(0,i);fx.lineTo(256,i);fx.stroke(); }
+  for(let i=0;i<500;i++){ fx.fillStyle='rgba(110,135,170,'+(Math.random()*0.06).toFixed(3)+')'; fx.fillRect(Math.random()*256,Math.random()*256,2,2); }
+  const ftex=new THREE.CanvasTexture(fc); ftex.wrapS=ftex.wrapT=THREE.RepeatWrapping; ftex.repeat.set(12,10); ftex.anisotropy=8;
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(28,0.3,24), new THREE.MeshStandardMaterial({map:ftex,roughness:0.45,metalness:0.0,envMapIntensity:0.8})); floor.position.y=-0.15; floor.receiveShadow=true; scene.add(floor);
   // colourful concentric rug
   [[3.6,0xcfe0ff],[2.5,0xffe0a3],[1.4,0xaee6d6]].forEach((c,i)=>{ const r=new THREE.Mesh(new THREE.CircleGeometry(c[0],48),new THREE.MeshStandardMaterial({color:c[1],roughness:0.95})); r.rotation.x=-Math.PI/2; r.position.y=0.012+i*0.003; scene.add(r); });
   // walls (0..9) + ceiling
@@ -137,12 +140,13 @@ export function buildScene(scene, opts={}){
   const right=new THREE.Mesh(new THREE.BoxGeometry(0.4,9,24),wallMat); right.position.set(14,4.5,0); right.receiveShadow=true; scene.add(right);
   const front=new THREE.Mesh(new THREE.BoxGeometry(28,9,0.4),wallMat); front.position.set(0,4.5,12); scene.add(front);
   const ceil=new THREE.Mesh(new THREE.BoxGeometry(28,0.3,24),M(0xf4f6fa,0.95)); ceil.position.y=9; scene.add(ceil);
-  [[-6,-3],[6,-3],[-6,4],[6,4],[0,0.5]].forEach(p=>{ const panel=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.08,1.2),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:0.8,roughness:0.4})); panel.position.set(p[0],8.85,p[1]); scene.add(panel); });
+  [[-6,-3],[6,-3],[-6,4],[6,4],[0,0.5]].forEach(p=>{ const panel=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.08,1.2),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:0.25,roughness:0.4})); panel.position.set(p[0],8.85,p[1]); scene.add(panel); });
   // colourful wainscot bands (each wall a subject colour) + pendant lights
   const band=(w,h,d,x,y,z,col)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(col,0.7)); m.position.set(x,y,z); scene.add(m); };
   band(28,1.3,0.46,0,0.65,-11.9,0x2ec4b6); band(0.46,1.3,24,-13.9,0.65,0,0x5b9bff);
   band(0.46,1.3,24,13.9,0.65,0,0xf6a623); band(28,1.3,0.46,0,0.65,11.9,0xc084fc);
-  [[-4.5,-4,0xff8f6b],[4.6,-4,0x5b9bff],[0,2.6,0xf6a623]].forEach(p=>{ const pd=pendant(p[2]); pd.position.set(p[0],9,p[1]); scene.add(pd); });
+  [[-4.5,-4,0xff8f6b],[4.6,-4,0x5b9bff],[0,2.6,0xf6a623]].forEach(p=>{ const pd=pendant(p[2]); pd.position.set(p[0],9,p[1]); scene.add(pd);
+    const pl=new THREE.PointLight(0xfff0d6,9,13,2); pl.position.set(p[0],7.5,p[1]); scene.add(pl); });
   // big DABBLE LAB wall sign
   const ls=new THREE.Mesh(new THREE.PlaneGeometry(4.4,1.34),new THREE.MeshBasicMaterial({map:labSignTex(),transparent:true})); ls.position.set(0,7.4,-11.78); scene.add(ls);
   // colourful cubby of bins
