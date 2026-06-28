@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Welcome to Dabble</title>
+<meta name="description" content="Start your Dabble lab — interactive IGCSE science & maths simulations." />
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=3" />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{--ink:#1b1f2a;--dim:#5c6473;--blue:#0071e3;--line:rgba(20,30,60,.1)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Hanken Grotesk',-apple-system,sans-serif;color:var(--ink);overflow:hidden;
+    background:
+      radial-gradient(60% 55% at 16% 8%, rgba(120,150,255,.30), transparent 60%),
+      radial-gradient(56% 50% at 88% 6%, rgba(190,140,255,.26), transparent 60%),
+      radial-gradient(64% 60% at 84% 96%, rgba(70,210,200,.24), transparent 62%),
+      linear-gradient(180deg,#fdfdff,#eef1f8 84%);}
+  .blob{position:fixed;border-radius:50%;filter:blur(8px);opacity:.5;z-index:0;animation:float 14s ease-in-out infinite}
+  .blob.a{width:140px;height:140px;background:radial-gradient(circle at 35% 30%,#bcd0ff,#7aa2ff);top:18%;left:12%}
+  .blob.b{width:90px;height:90px;background:radial-gradient(circle at 35% 30%,#ffd9a3,#f6a623);top:64%;left:80%;animation-delay:-5s}
+  .blob.c{width:70px;height:70px;background:radial-gradient(circle at 35% 30%,#aef0e2,#2ec4b6);top:74%;left:16%;animation-delay:-9s}
+  @keyframes float{0%,100%{transform:translateY(0) translateX(0)}50%{transform:translateY(-26px) translateX(12px)}}
+  @media(prefers-reduced-motion:reduce){.blob{animation:none}}
+
+  .stage{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;text-align:center}
+  .wm{display:inline-flex;align-items:flex-end;gap:1px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;font-weight:800;font-size:21px;letter-spacing:-.03em;color:var(--ink);line-height:1;margin-bottom:30px;opacity:0;animation:rise .6s .05s forwards}
+  .wm .cur{width:21px;height:21px;display:inline-block;margin-left:5px;vertical-align:-3px}
+
+  .step{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;text-align:center}
+  .step.on{display:flex}
+  .step>*{opacity:0;animation:rise .55s forwards}
+  .step>*:nth-child(1){animation-delay:.04s}.step>*:nth-child(2){animation-delay:.12s}.step>*:nth-child(3){animation-delay:.2s}
+  .step>*:nth-child(4){animation-delay:.28s}.step>*:nth-child(5){animation-delay:.36s}.step>*:nth-child(6){animation-delay:.44s}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:12px}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(28px,5.4vw,46px);letter-spacing:-.02em;line-height:1.06;max-width:18ch}
+  .lede{font-size:clamp(15px,1.9vw,18px);color:var(--dim);font-weight:500;max-width:42ch;margin-top:16px;line-height:1.5}
+  .bul{list-style:none;margin:22px auto 0;display:flex;flex-direction:column;gap:11px;text-align:left;max-width:30ch}
+  .bul li{font-size:15px;font-weight:500;color:var(--ink);display:flex;gap:10px;align-items:flex-start}
+  .bul li b{font-weight:700}
+
+  .namefield{margin-top:26px;width:min(420px,90vw);display:flex;flex-direction:column;gap:12px;align-items:center}
+  input{width:100%;font-family:inherit;font-size:20px;font-weight:600;text-align:center;color:var(--ink);
+    background:rgba(255,255,255,.7);border:1px solid var(--line);border-radius:16px;padding:16px 18px;outline:none;
+    backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(30,40,80,.1)}
+  input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.15)}
+  input::placeholder{color:#9aa2b1;font-weight:500}
+
+  .btn{font-family:inherit;cursor:pointer;font-size:16px;font-weight:700;border:0;border-radius:999px;padding:14px 28px;
+    background:var(--ink);color:#fff;transition:transform .15s,opacity .2s;margin-top:26px}
+  .btn:hover{transform:translateY(-2px)}
+  .skip{margin-top:14px;background:none;border:0;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--dim);cursor:pointer}
+  .skip:hover{color:var(--ink)}
+
+  .choices{display:flex;gap:16px;margin-top:30px;flex-wrap:wrap;justify-content:center}
+  .choice{width:min(280px,86vw);text-decoration:none;color:var(--ink);background:rgba(255,255,255,.66);border:1px solid var(--line);
+    border-radius:20px;padding:24px 22px;text-align:left;backdrop-filter:blur(14px);box-shadow:0 12px 34px rgba(30,40,80,.12);
+    transition:transform .18s,box-shadow .18s;display:block}
+  .choice:hover{transform:translateY(-5px);box-shadow:0 20px 46px rgba(30,40,80,.2)}
+  .choice .em{font-size:34px;display:block}
+  .choice b{display:block;font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin-top:10px}
+  .choice span{display:block;font-size:13.5px;color:var(--dim);font-weight:500;margin-top:4px}
+  .choice .go{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;color:var(--blue)}
+
+  .dots{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:8px}
+  .dots i{width:8px;height:8px;border-radius:50%;background:rgba(20,30,60,.18);transition:background .25s,width .25s}
+  .dots i.on{background:var(--blue);width:22px;border-radius:999px}
+</style>
+</head>
+<body>
+  <div class="blob a"></div><div class="blob b"></div><div class="blob c"></div>
+
+  <div class="stage">
+    <!-- step 1 — name -->
+    <section class="step on" id="s1">
+      <div class="wm">dabble<span class="cur"><svg viewBox="0 0 80 80"><g fill="#1b1f2a" stroke="#1b1f2a" stroke-linecap="round" stroke-linejoin="round"><path d="M27 29 L46 75 L53 55 L73 48 Z" stroke-width="4"/><line x1="35" y1="15" x2="39" y2="4" stroke-width="5"/><line x1="19" y1="19" x2="9" y2="9" stroke-width="5"/><line x1="14" y1="34" x2="3" y2="36" stroke-width="5"/></g></svg></span></div>
+      <div class="eyebrow">Welcome</div>
+      <h1>First up — what should I call you?</h1>
+      <div class="namefield">
+        <input id="name" type="text" autocomplete="given-name" maxlength="24" placeholder="your name" />
+        <button class="btn" type="button" onclick="toStep2()">Nice to meet you →</button>
+      </div>
+      <button class="skip" type="button" onclick="skipName()">skip for now</button>
+    </section>
+
+    <!-- step 2 — greet + intro -->
+    <section class="step" id="s2">
+      <div class="eyebrow">Hi <span id="g1">there</span> 👋</div>
+      <h1>This is Dabble.</h1>
+      <p class="lede">A lab of interactive science &amp; maths sims for IGCSE. You don't just read about a concept — you poke it, break it, and watch what happens.</p>
+      <ul class="bul">
+        <li>🧪 <span><b>Pick things up</b> — a beaker, a spring, a set of dice.</span></li>
+        <li>✦ <span><b>Change stuff</b> and see the result update live.</span></li>
+        <li>📈 <span>Built for <b>IGCSE (Cambridge)</b> science &amp; maths.</span></li>
+      </ul>
+      <button class="btn" type="button" onclick="toStep3()">Got it →</button>
+    </section>
+
+    <!-- step 3 — choose view -->
+    <section class="step" id="s3">
+      <div class="eyebrow">Ready, <span id="g2">explorer</span>?</div>
+      <h1>How do you want to explore?</h1>
+      <div class="choices">
+        <a class="choice" href="lab-walk.html" onclick="finish()"><span class="em">🧪</span><b>The 3D Lab</b><span>walk around a lab room &amp; pick things up</span><span class="go">Enter ›</span></a>
+        <a class="choice" href="index.html" onclick="finish()"><span class="em">📋</span><b>The Grid</b><span>a simple, searchable list of every sim</span><span class="go">Browse ›</span></a>
+      </div>
+    </section>
+  </div>
+
+  <div class="dots"><i class="on" id="d1"></i><i id="d2"></i><i id="d3"></i></div>
+
+<script>
+  var name='';
+  function go(step){ for(var i=1;i<=3;i++){ document.getElementById('s'+i).classList.toggle('on', i===step); document.getElementById('d'+i).classList.toggle('on', i===step); } }
+  function setName(n){ name=(n||'').trim(); try{ if(name) localStorage.setItem('dabble_name', name); }catch(e){}
+    var g=name||'there', g2=name||'explorer';
+    document.getElementById('g1').textContent=name||'there';
+    document.getElementById('g2').textContent=name||'explorer'; }
+  function toStep2(){ setName(document.getElementById('name').value); go(2); }
+  function skipName(){ setName(''); go(2); }
+  function toStep3(){ go(3); }
+  function finish(){ try{ localStorage.setItem('dabble_onboarded','1'); }catch(e){} }
+  window.toStep2=toStep2;window.skipName=skipName;window.toStep3=toStep3;window.finish=finish;
+  // prefill if returning
+  try{ var saved=localStorage.getItem('dabble_name'); if(saved){ document.getElementById('name').value=saved; setName(saved); } }catch(e){}
+  // enter key on name advances
+  document.getElementById('name').addEventListener('keydown',function(e){ if(e.key==='Enter') toStep2(); });
+  document.getElementById('name').focus();
+</script>
+</body>
+</html>
