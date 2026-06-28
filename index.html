@@ -257,7 +257,7 @@
   var tiles=[].slice.call(document.querySelectorAll('.tile')),groups=[].slice.call(document.querySelectorAll('.subject')),tabs=[].slice.call(document.querySelectorAll('.ftab')),search=document.getElementById('search'),f='all';
   var fav=JSON.parse(localStorage.getItem('dabble_fav')||'{}');
   function save(){localStorage.setItem('dabble_fav',JSON.stringify(fav));}
-  var T=document.getElementById('toast');function toast(m){T.textContent=m;T.classList.add('on');clearTimeout(T._t);T._t=setTimeout(function(){T.classList.remove('on');},1600);}
+  var T=document.getElementById('toast');function toast(m,dur){T.textContent=m;T.classList.add('on');clearTimeout(T._t);T._t=setTimeout(function(){T.classList.remove('on');},dur||1600);}
   tiles.forEach(function(tile){var href=tile.getAttribute('href');
     var fb=document.createElement('button');fb.className='tdot fav'+(fav[href]?' on':'');fb.type='button';fb.textContent='★';fb.title='Save';
     fb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(fav[href])delete fav[href];else fav[href]=1;fb.classList.toggle('on',!!fav[href]);save();toast(fav[href]?'Saved ⭐':'Removed');if(f==='fav')apply();});tile.appendChild(fb);
@@ -268,7 +268,7 @@
   function apply(){var q=(search.value||'').trim().toLowerCase();var total=0;groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var href=t.getAttribute('href');var ok=(f==='all'||(f==='fav'?fav[href]:f===g.dataset.subj))&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok){any=true;total++;}});g.style.display=any?'':'none';});var se=document.getElementById('savedEmpty');if(se)se.style.display=(f==='fav'&&total===0)?'block':'none';}
   tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
   search.addEventListener('input',apply);apply();
-  try{var _n=localStorage.getItem('dabble_name');if(_n)setTimeout(function(){toast('👋 welcome back, '+_n);},700);}catch(e){}
+  try{var _n=localStorage.getItem('dabble_name');if(_n)setTimeout(function(){toast('👋 welcome back, '+_n,6000);},700);}catch(e){}
   var sp=document.getElementById('surprise');if(sp)sp.addEventListener('click',function(){var hs=tiles.map(function(t){return t.getAttribute('href');});if(hs.length)location.href=hs[Math.floor(Math.random()*hs.length)];});
 })();
 </script>
