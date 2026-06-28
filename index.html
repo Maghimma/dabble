@@ -150,11 +150,11 @@
     <h1>Learn by doing.</h1>
     <p class="sub">Interactive simulations that make tough concepts obvious — built for <b>IGCSE (Cambridge)</b>. Drag, break, explore.</p>
     <div class="cta">
-      <a class="btn solid" href="lab-walk.html">🧪 Enter the Lab <span style="font-weight:500;opacity:.8">(3D)</span></a>
+      <a class="btn solid" href="lab-shelves.html">🧪 Enter the Lab <span style="font-weight:500;opacity:.8">(3D)</span></a>
       <a class="btn ghost" href="#sims">Browse all sims</a>
       <button class="btn ghost" id="surprise" type="button">🎲 Surprise me</button>
     </div>
-    <div style="margin-top:10px;font-size:12.5px"><a href="lab-diorama.html" style="color:var(--dim);text-decoration:none;font-weight:600">🏠 diorama</a> &nbsp;·&nbsp; <a href="lab-shelves.html" style="color:var(--dim);text-decoration:none;font-weight:600">📚 shelves</a> &nbsp;·&nbsp; <a href="lab.html" style="color:var(--dim);text-decoration:none;font-weight:600">🧊 flat table</a></div>
+    <div style="margin-top:10px;font-size:12.5px"><a href="lab.html" style="color:var(--dim);text-decoration:none;font-weight:600">🧊 flat table view</a></div>
     <div class="featlabel">✨ New here? This one's live — tap to play ↓</div>
     <div class="display glass">
       <div class="screen">
@@ -277,6 +277,7 @@
   function apply(){var q=(search.value||'').trim().toLowerCase();var total=0;groups.forEach(function(g){var any=false;g.querySelectorAll('.tile').forEach(function(t){var href=t.getAttribute('href');var ok=(f==='all'||(f==='fav'?fav[href]:f===g.dataset.subj))&&(!q||t.textContent.toLowerCase().indexOf(q)>=0);t.style.display=ok?'':'none';if(ok){any=true;total++;}});g.style.display=any?'':'none';});var se=document.getElementById('savedEmpty');if(se)se.style.display=(f==='fav'&&total===0)?'block':'none';}
   tabs.forEach(function(t){t.addEventListener('click',function(){f=t.dataset.f;tabs.forEach(function(x){x.classList.toggle('on',x===t);});apply();});});
   search.addEventListener('input',apply);apply();
+  try{var _n=localStorage.getItem('dabble_name');if(_n)setTimeout(function(){toast('👋 welcome back, '+_n);},700);}catch(e){}
   var sp=document.getElementById('surprise');if(sp)sp.addEventListener('click',function(){var hs=tiles.map(function(t){return t.getAttribute('href');});if(hs.length)location.href=hs[Math.floor(Math.random()*hs.length)];});
 })();
 </script>

@@ -85,10 +85,11 @@
   </nav>
 
   <div class="intro" id="intro">
-    <div class="tag">The Collection</div>
-    <h1>Pick a specimen.</h1>
+    <div class="tag" id="introTag">The Collection</div>
+    <h1 id="introH1">Pick a specimen.</h1>
     <p>31 interactive sims, shelved by subject · drag to look · tap one to open it.</p>
   </div>
+  <script>try{var _n=localStorage.getItem('dabble_name');if(_n){var t=document.getElementById('introTag');if(t)t.textContent='Welcome back, '+_n+' 👋';}}catch(e){}</script>
 
   <div class="label" id="label"></div>
   <div class="hint" id="hint">🖐️ drag to look around · tap an object to dive in</div>

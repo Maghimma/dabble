@@ -69,6 +69,20 @@
   .dots{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:8px}
   .dots i{width:8px;height:8px;border-radius:50%;background:rgba(20,30,60,.18);transition:background .25s,width .25s}
   .dots i.on{background:var(--blue);width:22px;border-radius:999px}
+  /* 3D spinning atom for the intro step */
+  .atom{width:122px;height:122px;position:relative;margin:0 auto 18px;perspective:520px}
+  .atom .core{position:absolute;top:50%;left:50%;width:22px;height:22px;margin:-11px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#aef0e2,#2ec4b6);box-shadow:0 0 18px rgba(46,196,182,.85)}
+  .orbit{position:absolute;inset:0;transform-style:preserve-3d}
+  .orbit.o1{color:#5b9bff;transform:rotateX(74deg)}
+  .orbit.o2{color:#f6a623;transform:rotateX(74deg) rotateY(60deg)}
+  .orbit.o3{color:#c084fc;transform:rotateX(74deg) rotateY(-60deg)}
+  .orbit .ring{position:absolute;inset:0;transform-style:preserve-3d;animation:aspin 3s linear infinite}
+  .orbit.o2 .ring{animation-duration:4s;animation-direction:reverse}
+  .orbit.o3 .ring{animation-duration:4.8s}
+  .ring::before{content:"";position:absolute;inset:0;border:2px solid currentColor;border-radius:50%;opacity:.5}
+  .ring .e{position:absolute;top:-6px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor}
+  @keyframes aspin{to{transform:rotateZ(360deg)}}
+  @media(prefers-reduced-motion:reduce){.orbit .ring{animation:none}}
 </style>
 </head>
 <body>
@@ -89,6 +103,7 @@
 
     <!-- step 2 — greet + intro -->
     <section class="step" id="s2">
+      <div class="atom"><div class="core"></div><div class="orbit o1"><div class="ring"><span class="e"></span></div></div><div class="orbit o2"><div class="ring"><span class="e"></span></div></div><div class="orbit o3"><div class="ring"><span class="e"></span></div></div></div>
       <div class="eyebrow">Hi <span id="g1">there</span> 👋</div>
       <h1>This is Dabble.</h1>
       <p class="lede">A lab of interactive science &amp; maths sims for IGCSE. You don't just read about a concept — you poke it, break it, and watch what happens.</p>
@@ -105,7 +120,7 @@
       <div class="eyebrow">Ready, <span id="g2">explorer</span>?</div>
       <h1>How do you want to explore?</h1>
       <div class="choices">
-        <a class="choice" href="lab-walk.html" onclick="finish()"><span class="em">🧪</span><b>The 3D Lab</b><span>walk around a lab room &amp; pick things up</span><span class="go">Enter ›</span></a>
+        <a class="choice" href="lab-shelves.html" onclick="finish()"><span class="em">🧪</span><b>The Lab</b><span>a 3D shelf of interactive sims, by subject</span><span class="go">Enter ›</span></a>
         <a class="choice" href="index.html" onclick="finish()"><span class="em">📋</span><b>The Grid</b><span>a simple, searchable list of every sim</span><span class="go">Browse ›</span></a>
       </div>
     </section>
@@ -115,8 +130,11 @@
 
 <script>
   var name='';
+  var FEEDBACK_URL='https://script.google.com/macros/s/AKfycby8A3RYIPSmwhoW2TvLXCJV-oREl0bc8N79S4sgB63b-mJqAYRawrHj4OQefybluh8QPQ/exec';
+  function logSignup(n){ try{ if(!n||localStorage.getItem('dabble_signed'))return; localStorage.setItem('dabble_signed','1');
+    fetch(FEEDBACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({ts:new Date().toISOString(),sim:'(onboarding)',type:'👋 joined',message:'',name:n})}); }catch(e){} }
   function go(step){ for(var i=1;i<=3;i++){ document.getElementById('s'+i).classList.toggle('on', i===step); document.getElementById('d'+i).classList.toggle('on', i===step); } }
-  function setName(n){ name=(n||'').trim(); try{ if(name) localStorage.setItem('dabble_name', name); }catch(e){}
+  function setName(n){ name=(n||'').trim(); try{ if(name){ localStorage.setItem('dabble_name', name); logSignup(name); } }catch(e){}
     var g=name||'there', g2=name||'explorer';
     document.getElementById('g1').textContent=name||'there';
     document.getElementById('g2').textContent=name||'explorer'; }
