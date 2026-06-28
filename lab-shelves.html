@@ -58,6 +58,20 @@
   .spin{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.14);border-top-color:var(--gacc);animation:rot 1s linear infinite}
   @keyframes rot{to{transform:rotate(360deg)}}
   .loader p{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--gdim)}
+  /* light theme */
+  body.light{--gink:#1b2030;--gdim:#5c6473;--gline:rgba(20,30,60,.10);
+    background:
+      radial-gradient(58% 50% at 16% 8%, rgba(120,150,255,.20), transparent 60%),
+      radial-gradient(54% 46% at 86% 6%, rgba(190,140,255,.16), transparent 60%),
+      radial-gradient(60% 56% at 84% 96%, rgba(70,210,200,.16), transparent 62%),
+      linear-gradient(180deg,#fdfdff,#eef1f8 84%);}
+  body.light #vig{background:radial-gradient(120% 95% at 50% 44%, transparent 72%, rgba(30,40,80,.08))}
+  body.light .pill,body.light .intro,body.light .hint,body.light .legend{background:rgba(255,255,255,.74);border-color:rgba(20,30,60,.08);box-shadow:0 6px 20px rgba(30,40,80,.1)}
+  body.light .pill:hover{background:#fff}
+  body.light .intro h1{color:#16182e}
+  body.light .intro .tag{color:#0071e3}
+  body.light .loader{background:linear-gradient(180deg,#fdfdff,#eef1f8)}
+  body.light .spin{border-color:rgba(20,30,60,.12);border-top-color:#0071e3}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .fbmodal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(10,15,25,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:18px}
   .fbmodal.on{display:flex}
@@ -75,12 +89,14 @@
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }</script>
 </head>
 <body>
+<script>try{if(localStorage.getItem('dabble_lab_theme')==='light')document.body.classList.add('light');}catch(e){}</script>
   <canvas id="c"></canvas>
   <div id="vig"></div>
 
   <nav class="nav">
     <a class="brand" href="index.html">dabble<span class="cur"><svg viewBox="0 0 80 80"><g fill="#1d1d1f" stroke="#1d1d1f" stroke-linecap="round" stroke-linejoin="round"><path d="M27 29 L46 75 L53 55 L73 48 Z" stroke-width="4"/><line x1="35" y1="15" x2="39" y2="4" stroke-width="5"/><line x1="19" y1="19" x2="9" y2="9" stroke-width="5"/><line x1="14" y1="34" x2="3" y2="36" stroke-width="5"/></g></svg></span></a>
     <div style="display:flex;gap:8px">
+      <button class="pill" id="themeBtn" type="button" title="Toggle light / dark" onclick="window.__setLabTheme&&window.__setLabTheme()">🌙</button>
       <button class="pill" type="button" onclick="openFeedback()">💬 Feedback</button>
       <a class="pill" href="index.html">Browse all sims ↗</a>
     </div>
@@ -654,6 +670,14 @@ function frame(){
 frame();
 
 addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); fitCam(); });
+
+// light / dark theme
+function applyLabTheme(t){ var light=t==='light'; document.body.classList.toggle('light',light);
+  if(floor&&floor.material) floor.material.color.set(light?0xe9ecf2:0x141a33);
+  var b=document.getElementById('themeBtn'); if(b) b.textContent=light?'☀️':'🌙';
+  try{localStorage.setItem('dabble_lab_theme',light?'light':'dark');}catch(e){} }
+window.__setLabTheme=function(t){ var cur=document.body.classList.contains('light')?'light':'dark'; applyLabTheme(t||(cur==='light'?'dark':'light')); };
+(function(){ var saved='dark'; try{saved=localStorage.getItem('dabble_lab_theme')||'dark';}catch(e){} applyLabTheme(saved); })();
 </script>
 
 <div class="fbmodal" id="fbModal"><div class="fbcard">
